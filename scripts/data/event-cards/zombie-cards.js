@@ -43,7 +43,7 @@ function addZombieEventCards(pushCard, helpers) {
     for (let i = 0; i < limit; i += 1) {
       const zKey = zombieKeys[i];
       if (state.zombies.has(zKey)) {
-        helpers.moveOneZombieTowardPlayer(zKey);
+        helpers.moveOneZombieTowardPlayer(zKey, { targetPlayerId: player.id });
       }
     }
     logLine(`${player.name} played Zombie Master and moved up to ${Math.min(6, zombieKeys.length)} zombie(s).`);

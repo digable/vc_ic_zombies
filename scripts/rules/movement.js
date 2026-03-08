@@ -34,6 +34,9 @@ function canStep(fromX, fromY, toX, toY) {
   if (!isLocalWalkable(fromTile, fromLocalX, fromLocalY)) {
     return false;
   }
+  if (!canExitSubTile(fromTile, fromLocalX, fromLocalY, moveDir)) {
+    return false;
+  }
 
   if (fromTileX === toTileX && fromTileY === toTileY) {
     if (!canEnterSubTile(toTile, toLocalX, toLocalY, enterFrom)) {
@@ -54,6 +57,10 @@ function canStep(fromX, fromY, toX, toY) {
 
     const enterDir = DIRS[exitDir].opposite;
     if (!hasRoad(fromTile, exitDir) || !hasRoad(toTile, enterDir)) {
+      return false;
+    }
+
+    if (!canExitSubTile(fromTile, fromLocalX, fromLocalY, exitDir)) {
       return false;
     }
 

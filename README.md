@@ -79,3 +79,39 @@ Styles are also split for readability:
 - No build step is required.
 - The board uses 3x3 movement spaces inside each tile.
 - Combat does not rely on browser `prompt()` dialogs; decisions are handled in-page.
+
+## Subtile Authoring Syntax
+
+You can define explicit 3x3 movement data on a tile using `subTiles` (or aliases `subTilesTemplate`, `subtiles`, `subtitles`).
+
+Each subtile key is `"x,y"` where `x` and `y` are `0..2`.
+
+Supported per-subtile properties:
+
+- `walkable: true|false`
+- `blocked: true` (alias for `walkable: false`)
+- `sides` / `open`: direction map or direction array, applied to both enter+exit
+- `enterFrom` / `enter`: direction map or direction array
+- `exitTo` / `exit`: direction map or direction array
+- `walls` / `wall`: direction map or direction array; forces closed on those edges
+- `doors` / `door`: direction map or direction array; forces open on those edges
+
+Direction values are `N`, `E`, `S`, `W`.
+
+Example:
+
+```js
+{
+	name: "Custom Building",
+	type: "named",
+	connectors: ["N", "E"],
+	zombieSpawnMode: "by_card",
+	zombieCount: 3,
+	subTiles: {
+		"1,1": { walkable: true, sides: ["N", "E", "W"] },
+		"1,0": { walkable: true, doors: ["N"], walls: ["E", "W"] },
+		"0,1": { walkable: true, enterFrom: ["E"], exitTo: ["E", "W"] },
+		"2,2": { blocked: true }
+	}
+}
+```

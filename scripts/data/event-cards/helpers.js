@@ -117,8 +117,9 @@ function buildEventDeckHelpers() {
     return true;
   };
 
-  const moveOneZombieTowardPlayer = (zKey) => {
-    const next = moveZombieOneStep(zKey);
+  const moveOneZombieTowardPlayer = (zKey, options = {}) => {
+    const { targetPlayerId = null } = options;
+    const next = moveZombieOneStep(zKey, { targetPlayerId, resolveTiesDeterministically: true });
     if (next !== zKey) {
       state.zombies.delete(zKey);
       state.zombies.add(next);

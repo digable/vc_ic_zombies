@@ -133,6 +133,127 @@ function getRotatedConnectors(connectors, rotation) {
   });
 }
 
+function rotateDir(dir, rotation) {
+  const order = ["N", "E", "S", "W"];
+  const i = order.indexOf(dir);
+  if (i < 0) {
+    return dir;
+  }
+  return order[(i + rotation) % 4];
+}
+
+function rotateLocalCoord(lx, ly, rotation) {
+  let x = lx;
+  let y = ly;
+  for (let i = 0; i < rotation; i += 1) {
+    const nextX = 2 - y;
+    const nextY = x;
+    x = nextX;
+    y = nextY;
+  }
+  return { x, y };
+}
+
+function rotateDirectionMap(dirMap, rotation) {
+  const out = { N: false, E: false, S: false, W: false };
+  if (!dirMap) {
+    return out;
+  }
+  Object.entries(dirMap).forEach(([dir, allowed]) => {
+    if (!allowed) {
+      return;
+    }
+    const rotated = rotateDir(dir, rotation);
+    if (rotated in out) {
+      out[rotated] = true;
+    }
+  });
+  return out;
+}
+
+function toDirectionMap(value) {
+  const out = { N: false, E: false, S: false, W: false };
+  if (!value) {
+    return out;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((dir) => {
+      if (dir in out) {
+        out[dir] = true;
+      }
+    });
+    return out;
+  }
+
+  if (typeof value === "object") {
+    Object.entries(value).forEach(([dir, allowed]) => {
+      if (dir in out) {
+        out[dir] = Boolean(allowed);
+      }
+    });
+  }
+
+  return out;
+}
+
+function getRotatedSubTiles(subTiles, rotation = 0) {
+  if (!subTiles) {
+    return null;
+  }
+
+  const steps = ((rotation % 4) + 4) % 4;
+  const rotated = {};
+  Object.entries(subTiles).forEach(([k, cell]) => {
+    const { x: lx, y: ly } = parseKey(k);
+    if (
+      !Number.isInteger(lx) ||
+      !Number.isInteger(ly) ||
+      lx < 0 ||
+      lx > 2 ||
+      ly < 0 ||
+      ly > 2
+    ) {
+      return;
+    }
+
+    const rotatedCoord = rotateLocalCoord(lx, ly, steps);
+    const nextCell = { ...cell };
+    if (cell?.enterFrom || cell?.sides || cell?.open) {
+      const sourceMap = cell.enterFrom || cell.sides || cell.open;
+      nextCell.enterFrom = rotateDirectionMap(sourceMap, steps);
+    }
+    if (cell?.exitTo || cell?.sides || cell?.open) {
+      const sourceMap = cell.exitTo || cell.sides || cell.open;
+      nextCell.exitTo = rotateDirectionMap(sourceMap, steps);
+    }
+
+    const wallsMap = toDirectionMap(cell?.walls || cell?.wall);
+    const doorsMap = toDirectionMap(cell?.doors || cell?.door);
+    const rotatedWalls = rotateDirectionMap(wallsMap, steps);
+    const rotatedDoors = rotateDirectionMap(doorsMap, steps);
+    const wallDirs = Object.keys(rotatedWalls).filter((dir) => rotatedWalls[dir]);
+    const doorDirs = Object.keys(rotatedDoors).filter((dir) => rotatedDoors[dir]);
+    if (wallDirs.length > 0) {
+      nextCell.walls = wallDirs;
+    }
+    if (doorDirs.length > 0) {
+      nextCell.doors = doorDirs;
+    }
+
+    rotated[key(rotatedCoord.x, rotatedCoord.y)] = nextCell;
+  });
+
+  return rotated;
+}
+
+function getTileSubTileMap(tile) {
+  if (!tile) {
+    return null;
+  }
+  return tile.subTiles || tile.subTilesTemplate || tile.subtiles || tile.subtitles || null;
+}
+
 function isLocalWalkable(tile, lx, ly) {
   if (!tile) {
     return false;
@@ -161,6 +282,7 @@ function isLocalWalkable(tile, lx, ly) {
 
 function buildSubTilesForTile(tile) {
   const subTiles = {};
+  const customSubTiles = getTileSubTileMap(tile);
 
   const baseWalkable = (lx, ly) => {
     if (tile.fullAccess) {
@@ -177,9 +299,18 @@ function buildSubTilesForTile(tile) {
 
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
+      const custom = customSubTiles?.[key(lx, ly)];
+      const walkable =
+        typeof custom?.walkable === "boolean"
+          ? custom.walkable
+          : custom?.blocked
+            ? false
+            : baseWalkable(lx, ly);
       subTiles[key(lx, ly)] = {
-        walkable: baseWalkable(lx, ly),
-        enterFrom: { N: false, E: false, S: false, W: false }
+        walkable,
+        enterFrom: { N: false, E: false, S: false, W: false },
+        exitTo: { N: false, E: false, S: false, W: false },
+        ...(walkable ? {} : { walls: ["N", "E", "S", "W"] })
       };
     }
   }
@@ -197,21 +328,84 @@ function buildSubTilesForTile(tile) {
         if (srcX < 0 || srcX > 2 || srcY < 0 || srcY > 2) {
           return;
         }
-        cell.enterFrom[dir] = Boolean(subTiles[key(srcX, srcY)]?.walkable);
+        const neighborWalkable = Boolean(subTiles[key(srcX, srcY)]?.walkable);
+        cell.enterFrom[dir] = neighborWalkable;
+        cell.exitTo[dir] = neighborWalkable;
       });
 
       // Edge exit cells can be entered from outside the tile if a connector exists.
       if (lx === 1 && ly === 0 && (tile.connectors || []).includes("N")) {
         cell.enterFrom.N = true;
+        cell.exitTo.N = true;
       }
       if (lx === 2 && ly === 1 && (tile.connectors || []).includes("E")) {
         cell.enterFrom.E = true;
+        cell.exitTo.E = true;
       }
       if (lx === 1 && ly === 2 && (tile.connectors || []).includes("S")) {
         cell.enterFrom.S = true;
+        cell.exitTo.S = true;
       }
       if (lx === 0 && ly === 1 && (tile.connectors || []).includes("W")) {
         cell.enterFrom.W = true;
+        cell.exitTo.W = true;
+      }
+
+      const custom = customSubTiles?.[key(lx, ly)];
+      if (custom) {
+        const hasSides = custom.sides !== undefined || custom.open !== undefined;
+        const sideMap = hasSides ? toDirectionMap(custom.sides ?? custom.open) : null;
+        const hasEnterMap = custom.enterFrom !== undefined || custom.enter !== undefined;
+        const hasExitMap = custom.exitTo !== undefined || custom.exit !== undefined;
+        const enterMap = hasEnterMap
+          ? toDirectionMap(custom.enterFrom ?? custom.enter)
+          : sideMap;
+        const exitMap = hasExitMap
+          ? toDirectionMap(custom.exitTo ?? custom.exit)
+          : sideMap;
+        const wallsMap = toDirectionMap(custom.walls || custom.wall);
+        const doorsMap = toDirectionMap(custom.doors || custom.door);
+        const wallDirs = Object.keys(wallsMap).filter((dir) => wallsMap[dir]);
+        const doorDirs = Object.keys(doorsMap).filter((dir) => doorsMap[dir]);
+
+        if (enterMap) {
+          Object.entries(enterMap).forEach(([dir, allowed]) => {
+            if (dir in cell.enterFrom) {
+              cell.enterFrom[dir] = Boolean(allowed);
+            }
+          });
+        }
+
+        if (exitMap) {
+          Object.entries(exitMap).forEach(([dir, allowed]) => {
+            if (dir in cell.exitTo) {
+              cell.exitTo[dir] = Boolean(allowed);
+            }
+          });
+        }
+
+        // Walls always close movement on that edge for both entering and exiting.
+        Object.entries(wallsMap).forEach(([dir, blocked]) => {
+          if (blocked && dir in cell.enterFrom) {
+            cell.enterFrom[dir] = false;
+            cell.exitTo[dir] = false;
+          }
+        });
+
+        // Doors always open movement on that edge for both entering and exiting.
+        Object.entries(doorsMap).forEach(([dir, open]) => {
+          if (open && dir in cell.enterFrom) {
+            cell.enterFrom[dir] = true;
+            cell.exitTo[dir] = true;
+          }
+        });
+
+        if (wallDirs.length > 0) {
+          cell.walls = wallDirs;
+        }
+        if (doorDirs.length > 0) {
+          cell.doors = doorDirs;
+        }
       }
     }
   }
@@ -225,6 +419,17 @@ function canEnterSubTile(tile, lx, ly, fromDir) {
     return false;
   }
   return Boolean(sub.enterFrom?.[fromDir]);
+}
+
+function canExitSubTile(tile, lx, ly, toDir) {
+  const sub = tile?.subTiles?.[key(lx, ly)];
+  if (!sub || !sub.walkable) {
+    return false;
+  }
+  if (sub.exitTo && toDir in sub.exitTo) {
+    return Boolean(sub.exitTo[toDir]);
+  }
+  return Boolean(sub.enterFrom?.[toDir]);
 }
 
 function findSpawnSpaceOnTile(tx, ty) {

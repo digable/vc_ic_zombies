@@ -45,9 +45,14 @@ function chooseDeterministicOption(options, labelBuilder) {
 }
 
 function moveZombieOneStep(zKey, options = {}) {
-  const { resolveTiesDeterministically = false } = options;
+  const { resolveTiesDeterministically = false, targetPlayerId = null } = options;
   const { x, y } = parseKey(zKey);
-  const targetCandidates = closestPlayersTo(x, y);
+  const explicitTarget =
+    targetPlayerId !== null && targetPlayerId !== undefined
+      ? state.players.find((p) => p.id === targetPlayerId) || null
+      : null;
+
+  const targetCandidates = explicitTarget ? [explicitTarget] : closestPlayersTo(x, y);
   const target = resolveTiesDeterministically
     ? chooseDeterministicOption(
       targetCandidates,

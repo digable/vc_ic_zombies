@@ -24,6 +24,42 @@ function moveZombies() {
     let movedCount = 0;
     let combatDecisionPending = false;
 
+    const chooseZombieCombatTarget = (playersOnSpace, options = {}) => {
+      const { specifiedPlayerId = null } = options;
+      if (!playersOnSpace || playersOnSpace.length === 0) {
+        return null;
+      }
+
+      if (specifiedPlayerId !== null && specifiedPlayerId !== undefined) {
+        const specified = playersOnSpace.find((p) => p.id === specifiedPlayerId);
+        if (specified) {
+          return specified;
+        }
+      }
+
+      if (playersOnSpace.length === 1) {
+        return playersOnSpace[0];
+      }
+
+      const turnDistance = (player) => {
+        const i = state.players.indexOf(player);
+        if (i < 0) {
+          return Number.MAX_SAFE_INTEGER;
+        }
+        return (i - state.currentPlayerIndex + state.players.length) % state.players.length;
+      };
+
+      const ordered = [...playersOnSpace].sort((a, b) => {
+        const d = turnDistance(a) - turnDistance(b);
+        if (d !== 0) {
+          return d;
+        }
+        return a.id - b.id;
+      });
+
+      return ordered[0];
+    };
+
     for (let i = 0; i < moveLimit; i += 1) {
       const available = [...state.zombies].filter((zk) => !movedThisPhase.has(zk));
       if (available.length === 0) {
@@ -66,11 +102,18 @@ function moveZombies() {
         movedThisPhase.add(next);
         movedCount += 1;
 
-        state.players
-          .filter((p) => key(p.x, p.y) === next)
-          .forEach((p) => {
-            logLine(`A zombie moved into ${p.name}'s space. Combat starts immediately.`);
-            const combat = resolveCombatForPlayer(p, {
+        const occupants = state.players.filter((p) => key(p.x, p.y) === next);
+        const target = chooseZombieCombatTarget(occupants);
+        if (target) {
+          const active = currentPlayer();
+          if (target.id === active.id) {
+            if (occupants.length > 1) {
+              logLine(`A zombie moved into a shared space and targets ${target.name} for combat.`);
+            } else {
+              logLine(`A zombie moved into ${target.name}'s space. Combat starts immediately.`);
+            }
+
+            const combat = resolveCombatForPlayer(target, {
               advanceStepWhenClear: false,
               endStepOnKnockout: false,
               resumeStepAfterPending: STEP.DISCARD
@@ -78,7 +121,10 @@ function moveZombies() {
             if (combat.pending) {
               combatDecisionPending = true;
             }
-          });
+          } else {
+            logLine(`A zombie moved into ${target.name}'s space. Combat is deferred until ${target.name}'s turn.`);
+          }
+        }
       }
 
       if (combatDecisionPending) {

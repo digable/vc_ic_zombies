@@ -45,15 +45,7 @@ function setupGame(playerCount) {
   state.pendingTileOptions = [];
   state.logs = [];
 
-  addTile(0, 0, {
-    name: "Town Square",
-    type: "town",
-    connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_card",
-    zombieCount: 0,
-    hearts: 0,
-    bullets: 0
-  });
+  addTile(0, 0, buildTownSquareTile());
 
   logLine("Town Square deployed. No zombies are auto-placed at setup.");
   logLine(`${currentPlayer().name} goes first (most recent zombie movie watcher).`);
@@ -114,10 +106,13 @@ function placePendingTileAt(x, y) {
 
   const placement = optionsAtCoord[0];
   const tile = state.pendingTile;
+  const sourceSubTiles = getTileSubTileMap(tile);
+  const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, placement.rotation);
 
   addTile(placement.x, placement.y, {
     ...tile,
-    connectors: placement.connectors
+    connectors: placement.connectors,
+    ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
   });
 
   const placedName = getTileDisplayName(tile);

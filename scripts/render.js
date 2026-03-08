@@ -24,6 +24,90 @@ function getRoadLineDirs(tileLike, lx, ly) {
   return dirs;
 }
 
+function getSubTileWallDirs(tileLike, lx, ly) {
+  const sub = tileLike?.subTiles?.[key(lx, ly)];
+  if (!sub) {
+    return [];
+  }
+
+  const rawWallDirs = (() => {
+    if (sub.walkable === false) {
+      return ["N", "E", "S", "W"];
+    }
+
+    const walls = sub.walls || sub.wall;
+    if (!walls) {
+      return [];
+    }
+
+    if (Array.isArray(walls)) {
+      return walls.filter((dir) => dir === "N" || dir === "E" || dir === "S" || dir === "W");
+    }
+
+    if (typeof walls === "object") {
+      return Object.entries(walls)
+        .filter(([dir, isWall]) => Boolean(isWall) && (dir === "N" || dir === "E" || dir === "S" || dir === "W"))
+        .map(([dir]) => dir);
+    }
+
+    return [];
+  })();
+
+  const hasWall = (tileRef, x, y, dir) => {
+    const cell = tileRef?.subTiles?.[key(x, y)];
+    if (!cell) {
+      return false;
+    }
+    if (cell.walkable === false) {
+      return true;
+    }
+    const cellWalls = cell.walls || cell.wall;
+    if (!cellWalls) {
+      return false;
+    }
+    if (Array.isArray(cellWalls)) {
+      return cellWalls.includes(dir);
+    }
+    if (typeof cellWalls === "object") {
+      return Boolean(cellWalls[dir]);
+    }
+    return false;
+  };
+
+  const isBlockedCell = (tileRef, x, y) => {
+    const cell = tileRef?.subTiles?.[key(x, y)];
+    if (!cell) {
+      return false;
+    }
+    return cell.walkable === false;
+  };
+
+  // Shared internal walls are rendered once to avoid visually doubled thickness.
+  return rawWallDirs.filter((dir) => {
+    const d = DIRS[dir];
+    const nx = lx + d.x;
+    const ny = ly + d.y;
+    if (nx < 0 || nx > 2 || ny < 0 || ny > 2) {
+      return true;
+    }
+
+    // Adjacent blocked cells are treated as a single block: draw only outer perimeter.
+    if (sub.walkable === false && isBlockedCell(tileLike, nx, ny)) {
+      return false;
+    }
+
+    const opposite = d.opposite;
+    if (!hasWall(tileLike, nx, ny, opposite)) {
+      return true;
+    }
+
+    if (dir === "N" || dir === "W") {
+      return true;
+    }
+    return false;
+  });
+}
+
 function renderBoard() {
   const { minX, maxX, minY, maxY } = boardBounds();
   const cols = maxX - minX + 1;
@@ -69,10 +153,13 @@ function renderBoard() {
           cell.classList.add(previewClass);
 
           const previewMicro = [];
+          const sourceSubTiles = getTileSubTileMap(previewTile);
+          const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, state.pendingRotation);
           const previewTileForWalk = {
             type: previewTile.type,
             connectors: option?.connectors || [],
-            fullAccess: previewTile.fullAccess
+            fullAccess: previewTile.fullAccess,
+            ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
           };
           for (let ly = 0; ly < 3; ly += 1) {
             for (let lx = 0; lx < 3; lx += 1) {
@@ -87,9 +174,13 @@ function renderBoard() {
               const lanes = lineDirs
                 .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
                 .join("");
+              const wallDirs = getSubTileWallDirs(previewTileForWalk, lx, ly);
+              const walls = wallDirs
+                .map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`)
+                .join("");
               const blocked = !isWalkable ? '<span class="mark blocked">X</span>' : "";
               previewMicro.push(
-                `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${blocked}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+                `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${blocked}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
               );
             }
           }
@@ -177,6 +268,10 @@ function renderBoard() {
           const lanes = lineDirs
             .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
             .join("");
+          const wallDirs = getSubTileWallDirs(tile, lx, ly);
+          const walls = wallDirs
+            .map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`)
+            .join("");
 
           if (!isWalkable) {
             parts.push('<span class="mark blocked">X</span>');
@@ -202,7 +297,7 @@ function renderBoard() {
           if (data.bullets > 0) {
             parts.push(`<span class="mark token">B${data.bullets}</span>`);
           }
-          micro.push(`<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${parts.join("")}</span>`);
+          micro.push(`<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${parts.join("")}</span>`);
         }
       }
 
