@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VC IC Zombies</title>
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>VC IC Zombies</h1>
+      <p class="subtitle">Town square survival. Reach the helipad or collect 25 kills.</p>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls">
+        <h2>Game Controls</h2>
+        <div class="row">
+          <label for="playerCount">Players</label>
+          <input id="playerCount" type="number" min="1" max="4" value="2" />
+          <button id="newGameBtn">New Game</button>
+        </div>
+        <div class="row">
+          <button id="drawTileBtn">1. Draw & Place Tile</button>
+          <button id="combatBtn">2. Combat Current Space</button>
+          <button id="drawEventsBtn">3. Draw to 3 Events</button>
+        </div>
+        <div class="row">
+          <span id="pendingTileInfo">Pending Tile: -</span>
+        </div>
+        <div class="row">
+          <button id="rotateLeftBtn">Rotate ⟲</button>
+          <button id="rotateRightBtn">Rotate ⟳</button>
+        </div>
+        <div class="row">
+          <button id="rollMoveBtn">4. Roll Movement</button>
+          <span id="moveRollOutput">Move Roll: -</span>
+        </div>
+        <div class="row dir-row">
+          <button class="moveDirBtn" data-dir="N">Move ↑</button>
+          <button class="moveDirBtn" data-dir="W">Move ←</button>
+          <button class="moveDirBtn" data-dir="E">Move →</button>
+          <button class="moveDirBtn" data-dir="S">Move ↓</button>
+          <button id="endMoveBtn">End Movement</button>
+        </div>
+        <div class="row">
+          <button id="moveZombiesBtn">5. Move Zombies</button>
+          <span id="zombieRollOutput">Zombie Roll: -</span>
+        </div>
+        <div class="row">
+          <button id="discardBtn">6. Discard Selected Event</button>
+          <button id="endTurnBtn">End Turn</button>
+        </div>
+      </section>
+
+      <section class="panel board-wrap">
+        <div class="board-header">
+          <h2>Map</h2>
+          <div id="turnInfo"></div>
+        </div>
+        <div id="board"></div>
+      </section>
+
+      <section class="panel sidebar">
+        <h2>Current Player</h2>
+        <div id="currentPlayerCard"></div>
+
+        <h2>Player Status</h2>
+        <div id="playersList"></div>
+
+        <h2>Event Hand</h2>
+        <div id="handList"></div>
+
+        <h2>Log</h2>
+        <div id="log"></div>
+      </section>
+    </main>
+
+    <script src="scripts/core.js"></script>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/rules.js"></script>
+    <script src="scripts/actions.js"></script>
+    <script src="scripts/render.js"></script>
+    <script src="scripts/bootstrap.js"></script>
+  </body>
+</html>

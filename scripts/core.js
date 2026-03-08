@@ -1,0 +1,432 @@
+const DIRS = {
+  N: { x: 0, y: -1, opposite: "S" },
+  E: { x: 1, y: 0, opposite: "W" },
+  S: { x: 0, y: 1, opposite: "N" },
+  W: { x: -1, y: 0, opposite: "E" }
+};
+
+const DOOR_LOCAL = {
+  N: { x: 1, y: 0 },
+  E: { x: 2, y: 1 },
+  S: { x: 1, y: 2 },
+  W: { x: 0, y: 1 }
+};
+
+const STEP = {
+  DRAW_TILE: "DRAW_TILE",
+  COMBAT: "COMBAT",
+  DRAW_EVENTS: "DRAW_EVENTS",
+  ROLL_MOVE: "ROLL_MOVE",
+  MOVE: "MOVE",
+  MOVE_ZOMBIES: "MOVE_ZOMBIES",
+  DISCARD: "DISCARD",
+  END: "END"
+};
+
+const state = {
+  players: [],
+  currentPlayerIndex: 0,
+  board: new Map(),
+  mapDeck: [],
+  eventDeck: [],
+  discardPile: [],
+  zombies: new Set(),
+  spaceTokens: new Map(),
+  step: STEP.DRAW_TILE,
+  movesRemaining: 0,
+  currentMoveRoll: null,
+  currentZombieRoll: null,
+  selectedHandIndex: null,
+  turnNumber: 1,
+  gameOver: false,
+  eventUsedThisTurn: false,
+  movementBonus: 0,
+  pendingTile: null,
+  pendingRotation: 0,
+  pendingTileOptions: [],
+  logs: []
+};
+
+const refs = {
+  board: document.getElementById("board"),
+  turnInfo: document.getElementById("turnInfo"),
+  currentPlayerCard: document.getElementById("currentPlayerCard"),
+  playersList: document.getElementById("playersList"),
+  handList: document.getElementById("handList"),
+  log: document.getElementById("log"),
+  moveRollOutput: document.getElementById("moveRollOutput"),
+  zombieRollOutput: document.getElementById("zombieRollOutput"),
+  pendingTileInfo: document.getElementById("pendingTileInfo"),
+  newGameBtn: document.getElementById("newGameBtn"),
+  drawTileBtn: document.getElementById("drawTileBtn"),
+  rotateLeftBtn: document.getElementById("rotateLeftBtn"),
+  rotateRightBtn: document.getElementById("rotateRightBtn"),
+  combatBtn: document.getElementById("combatBtn"),
+  drawEventsBtn: document.getElementById("drawEventsBtn"),
+  rollMoveBtn: document.getElementById("rollMoveBtn"),
+  moveDirBtns: Array.from(document.querySelectorAll(".moveDirBtn")),
+  endMoveBtn: document.getElementById("endMoveBtn"),
+  moveZombiesBtn: document.getElementById("moveZombiesBtn"),
+  discardBtn: document.getElementById("discardBtn"),
+  endTurnBtn: document.getElementById("endTurnBtn"),
+  playerCount: document.getElementById("playerCount")
+};
+
+function key(x, y) {
+  return `${x},${y}`;
+}
+
+function parseKey(k) {
+  const [x, y] = k.split(",").map(Number);
+  return { x, y };
+}
+
+function spaceToTileCoord(v) {
+  return Math.floor(v / 3);
+}
+
+function getLocalCoord(v, tileCoord) {
+  return v - tileCoord * 3;
+}
+
+function getTileAtSpace(x, y) {
+  const tx = spaceToTileCoord(x);
+  const ty = spaceToTileCoord(y);
+  return state.board.get(key(tx, ty));
+}
+
+function getTileDisplayName(tile) {
+  if (!tile) {
+    return "";
+  }
+  return tile.name && tile.name.trim().length > 0 ? tile.name : "Road";
+}
+
+function directionToArrow(dir) {
+  if (dir === "N") {
+    return "↑";
+  }
+  if (dir === "E") {
+    return "→";
+  }
+  if (dir === "S") {
+    return "↓";
+  }
+  if (dir === "W") {
+    return "←";
+  }
+  return dir;
+}
+
+function formatTileExits(tile) {
+  return (tile.connectors || []).map(directionToArrow).join(" ") || "None";
+}
+
+function getRotatedConnectors(connectors, rotation) {
+  const order = ["N", "E", "S", "W"];
+  return (connectors || []).map((dir) => {
+    const i = order.indexOf(dir);
+    return order[(i + rotation) % 4];
+  });
+}
+
+function isLocalWalkable(tile, lx, ly) {
+  if (!tile) {
+    return false;
+  }
+  if (lx < 0 || lx > 2 || ly < 0 || ly > 2) {
+    return false;
+  }
+
+  if (tile.subTiles) {
+    return Boolean(tile.subTiles[key(lx, ly)]?.walkable);
+  }
+
+  if (tile.fullAccess) {
+    return true;
+  }
+
+  if (lx === 1 && ly === 1) {
+    return true;
+  }
+
+  return tile.connectors.some((dir) => {
+    const d = DOOR_LOCAL[dir];
+    return d.x === lx && d.y === ly;
+  });
+}
+
+function buildSubTilesForTile(tile) {
+  const subTiles = {};
+
+  const baseWalkable = (lx, ly) => {
+    if (tile.fullAccess) {
+      return true;
+    }
+    if (lx === 1 && ly === 1) {
+      return true;
+    }
+    return (tile.connectors || []).some((dir) => {
+      const d = DOOR_LOCAL[dir];
+      return d.x === lx && d.y === ly;
+    });
+  };
+
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      subTiles[key(lx, ly)] = {
+        walkable: baseWalkable(lx, ly),
+        enterFrom: { N: false, E: false, S: false, W: false }
+      };
+    }
+  }
+
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      const cell = subTiles[key(lx, ly)];
+      if (!cell.walkable) {
+        continue;
+      }
+
+      Object.entries(DIRS).forEach(([dir, d]) => {
+        const srcX = lx + d.x;
+        const srcY = ly + d.y;
+        if (srcX < 0 || srcX > 2 || srcY < 0 || srcY > 2) {
+          return;
+        }
+        cell.enterFrom[dir] = Boolean(subTiles[key(srcX, srcY)]?.walkable);
+      });
+
+      // Edge exit cells can be entered from outside the tile if a connector exists.
+      if (lx === 1 && ly === 0 && (tile.connectors || []).includes("N")) {
+        cell.enterFrom.N = true;
+      }
+      if (lx === 2 && ly === 1 && (tile.connectors || []).includes("E")) {
+        cell.enterFrom.E = true;
+      }
+      if (lx === 1 && ly === 2 && (tile.connectors || []).includes("S")) {
+        cell.enterFrom.S = true;
+      }
+      if (lx === 0 && ly === 1 && (tile.connectors || []).includes("W")) {
+        cell.enterFrom.W = true;
+      }
+    }
+  }
+
+  return subTiles;
+}
+
+function canEnterSubTile(tile, lx, ly, fromDir) {
+  const sub = tile?.subTiles?.[key(lx, ly)];
+  if (!sub || !sub.walkable) {
+    return false;
+  }
+  return Boolean(sub.enterFrom?.[fromDir]);
+}
+
+function findSpawnSpaceOnTile(tx, ty) {
+  const tile = state.board.get(key(tx, ty));
+  if (!tile) {
+    return null;
+  }
+
+  const offsets = [
+    [1, 1],
+    [1, 0],
+    [2, 1],
+    [1, 2],
+    [0, 1],
+    [0, 0],
+    [2, 0],
+    [0, 2],
+    [2, 2]
+  ];
+
+  for (const [lx, ly] of offsets) {
+    if (!isLocalWalkable(tile, lx, ly)) {
+      continue;
+    }
+    const sx = tx * 3 + lx;
+    const sy = ty * 3 + ly;
+    const sk = key(sx, sy);
+    if (!state.zombies.has(sk)) {
+      return { x: sx, y: sy };
+    }
+  }
+  return null;
+}
+
+function spawnZombieOnTile(tx, ty, sourceName) {
+  const tile = state.board.get(key(tx, ty));
+  if (!tile) {
+    return false;
+  }
+
+  const spawn = findSpawnSpaceOnTile(tx, ty);
+  if (!spawn) {
+    logLine(`No open zombie space on ${sourceName || tile.name}.`);
+    return false;
+  }
+
+  state.zombies.add(key(spawn.x, spawn.y));
+  return true;
+}
+
+function spawnZombiesOnTile(tx, ty, count, sourceName) {
+  let placed = 0;
+  for (let i = 0; i < count; i += 1) {
+    if (spawnZombieOnTile(tx, ty, sourceName)) {
+      placed += 1;
+    }
+  }
+  return placed;
+}
+
+function spawnZombiesOnRoadExits(tx, ty, connectors) {
+  let placed = 0;
+  (connectors || []).forEach((dir) => {
+    const door = DOOR_LOCAL[dir];
+    if (!door) {
+      return;
+    }
+    const sx = tx * 3 + door.x;
+    const sy = ty * 3 + door.y;
+    const sk = key(sx, sy);
+    if (!state.zombies.has(sk)) {
+      state.zombies.add(sk);
+      placed += 1;
+    }
+  });
+  return placed;
+}
+
+function getZombieSpawnCountForPlacedTile(tile, connectors) {
+  if (!tile) {
+    return 0;
+  }
+
+  const mode = tile.zombieSpawnMode || "none";
+  if (mode === "by_card") {
+    return Math.max(0, tile.zombieCount || 0);
+  }
+  if (mode === "by_exits") {
+    return Array.isArray(connectors) ? connectors.length : 0;
+  }
+  return 0;
+}
+
+function addTokensToSpace(x, y, hearts = 0, bullets = 0) {
+  if (hearts > 0 && bullets > 0) {
+    return false;
+  }
+
+  const sk = key(x, y);
+  const existing = state.spaceTokens.get(sk);
+  if (existing && (existing.hearts > 0 || existing.bullets > 0)) {
+    return false;
+  }
+
+  const next = {
+    hearts: hearts > 0 ? 1 : 0,
+    bullets: bullets > 0 ? 1 : 0
+  };
+
+  if (next.hearts === 0 && next.bullets === 0) {
+    return false;
+  }
+
+  state.spaceTokens.set(sk, next);
+  return true;
+}
+
+function placeBuildingTokens(tx, ty, hearts, bullets) {
+  const tile = state.board.get(key(tx, ty));
+  if (!tile) {
+    return;
+  }
+
+  const offsets = [];
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      if (isLocalWalkable(tile, lx, ly)) {
+        offsets.push([lx, ly]);
+      }
+    }
+  }
+
+  let h = hearts || 0;
+  let b = bullets || 0;
+  let i = 0;
+  let attempts = 0;
+  const maxAttempts = Math.max(1, offsets.length * 4);
+
+  while ((h > 0 || b > 0) && attempts < maxAttempts && offsets.length > 0) {
+    const [lx, ly] = offsets[i % offsets.length];
+    const sx = tx * 3 + lx;
+    const sy = ty * 3 + ly;
+    if (h > 0 && addTokensToSpace(sx, sy, 1, 0)) {
+      h -= 1;
+    } else if (b > 0 && addTokensToSpace(sx, sy, 0, 1)) {
+      b -= 1;
+    }
+    i += 1;
+    attempts += 1;
+  }
+}
+
+function collectTokensAtPlayerSpace(player) {
+  const sk = key(player.x, player.y);
+  const tokens = state.spaceTokens.get(sk);
+  if (!tokens) {
+    return;
+  }
+
+  let gainedHearts = 0;
+  if (tokens.hearts > 0 && player.hearts < 5) {
+    gainedHearts = Math.min(tokens.hearts, 5 - player.hearts);
+    player.hearts += gainedHearts;
+    tokens.hearts -= gainedHearts;
+  }
+
+  let gainedBullets = 0;
+  if (tokens.bullets > 0) {
+    gainedBullets = tokens.bullets;
+    player.bullets += gainedBullets;
+    tokens.bullets = 0;
+  }
+
+  if (tokens.hearts <= 0 && tokens.bullets <= 0) {
+    state.spaceTokens.delete(sk);
+  } else {
+    state.spaceTokens.set(sk, tokens);
+  }
+
+  if (gainedHearts > 0 || gainedBullets > 0) {
+    logLine(`${player.name} picked up tokens (+${gainedHearts} hearts, +${gainedBullets} bullets).`);
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function rollD6() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+function logLine(text) {
+  state.logs.unshift(`[T${state.turnNumber}] ${text}`);
+  if (state.logs.length > 120) {
+    state.logs.pop();
+  }
+}
+
+function addTile(x, y, tile) {
+  const placedTile = { ...tile, x, y, discovered: true, looted: false };
+  placedTile.subTiles = buildSubTilesForTile(placedTile);
+  state.board.set(key(x, y), placedTile);
+}

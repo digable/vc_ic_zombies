@@ -1,0 +1,162 @@
+.cell {
+  width: 84px;
+  height: 106px;
+  border: 1px solid #9e8a66;
+  border-radius: 8px;
+  position: relative;
+  background: #f0ead8;
+  padding: 0;
+  font-size: 0.67rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cell > div:first-child,
+.cell > .small {
+  padding: 0.15rem 0.2rem 0;
+}
+
+.cell.empty {
+  background: rgba(0, 0, 0, 0.03);
+  border-style: dashed;
+}
+
+.cell.place-option {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #c24a3e;
+  background:
+    linear-gradient(135deg, rgba(194, 74, 62, 0.18), rgba(194, 74, 62, 0.06)),
+    #f8efe9;
+  cursor: pointer;
+}
+
+.cell.place-option:hover {
+  filter: brightness(0.97);
+}
+
+.tile-town {
+  background: linear-gradient(135deg, #f7c88f 0%, #ebb36e 100%);
+}
+
+.tile-road {
+  background: var(--road);
+}
+
+.tile-building {
+  background: var(--building);
+}
+
+.tile-named {
+  background: var(--named);
+  color: #fff;
+}
+
+.tile-helipad {
+  background: var(--helipad);
+  color: #fff;
+}
+
+.badges {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.63rem;
+  color: #fff;
+}
+
+.badge.z {
+  background: var(--zombie);
+}
+
+.badge.p {
+  background: var(--player);
+}
+
+.micro-grid {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 0;
+  overflow: hidden;
+  width: 100%;
+  flex: 1;
+}
+
+.micro-cell {
+  min-height: 0;
+  text-align: left;
+  font-size: 0.56rem;
+  border: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.45);
+  padding: 1px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.micro-cell:nth-child(3n) {
+  border-right: 0;
+}
+
+.micro-cell:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+
+.mark {
+  display: inline-block;
+  border-radius: 3px;
+  padding: 0 2px;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.mark.player {
+  background: #2d6a9f;
+}
+
+.mark.zombie {
+  background: #395b2f;
+}
+
+.mark.token {
+  background: #8f6b40;
+}
+
+.mark.exit {
+  background: #4d4d4d;
+}
+
+.player-card,
+.hand-card {
+  border: 1px solid #c5b08a;
+  border-radius: 6px;
+  padding: 0.45rem;
+  margin-bottom: 0.4rem;
+  background: #fffdf8;
+}
+
+.hand-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}

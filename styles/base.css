@@ -1,0 +1,57 @@
+:root {
+  --ink: #1f1f1f;
+  --paper: #f7f5ef;
+  --sand: #e4d7b8;
+  --accent: #b23a2e;
+  --road: #d6d6d6;
+  --building: #c59f6a;
+  --named: #8f6b40;
+  --helipad: #2f9e44;
+  --zombie: #395b2f;
+  --player: #2d6a9f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 15%, #fff9d8 0%, transparent 28%),
+    radial-gradient(circle at 80% 10%, #ffd8c9 0%, transparent 32%),
+    linear-gradient(160deg, #f3ead2 0%, #f7f5ef 65%, #efe3c4 100%);
+}
+
+button,
+input {
+  border: 1px solid #8f7d56;
+  border-radius: 6px;
+  padding: 0.4rem 0.55rem;
+  font: inherit;
+}
+
+button {
+  background: #f4eddd;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #eadfca;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input[type="number"] {
+  width: 72px;
+}
+
+.small {
+  font-size: 0.68rem;
+  opacity: 0.92;
+}
