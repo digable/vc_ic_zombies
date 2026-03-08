@@ -59,7 +59,7 @@ function moveZombies() {
       }
 
       movedThisPhase.add(chosenZombie);
-      const next = moveZombieOneStep(chosenZombie, { resolveTiesWithPrompt: false });
+      const next = moveZombieOneStep(chosenZombie, { resolveTiesDeterministically: false });
       if (next !== chosenZombie) {
         state.zombies.delete(chosenZombie);
         state.zombies.add(next);

@@ -306,7 +306,6 @@ function renderCombatDecision() {
   panel.innerHTML = `
     <div class="combat-decision-title">Combat Decision Required: ${player.name}</div>
     <div class="small">
-      Active player for this decision: <strong>${player.name}</strong>.<br />
       ${player.name} rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}).<br />
       Current combat total: ${pending.modifiedRoll}. Choose one action:
     </div>

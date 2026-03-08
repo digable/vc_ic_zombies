@@ -68,9 +68,7 @@ function movePlayer(dir) {
   }
 
   const playerSpaceKey = key(player.x, player.y);
-  const zombieEncounterKey = state.zombies.has(playerSpaceKey) ? playerSpaceKey : null;
-
-  if (zombieEncounterKey) {
+  if (state.zombies.has(playerSpaceKey)) {
     if (player.noCombatThisTurn) {
       logLine(`${player.name} is under a no-combat effect and ignores zombie battle this turn.`);
       if (state.movesRemaining <= 0) {

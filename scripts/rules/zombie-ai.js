@@ -29,7 +29,7 @@ function closestPlayersTo(x, y) {
   return chosen;
 }
 
-function chooseByPrompt(options, labelBuilder, title) {
+function chooseDeterministicOption(options, labelBuilder) {
   if (options.length <= 1) {
     return options[0] || null;
   }
@@ -45,14 +45,13 @@ function chooseByPrompt(options, labelBuilder, title) {
 }
 
 function moveZombieOneStep(zKey, options = {}) {
-  const { resolveTiesWithPrompt = false } = options;
+  const { resolveTiesDeterministically = false } = options;
   const { x, y } = parseKey(zKey);
   const targetCandidates = closestPlayersTo(x, y);
-  const target = resolveTiesWithPrompt
-    ? chooseByPrompt(
+  const target = resolveTiesDeterministically
+    ? chooseDeterministicOption(
       targetCandidates,
-      (p) => `${p.name} at (${p.x}, ${p.y})`,
-      "Zombie target tie. Choose closest player target:"
+      (p) => `${p.name} at (${p.x}, ${p.y})`
     )
     : targetCandidates[0];
   if (!target) {
@@ -92,11 +91,10 @@ function moveZombieOneStep(zKey, options = {}) {
   const bestDist = moveOptions[0].dist;
   const best = moveOptions.filter((o) => o.dist === bestDist);
 
-  const chosen = resolveTiesWithPrompt
-    ? chooseByPrompt(
+  const chosen = resolveTiesDeterministically
+    ? chooseDeterministicOption(
       best,
-      (o) => `to (${o.x}, ${o.y})`,
-      "Zombie movement tie. Choose move:"
+      (o) => `to (${o.x}, ${o.y})`
     )
     : best[0];
 

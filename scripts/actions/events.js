@@ -51,7 +51,6 @@ function playEvent(index) {
   card.apply(player);
   state.discardPile.push(card);
   player.eventUsedThisRound = true;
-  state.eventUsedThisTurn = true;
 
   const pKey = key(player.x, player.y);
   if (state.zombies.has(pKey) && !player.noCombatThisTurn) {

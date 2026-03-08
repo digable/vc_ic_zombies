@@ -29,7 +29,6 @@ function endTurn() {
   state.currentMoveRoll = null;
   state.currentZombieRoll = null;
   state.selectedHandIndex = null;
-  state.eventUsedThisTurn = false;
   state.pendingCombatDecision = null;
   state.movementBonus = 0;
   state.moveFloorThisTurn = 0;

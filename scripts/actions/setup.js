@@ -36,7 +36,6 @@ function setupGame(playerCount) {
   state.selectedHandIndex = null;
   state.turnNumber = 1;
   state.gameOver = false;
-  state.eventUsedThisTurn = false;
   state.lastCombatResult = null;
   state.pendingCombatDecision = null;
   state.movementBonus = 0;

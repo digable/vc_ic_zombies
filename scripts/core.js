@@ -39,8 +39,6 @@ const state = {
   selectedHandIndex: null,
   turnNumber: 1,
   gameOver: false,
-  eventUsedThisTurn: false,
-  noCombatThisTurn: false,
   lastCombatResult: null,
   pendingCombatDecision: null,
   movementBonus: 0,
