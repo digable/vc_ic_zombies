@@ -34,5 +34,22 @@ function endTurn() {
   state.moveFloorThisTurn = 0;
 
   logLine(`Turn passes to ${player.name}.`);
+
+  const playerSpaceKey = key(player.x, player.y);
+  if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
+    state.step = STEP.COMBAT;
+    logLine(`${player.name} starts the turn in a zombie space. Combat resolves immediately.`);
+    const combat = resolveCombatForPlayer(player, {
+      advanceStepWhenClear: false,
+      endStepOnKnockout: true,
+      resumeStepAfterPending: STEP.DRAW_TILE
+    });
+    if (combat.pending) {
+      logLine(`${player.name} must resolve combat before continuing the turn.`);
+    }
+    render();
+    return;
+  }
+
   render();
 }
