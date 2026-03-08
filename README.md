@@ -30,12 +30,13 @@ Use the control buttons in order each turn:
 - Tile placement obeys connector matching (roads must connect).
 - Zombie spawn on tiles that indicate spawn.
 - Combat is required when entering a zombie space.
-- Combat roll: 4-6 win, 1-3 lose.
-- On combat loss, player pays deficit with hearts/bullets (player chooses payment priority each fight).
+- Combat total is `d6 + attack bonus + temporary combat bonus`; 4+ wins.
+- On failed combat, the active player must choose in the in-page combat decision box: spend bullet (+1), spend life token to reroll, or lose combat.
+- The combat decision box always names the player who must choose and pauses other actions until a choice is made.
 - If hearts run out, player loses half kills (rounded down), respawns at Town Square, and resets to 3 hearts/3 bullets.
 - Named tiles place zombies/items based on card stats when played.
 - Hearts are capped at 5.
-- Event cards can be played at any time during your turn, max one per turn.
+- Event cards can be played at any time during your turn, max one from the start of your turn to the start of your next turn.
 - Zombie movement is non-diagonal, one step each, and one zombie per space.
 - Win by reaching Helipad or getting 25 zombie kills.
 
@@ -44,9 +45,24 @@ Use the control buttons in order each turn:
 The code is split into small browser scripts for easier human maintenance:
 
 - `scripts/core.js`: shared constants, state, refs, utility helpers, token and zombie spawn helpers
-- `scripts/data.js`: map/event deck definitions and card stats
-- `scripts/rules.js`: placement/movement/combat eligibility rules
-- `scripts/actions.js`: turn actions and game-state mutations
+- `scripts/data/map-deck.js`: map deck definitions and tile stats
+- `scripts/data/event-deck.js`: event deck builder/orchestrator
+- `scripts/data/event-cards/helpers.js`: shared event helper utilities
+- `scripts/data/event-cards/player-cards.js`: self-targeting player buff/recovery cards
+- `scripts/data/event-cards/opponent-cards.js`: opponent-targeting disruption cards
+- `scripts/data/event-cards/zombie-cards.js`: zombie spawn/remove/move cards
+- `scripts/rules/placement.js`: tile placement and connector validation rules
+- `scripts/rules/combat-flow.js`: current-player and combat/zombie-step skip gating
+- `scripts/rules/movement.js`: player/zombie step legality across subtiles and tile edges
+- `scripts/rules/zombie-ai.js`: zombie targeting and one-step movement selection
+- `scripts/rules/board-bounds.js`: dynamic board render bounds helper
+- `scripts/actions/setup.js`: game setup and map draw/place actions
+- `scripts/actions/win.js`: win condition checks
+- `scripts/actions/combat.js`: combat resolution and knockout handling
+- `scripts/actions/movement.js`: player movement roll/step/end-move flow
+- `scripts/actions/zombies.js`: zombie movement phase actions
+- `scripts/actions/events.js`: draw/play/discard event-hand actions
+- `scripts/actions/turn-end.js`: end-turn cleanup and hand-limit enforcement
 - `scripts/render.js`: board/UI rendering and button state updates
 - `scripts/bootstrap.js`: event listeners and initial game boot
 
@@ -62,3 +78,4 @@ Styles are also split for readability:
 
 - No build step is required.
 - The board uses 3x3 movement spaces inside each tile.
+- Combat does not rely on browser `prompt()` dialogs; decisions are handled in-page.

@@ -56,6 +56,20 @@ function attachListeners() {
       placePendingTileAt(Number(x), Number(y));
     }
   });
+
+  if (refs.combatDecisionPanel) {
+    refs.combatDecisionPanel.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const action = target.getAttribute("data-combat-action");
+      if (action) {
+        resolvePendingCombatDecision(action);
+      }
+    });
+  }
 }
 
 attachListeners();

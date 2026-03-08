@@ -1,3 +1,29 @@
+function getRoadLineDirs(tileLike, lx, ly) {
+  if (!tileLike || !isLocalWalkable(tileLike, lx, ly)) {
+    return [];
+  }
+
+  const dirs = [];
+  Object.entries(DIRS).forEach(([dir, d]) => {
+    const nx = lx + d.x;
+    const ny = ly + d.y;
+
+    if (nx >= 0 && nx <= 2 && ny >= 0 && ny <= 2) {
+      if (isLocalWalkable(tileLike, nx, ny)) {
+        dirs.push(dir);
+      }
+      return;
+    }
+
+    const door = DOOR_LOCAL[dir];
+    if (door && door.x === lx && door.y === ly && (tileLike.connectors || []).includes(dir)) {
+      dirs.push(dir);
+    }
+  });
+
+  return dirs;
+}
+
 function renderBoard() {
   const { minX, maxX, minY, maxY } = boardBounds();
   const cols = maxX - minX + 1;
@@ -43,14 +69,27 @@ function renderBoard() {
           cell.classList.add(previewClass);
 
           const previewMicro = [];
+          const previewTileForWalk = {
+            type: previewTile.type,
+            connectors: option?.connectors || [],
+            fullAccess: previewTile.fullAccess
+          };
           for (let ly = 0; ly < 3; ly += 1) {
             for (let lx = 0; lx < 3; lx += 1) {
+              const isWalkable = isLocalWalkable(previewTileForWalk, lx, ly);
               const isExit = (option?.connectors || []).some((dir) => {
                 const door = DOOR_LOCAL[dir];
                 return door && door.x === lx && door.y === ly;
               });
+              const isRoadTileType = previewTile.type === "road" || previewTile.type === "town" || previewTile.type === "helipad";
+              const isRoadSubtile = isRoadTileType && isWalkable;
+              const lineDirs = isRoadSubtile ? getRoadLineDirs(previewTileForWalk, lx, ly) : [];
+              const lanes = lineDirs
+                .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
+                .join("");
+              const blocked = !isWalkable ? '<span class="mark blocked">X</span>' : "";
               previewMicro.push(
-                `<span class="micro-cell">${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+                `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${blocked}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
               );
             }
           }
@@ -129,8 +168,19 @@ function renderBoard() {
       const micro = [];
       for (let ly = 0; ly < 3; ly += 1) {
         for (let lx = 0; lx < 3; lx += 1) {
+          const isWalkable = isLocalWalkable(tile, lx, ly);
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
           const parts = [];
+          const isRoadTileType = tile.type === "road" || tile.type === "town" || tile.type === "helipad";
+          const isRoadSubtile = isRoadTileType && isWalkable;
+          const lineDirs = isRoadSubtile ? getRoadLineDirs(tile, lx, ly) : [];
+          const lanes = lineDirs
+            .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
+            .join("");
+
+          if (!isWalkable) {
+            parts.push('<span class="mark blocked">X</span>');
+          }
 
           const isExit = (tile.connectors || []).some((dir) => {
             const door = DOOR_LOCAL[dir];
@@ -152,7 +202,7 @@ function renderBoard() {
           if (data.bullets > 0) {
             parts.push(`<span class="mark token">B${data.bullets}</span>`);
           }
-          micro.push(`<span class="micro-cell">${parts.join("")}</span>`);
+          micro.push(`<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${parts.join("")}</span>`);
         }
       }
 
@@ -181,7 +231,7 @@ function renderPlayers() {
   refs.currentPlayerCard.innerHTML = `
     <div class="player-card">
       <strong>${cp.name}</strong><br />
-      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills}<br />
+      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}<br />
       Position: Tile (${cptx}, ${cpty}) / Space (${cplx}, ${cply})
     </div>
   `;
@@ -196,7 +246,7 @@ function renderPlayers() {
     el.className = "player-card";
     el.innerHTML = `
       <strong>${p.name}</strong><br />
-      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills}<br />
+      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}<br />
       Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
     `;
     refs.playersList.appendChild(el);
@@ -219,16 +269,53 @@ function renderHand() {
       el.classList.add("selected");
     }
 
-    const playDisabled = state.gameOver || state.eventUsedThisTurn;
+    const playDisabled = state.gameOver || player.eventUsedThisRound || player.cannotPlayCardTurns > 0 || Boolean(state.pendingCombatDecision);
+    const showSelect = state.step === STEP.DISCARD && !state.pendingCombatDecision;
     el.innerHTML = `
       <strong>${card.name}</strong><br />
       <span class="small">${card.description}</span><br />
       <button ${playDisabled ? "disabled" : ""} data-play-index="${index}">Play</button>
-      <button data-select-index="${index}">Select</button>
+      ${showSelect ? `<button data-select-index="${index}">Select</button>` : ""}
     `;
 
     refs.handList.appendChild(el);
   });
+}
+
+function renderCombatDecision() {
+  const panel = refs.combatDecisionPanel;
+  if (!panel) {
+    return;
+  }
+
+  const pending = state.pendingCombatDecision;
+  if (!pending) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  const player = state.players.find((p) => p.id === pending.playerId);
+  if (!player) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <div class="combat-decision-title">Combat Decision Required: ${player.name}</div>
+    <div class="small">
+      Active player for this decision: <strong>${player.name}</strong>.<br />
+      ${player.name} rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}).<br />
+      Current combat total: ${pending.modifiedRoll}. Choose one action:
+    </div>
+    <div class="combat-decision-actions">
+      <button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1)</button>
+      <button data-combat-action="H" ${player.hearts > 0 ? "" : "disabled"}>Spend 1 Life Token (Reroll)</button>
+      <button data-combat-action="L">Lose Combat</button>
+    </div>
+  `;
 }
 
 function renderLog() {
@@ -236,6 +323,23 @@ function renderLog() {
 }
 
 function updateButtons() {
+  if (state.pendingCombatDecision) {
+    refs.drawTileBtn.disabled = true;
+    refs.rotateLeftBtn.disabled = true;
+    refs.rotateRightBtn.disabled = true;
+    refs.combatBtn.disabled = true;
+    refs.drawEventsBtn.disabled = true;
+    refs.rollMoveBtn.disabled = true;
+    refs.endMoveBtn.disabled = true;
+    refs.moveZombiesBtn.disabled = true;
+    refs.discardBtn.disabled = true;
+    refs.endTurnBtn.disabled = true;
+    refs.moveDirBtns.forEach((btn) => {
+      btn.disabled = true;
+    });
+    return;
+  }
+
   const p = currentPlayer();
   const combatRequired = isCombatRequiredForCurrentPlayer();
 
@@ -258,7 +362,8 @@ function updateButtons() {
 }
 
 function renderMeta() {
-  refs.turnInfo.textContent = `Turn ${state.turnNumber} | ${currentPlayer().name} | Step: ${state.step}`;
+  const combatText = state.lastCombatResult ? ` | Combat: ${state.lastCombatResult}` : "";
+  refs.turnInfo.textContent = `Turn ${state.turnNumber} | ${currentPlayer().name} | Step: ${state.step}${combatText}`;
   refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}`;
   refs.zombieRollOutput.textContent = `Zombie Roll: ${state.currentZombieRoll ?? "-"}`;
   refs.pendingTileInfo.textContent = state.pendingTile
@@ -271,6 +376,7 @@ function render() {
   renderBoard();
   renderPlayers();
   renderHand();
+  renderCombatDecision();
   renderLog();
   updateButtons();
 }

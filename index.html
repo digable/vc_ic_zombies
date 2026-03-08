@@ -27,6 +27,7 @@
           <button id="combatBtn">2. Combat Current Space</button>
           <button id="drawEventsBtn">3. Draw to 3 Events</button>
         </div>
+        <div id="combatDecisionPanel" class="combat-decision hidden" aria-live="polite"></div>
         <div class="row">
           <span id="pendingTileInfo">Pending Tile: -</span>
         </div>
@@ -79,9 +80,24 @@
     </main>
 
     <script src="scripts/core.js"></script>
-    <script src="scripts/data.js"></script>
-    <script src="scripts/rules.js"></script>
-    <script src="scripts/actions.js"></script>
+    <script src="scripts/data/map-deck.js"></script>
+    <script src="scripts/data/event-cards/helpers.js"></script>
+    <script src="scripts/data/event-cards/player-cards.js"></script>
+    <script src="scripts/data/event-cards/opponent-cards.js"></script>
+    <script src="scripts/data/event-cards/zombie-cards.js"></script>
+    <script src="scripts/data/event-deck.js"></script>
+    <script src="scripts/rules/placement.js"></script>
+    <script src="scripts/rules/combat-flow.js"></script>
+    <script src="scripts/rules/movement.js"></script>
+    <script src="scripts/rules/zombie-ai.js"></script>
+    <script src="scripts/rules/board-bounds.js"></script>
+    <script src="scripts/actions/win.js"></script>
+    <script src="scripts/actions/setup.js"></script>
+    <script src="scripts/actions/combat.js"></script>
+    <script src="scripts/actions/movement.js"></script>
+    <script src="scripts/actions/zombies.js"></script>
+    <script src="scripts/actions/events.js"></script>
+    <script src="scripts/actions/turn-end.js"></script>
     <script src="scripts/render.js"></script>
     <script src="scripts/bootstrap.js"></script>
   </body>
