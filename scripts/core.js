@@ -51,6 +51,8 @@ const state = {
 
 const refs = {
   board: document.getElementById("board"),
+  mapDeckDebug: document.getElementById("mapDeckDebug"),
+  mapDeckDebugCount: document.getElementById("mapDeckDebugCount"),
   turnInfo: document.getElementById("turnInfo"),
   currentPlayerCard: document.getElementById("currentPlayerCard"),
   playersList: document.getElementById("playersList"),

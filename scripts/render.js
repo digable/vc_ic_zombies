@@ -1,3 +1,16 @@
+function renderDeckInfo() {
+  const box = document.getElementById("deckInfoBox");
+  if (!box) return;
+  const totalStart = state.mapDeck.length + state.discardPile.length;
+  const totalPlayed = state.discardPile.length;
+  const totalLeft = state.mapDeck.length;
+  box.innerHTML = `
+    <div><strong>Deck Info</strong></div>
+    <div>Total in Deck (start): ${totalStart}</div>
+    <div>Total Played: ${totalPlayed}</div>
+    <div>Total Left: ${totalLeft}</div>
+  `;
+}
 function getRoadLineDirs(tileLike, lx, ly) {
   if (!tileLike || !isLocalWalkable(tileLike, lx, ly)) {
     return [];
@@ -185,11 +198,336 @@ function isRoadStyledSubtile(tileLike, lx, ly, isWalkable) {
   }
 
   const subTileType = getSubTileType(tileLike, lx, ly);
-  if (subTileType) {
-    return subTileType === "road";
+  return subTileType === "road";
+}
+
+function getTileClassName(tile) {
+  if (tile?.type === "town") {
+    return "tile-town";
+  }
+  if (tile?.type === "building") {
+    return "tile-building";
+  }
+  if (tile?.type === "named") {
+    return "tile-named";
+  }
+  if (tile?.type === "helipad") {
+    return "tile-helipad";
+  }
+  return "tile-road";
+}
+
+let mapDeckDebugIdCounter = 1;
+const mapDeckDebugEdits = new Map();
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function ensureMapDeckDebugTileId(tile) {
+  if (!tile._debugTileId) {
+    tile._debugTileId = `tile-${mapDeckDebugIdCounter}`;
+    mapDeckDebugIdCounter += 1;
+  }
+  return tile._debugTileId;
+}
+
+function normalizeDirList(value) {
+  if (!value) {
+    return [];
+  }
+  const list = Array.isArray(value)
+    ? value
+    : Object.entries(value)
+      .filter(([, enabled]) => Boolean(enabled))
+      .map(([dir]) => dir);
+  return ["N", "E", "S", "W"].filter((dir) => list.includes(dir));
+}
+
+function createEditableSubtileCells(tile) {
+  const base = buildSubTilesForTile(tile);
+  const out = {};
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      const coord = key(lx, ly);
+      const cell = base?.[coord] || {};
+      out[coord] = {
+        walkable: Boolean(cell.walkable),
+        type: typeof cell.type === "string" ? cell.type : "",
+        walls: normalizeDirList(cell.walls || cell.wall),
+        doors: normalizeDirList(cell.doors || cell.door)
+      };
+    }
+  }
+  return out;
+}
+
+function ensureMapDeckDebugEdits(tile) {
+  const tileId = ensureMapDeckDebugTileId(tile);
+  if (!mapDeckDebugEdits.has(tileId)) {
+    mapDeckDebugEdits.set(tileId, createEditableSubtileCells(tile));
+  }
+  return { tileId, editedCells: mapDeckDebugEdits.get(tileId) };
+}
+
+function editableCellsToTemplate(editedCells) {
+  const template = {};
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      const coord = key(lx, ly);
+      const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [] };
+
+      if (!cell.walkable) {
+        template[coord] = { blocked: true };
+        continue;
+      }
+
+      const row = { walkable: true };
+      if (cell.type && cell.type.trim()) {
+        row.type = cell.type.trim();
+      }
+      if (cell.walls?.length) {
+        row.walls = [...cell.walls];
+      }
+      if (cell.doors?.length) {
+        row.doors = [...cell.doors];
+      }
+      template[coord] = row;
+    }
+  }
+  return template;
+}
+
+function buildSubTilesTemplateCode(editedCells) {
+  const template = editableCellsToTemplate(editedCells);
+  const lines = ["subTilesTemplate: {"];
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      const coord = key(lx, ly);
+      const row = template[coord];
+      const parts = [];
+      if (row.blocked) {
+        parts.push("blocked: true");
+      } else {
+        parts.push("walkable: true");
+        if (row.type) {
+          parts.push(`type: \"${row.type}\"`);
+        }
+        if (row.walls?.length) {
+          parts.push(`walls: [${row.walls.map((dir) => `\"${dir}\"`).join(", ")}]`);
+        }
+        if (row.doors?.length) {
+          parts.push(`doors: [${row.doors.map((dir) => `\"${dir}\"`).join(", ")}]`);
+        }
+      }
+      lines.push(`  \"${coord}\": { ${parts.join(", ")} },`);
+    }
+  }
+  lines.push("}");
+  return lines.join("\n");
+}
+
+
+function renderMapDeckDebug() {
+  if (!refs.mapDeckDebug || !refs.mapDeckDebugCount) {
+    return;
   }
 
-  return tileLike?.type === "road" || tileLike?.type === "town" || tileLike?.type === "helipad";
+  refs.mapDeckDebugCount.textContent = `${state.mapDeck.length} tile(s)`;
+  if (state.mapDeck.length === 0) {
+    refs.mapDeckDebug.innerHTML = "<div class='small'>Map deck is empty.</div>";
+    return;
+  }
+
+  const getDebugGroup = (tile) => {
+    if (tile?.type === "building" || tile?.type === "named") {
+      return "Buildings";
+    }
+    if (tile?.type === "road") {
+      return "Road";
+    }
+    // Treat helipad and town square as special
+    if (tile?.type === "helipad" || tile?.type === "special" || tile?.isHelipad || tile?.isTownSquare) {
+      return "Special Cards";
+    }
+    return "Special Cards";
+  };
+
+  const grouped = new Map([
+    ["Buildings", []],
+    ["Road", []],
+    ["Special Cards", []]
+  ]);
+
+  state.mapDeck.forEach((tile, index) => {
+    const group = getDebugGroup(tile);
+    grouped.get(group)?.push({ tile, deckIndex: index });
+  });
+
+  grouped.forEach((entries) => {
+    entries.sort((a, b) => {
+      const an = getTileDisplayName(a.tile).toLowerCase();
+      const bn = getTileDisplayName(b.tile).toLowerCase();
+      if (an < bn) {
+        return -1;
+      }
+      if (an > bn) {
+        return 1;
+      }
+      return a.deckIndex - b.deckIndex;
+    });
+  });
+
+  const renderCard = ({ tile, deckIndex }) => {
+    const { tileId, editedCells } = ensureMapDeckDebugEdits(tile);
+    const editableTemplate = editableCellsToTemplate(editedCells);
+    const tileForRender = {
+      ...tile,
+      subTilesTemplate: editableTemplate,
+      subTiles: buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate })
+    };
+    const micro = [];
+    const subtileRows = [];
+
+    const formatDirs = (value) => {
+      if (!value) {
+        return "-";
+      }
+      const dirs = Array.isArray(value)
+        ? value
+        : Object.entries(value)
+          .filter(([, allowed]) => Boolean(allowed))
+          .map(([dir]) => dir);
+      if (dirs.length === 0) {
+        return "-";
+      }
+      return dirs.map(directionToArrow).join(" ");
+    };
+
+    const formatBool = (value) => (value ? "Yes" : "No");
+
+    for (let ly = 0; ly < 3; ly += 1) {
+      for (let lx = 0; lx < 3; lx += 1) {
+        const coord = key(lx, ly);
+        const sub = tileForRender?.subTiles?.[coord] || null;
+        const editedCell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [] };
+        const isWalkable = isLocalWalkable(tileForRender, lx, ly);
+        const isRoadSubtile = isRoadStyledSubtile(tileForRender, lx, ly, isWalkable);
+        const lineDirs = isRoadSubtile ? getRoadLineDirs(tileForRender, lx, ly) : [];
+        const lanes = lineDirs
+          .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
+          .join("");
+        const wallDirs = getSubTileWallDirs(tileForRender, lx, ly);
+        const walls = wallDirs
+          .map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`)
+          .join("");
+        const isExit = (tileForRender.connectors || []).some((dir) => {
+          const door = DOOR_LOCAL[dir];
+          return door && door.x === lx && door.y === ly;
+        });
+        micro.push(
+          `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+        );
+
+        subtileRows.push(`
+          <div class="deck-subtile-row">
+            <div class="deck-subtile-head">
+              <code class="deck-subtile-coord">${lx},${ly}</code>
+              <span class="deck-subtile-type">${sub?.type || "-"}</span>
+            </div>
+            <label class="deck-subtile-edit-line">
+              <strong>Walkable</strong>
+              <input
+                type="checkbox"
+                data-debug-tile-id="${tileId}"
+                data-debug-coord="${coord}"
+                data-debug-field="walkable"
+                ${editedCell.walkable ? "checked" : ""}
+              />
+            </label>
+            <label class="deck-subtile-edit-line">
+              <strong>Type</strong>
+              <select data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="type">
+                <option value="" ${!editedCell.type ? "selected" : ""}>-</option>
+                <option value="road" ${editedCell.type === "road" ? "selected" : ""}>road</option>
+                <option value="building" ${editedCell.type === "building" ? "selected" : ""}>building</option>
+              </select>
+            </label>
+            <div class="deck-subtile-edit-dirs">
+              <strong>Walls</strong>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="N" ${editedCell.walls.includes("N") ? "checked" : ""}/>N</label>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="E" ${editedCell.walls.includes("E") ? "checked" : ""}/>E</label>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="S" ${editedCell.walls.includes("S") ? "checked" : ""}/>S</label>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="W" ${editedCell.walls.includes("W") ? "checked" : ""}/>W</label>
+            </div>
+            <div class="deck-subtile-edit-dirs">
+              <strong>Doors</strong>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="N" ${editedCell.doors.includes("N") ? "checked" : ""}/>N</label>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="E" ${editedCell.doors.includes("E") ? "checked" : ""}/>E</label>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="S" ${editedCell.doors.includes("S") ? "checked" : ""}/>S</label>
+              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="W" ${editedCell.doors.includes("W") ? "checked" : ""}/>W</label>
+            </div>
+            <div><strong>Road Lines:</strong> ${formatDirs(lineDirs)}</div>
+            <div class="deck-subtile-flow"><strong>Flow:</strong> in ${formatDirs(sub?.enterFrom)} | out ${formatDirs(sub?.exitTo)}</div>
+          </div>
+        `);
+      }
+    }
+
+    const generatedCode = buildSubTilesTemplateCode(editedCells);
+
+    return `
+      <div class="deck-tile ${getTileClassName(tileForRender)}">
+        <div class="small">#${deckIndex + 1}</div>
+        <div><strong>${getTileDisplayName(tileForRender)}</strong></div>
+        <label class="deck-tile-edit-line">
+          <strong>Count</strong>
+          <input type="number" min="1" value="${tileForRender.count || 1}" data-debug-tile-id="${tileId}" data-debug-field="count" class="deck-tile-count-input" />
+        </label>
+        <div class="deck-tile-edit-line">
+          <strong>Connectors</strong>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="N" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("N") ? "checked" : ""}/>N</label>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="E" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("E") ? "checked" : ""}/>E</label>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="S" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("S") ? "checked" : ""}/>S</label>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="W" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("W") ? "checked" : ""}/>W</label>
+        </div>
+        <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
+        <div class="micro-grid">${micro.join("")}</div>
+        <div class="deck-subtiles">${subtileRows.join("")}</div>
+        <details class="deck-code-wrap">
+          <summary>Generated subTilesTemplate code</summary>
+          <div class="deck-code-actions">
+            <button type="button" class="deck-copy-btn" data-debug-copy-code="1">Copy</button>
+            <span class="deck-copy-status" aria-live="polite"></span>
+          </div>
+          <pre class="deck-code">${escapeHtml(generatedCode)}</pre>
+        </details>
+      </div>
+    `;
+  };
+
+  const sectionOrder = ["Buildings", "Road", "Special Cards"];
+  const sections = sectionOrder.map((section) => {
+    const entries = grouped.get(section) || [];
+    if (entries.length === 0) {
+      return "";
+    }
+    return `
+      <section class="map-deck-group">
+        <h4 class="map-deck-group-title">${section} (${entries.length})</h4>
+        <div class="map-deck-group-grid">
+          ${entries.map((entry) => renderCard(entry)).join("")}
+        </div>
+      </section>
+    `;
+  });
+
+  refs.mapDeckDebug.innerHTML = sections.join("");
 }
 
 function renderBoard() {
@@ -552,6 +890,7 @@ function render() {
   renderBoard();
   renderPlayers();
   renderHand();
+  renderDeckInfo();
   renderCombatDecision();
   renderLog();
   updateButtons();

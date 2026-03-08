@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VC IC Zombies - Tile Editor</title>
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/tile-debug.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Tile Editor</h1>
+      <p class="subtitle">Edit subtiles and copy generated subTilesTemplate code. <a href="#newTileGenerator">Create New Tile</a> | <a href="index.html">Back to game</a></p>
+    </header>
+
+    <main class="tile-debug-page">
+      <section class="panel tile-generator" id="newTileGenerator">
+        <div class="board-header">
+          <h3>New Tile Generator</h3>
+        </div>
+        <div class="tile-generator-grid">
+          <label>Name <input id="newTileName" type="text" value="New Tile" /></label>
+          <label>Type
+            <select id="newTileType">
+              <option value="road">road</option>
+              <option value="building">building</option>
+              <option value="named" selected>named</option>
+              <option value="town">town</option>
+              <option value="helipad">helipad</option>
+            </select>
+          </label>
+          <label>Count <input id="newTileCount" type="number" min="1" value="1" /></label>
+          <label>Zombie Spawn Mode
+            <select id="newTileSpawnMode">
+              <option value="by_card" selected>by_card</option>
+              <option value="by_exits">by_exits</option>
+              <option value="none">none</option>
+            </select>
+          </label>
+          <label>Zombie Count (Z) <input id="newTileZombieCount" type="number" min="0" value="0" /></label>
+          <label>Hearts (L) <input id="newTileHearts" type="number" min="0" value="0" /></label>
+          <label>Bullets (B) <input id="newTileBullets" type="number" min="0" value="0" /></label>
+          <label>Connectors (comma-separated, e.g. N,E,S)<input id="newTileConnectors" type="text" placeholder="N,E,S,W" /></label>
+          <label class="tile-generator-check"><input id="newTileFullAccess" type="checkbox" /> Full Access</label>
+        </div>
+
+        <div class="tile-generator-connectors">
+          <strong>Connectors</strong>
+          <label><input type="checkbox" id="newTileConnectorN" /> N</label>
+          <label><input type="checkbox" id="newTileConnectorE" /> E</label>
+          <label><input type="checkbox" id="newTileConnectorS" /> S</label>
+          <label><input type="checkbox" id="newTileConnectorW" /> W</label>
+        </div>
+
+        <label class="tile-generator-block">subTilesTemplate (paste generated subtile template or your own)
+          <textarea id="newTileSubTilesTemplate" rows="8" placeholder='{
+  "0,0": { blocked: true },
+  "1,0": { walkable: true, type: "road" }
+}'></textarea>
+        </label>
+
+        <label class="tile-generator-block">Extra Parameters JSON (optional)
+          <textarea id="newTileExtraParams" rows="4" placeholder='{
+  "customFlag": true
+}'></textarea>
+        </label>
+
+        <div class="tile-generator-actions">
+          <button id="generateNewTileCodeBtn" type="button">Generate Tile Code</button>
+          <button id="copyNewTileCodeBtn" type="button">Copy Code</button>
+          <span id="newTileCodeStatus" aria-live="polite"></span>
+        </div>
+
+        <pre id="newTileCodeOutput" class="tile-generator-output"></pre>
+      </section>
+
+      <section class="panel map-deck-debug-wrap">
+        <div class="board-header map-deck-debug-header">
+          <h3>Map Deck Debug</h3>
+          <div id="mapDeckDebugCount"></div>
+        </div>
+        <div id="mapDeckDebug"></div>
+      </section>
+    </main>
+
+    <script src="scripts/core.js"></script>
+    <script src="scripts/data/map-deck.js"></script>
+    <script src="scripts/render.js"></script>
+    <script src="scripts/tile-debug.js"></script>
+  </body>
+</html>

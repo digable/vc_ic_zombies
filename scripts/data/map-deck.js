@@ -1,8 +1,10 @@
 function buildMapDeck() {
   const roadTiles = [
+    // Straight (N-S or E-W)
     {
-      name: "",
+      name: "Straight",
       type: "road",
+      count: 4,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -17,26 +19,11 @@ function buildMapDeck() {
         "2,2": { blocked: true }
       }
     },
+    // Corner (N-E, E-S, S-W, N-W) - only one needed, can rotate
     {
-      name: "",
+      name: "Corner",
       type: "road",
-      connectors: ["E", "W"],
-      zombieSpawnMode: "by_exits",
-      subTilesTemplate: {
-        "0,0": { blocked: true },
-        "1,0": { blocked: true },
-        "2,0": { blocked: true },
-        "0,1": { walkable: true, walls: ["N", "S"], doors: ["W"] },
-        "1,1": { walkable: true, walls: ["N", "S"] },
-        "2,1": { walkable: true, walls: ["N", "S"], doors: ["E"] },
-        "0,2": { blocked: true },
-        "1,2": { blocked: true },
-        "2,2": { blocked: true }
-      }
-    },
-    {
-      name: "",
-      type: "road",
+      count: 4,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -51,60 +38,11 @@ function buildMapDeck() {
         "2,2": { blocked: true }
       }
     },
+    // T-Junction (N-E-W, N-E-S, E-S-W, N-S-W) - only one needed, can rotate
     {
-      name: "",
+      name: "T-Junction",
       type: "road",
-      connectors: ["E", "S"],
-      zombieSpawnMode: "by_exits",
-      subTilesTemplate: {
-        "0,0": { blocked: true },
-        "1,0": { blocked: true },
-        "2,0": { blocked: true },
-        "0,1": { blocked: true },
-        "1,1": { walkable: true, walls: ["N", "W"] },
-        "2,1": { walkable: true, walls: ["N", "S"], doors: ["E"] },
-        "0,2": { blocked: true },
-        "1,2": { walkable: true, walls: ["E", "W"], doors: ["S"] },
-        "2,2": { blocked: true }
-      }
-    },
-    {
-      name: "",
-      type: "road",
-      connectors: ["S", "W"],
-      zombieSpawnMode: "by_exits",
-      subTilesTemplate: {
-        "0,0": { blocked: true },
-        "1,0": { blocked: true },
-        "2,0": { blocked: true },
-        "0,1": { walkable: true, walls: ["N", "S"], doors: ["W"] },
-        "1,1": { walkable: true, walls: ["N", "E"] },
-        "2,1": { blocked: true },
-        "0,2": { blocked: true },
-        "1,2": { walkable: true, walls: ["E", "W"], doors: ["S"] },
-        "2,2": { blocked: true }
-      }
-    },
-    {
-      name: "",
-      type: "road",
-      connectors: ["N", "W"],
-      zombieSpawnMode: "by_exits",
-      subTilesTemplate: {
-        "0,0": { blocked: true },
-        "1,0": { walkable: true, walls: ["E", "W"], doors: ["N"] },
-        "2,0": { blocked: true },
-        "0,1": { walkable: true, walls: ["N", "S"], doors: ["W"] },
-        "1,1": { walkable: true, walls: ["E", "S"] },
-        "2,1": { blocked: true },
-        "0,2": { blocked: true },
-        "1,2": { blocked: true },
-        "2,2": { blocked: true }
-      }
-    },
-    {
-      name: "",
-      type: "road",
+      count: 4,
       connectors: ["N", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -119,26 +57,11 @@ function buildMapDeck() {
         "2,2": { blocked: true }
       }
     },
-    {
-      name: "",
-      type: "road",
-      connectors: ["N", "E", "S"],
-      zombieSpawnMode: "by_exits",
-      subTilesTemplate: {
-        "0,0": { blocked: true },
-        "1,0": { walkable: true, walls: ["E", "W"], doors: ["N"] },
-        "2,0": { blocked: true },
-        "0,1": { blocked: true },
-        "1,1": { walkable: true, walls: ["W"] },
-        "2,1": { walkable: true, walls: ["N", "S"], doors: ["E"] },
-        "0,2": { blocked: true },
-        "1,2": { walkable: true, walls: ["E", "W"], doors: ["S"] },
-        "2,2": { blocked: true }
-      }
-    },
+    // 4-way (Parking Lot)
     {
       name: "Parking Lot",
       type: "road",
+      count: 1,
       connectors: ["N", "S", "E", "W"],
       fullAccess: true,
       zombieSpawnMode: "by_exits",
@@ -240,6 +163,7 @@ function buildMapDeck() {
     {
       name: "Pharmacy",
       type: "named",
+      count: 1,
       connectors: ["W", "N"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -260,6 +184,7 @@ function buildMapDeck() {
     {
       name: "Fire Station",
       type: "named",
+      count: 1,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -280,6 +205,7 @@ function buildMapDeck() {
     {
       name: "Toy Store",
       type: "named",
+      count: 1,
       connectors: ["N", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -300,6 +226,7 @@ function buildMapDeck() {
     {
       name: "Skate Shop",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -320,6 +247,7 @@ function buildMapDeck() {
     {
       name: "Florist",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -340,6 +268,7 @@ function buildMapDeck() {
     {
       name: "Sporting Goods Store",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -360,6 +289,7 @@ function buildMapDeck() {
     {
       name: "Lawn & Garden Store",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -380,21 +310,22 @@ function buildMapDeck() {
     {
       name: "Hardware Store",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
       hearts: 1,
       bullets: 2,
       subTilesTemplate: {
-        "0,0": { walkable: true, walls: ["N", "W"] },
-        "1,0": { walkable: true, walls: ["N"], doors: ["S"], type: "road" },
-        "2,0": { walkable: true, walls: ["N", "E", "S"] },
-        "0,1": { walkable: true, doors: ["E"] },
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+        "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
         "1,1": { walkable: true, type: "road" },
-        "2,1": { walkable: true, walls: ["N", "S"], type: "road" },
-        "0,2": { walkable: true, walls: ["E", "S", "W"] },
-        "1,2": { walkable: true },
-        "2,2": { blocked: true }
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+        "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+        "1,2": { walkable: true, type: "road" },
+        "2,2": { blocked: true },
       }
     },
 
@@ -402,6 +333,7 @@ function buildMapDeck() {
     {
       name: "Bank",
       type: "named",
+      count: 1,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -422,6 +354,7 @@ function buildMapDeck() {
     {
       name: "Bar",
       type: "named",
+      count: 1,
       connectors: ["S", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -442,6 +375,7 @@ function buildMapDeck() {
     {
       name: "Courthouse",
       type: "named",
+      count: 1,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -462,6 +396,7 @@ function buildMapDeck() {
     {
       name: "Hair Salon",
       type: "named",
+      count: 1,
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -482,6 +417,7 @@ function buildMapDeck() {
     {
       name: "Supermarket",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -502,6 +438,7 @@ function buildMapDeck() {
     {
       name: "Lighting Store",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 0,
@@ -522,6 +459,7 @@ function buildMapDeck() {
     {
       name: "Church",
       type: "named",
+      count: 1,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 1,
@@ -542,6 +480,7 @@ function buildMapDeck() {
     {
       name: "Book Store",
       type: "named",
+      count: 1,
       connectors: ["W", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 1,
@@ -562,6 +501,7 @@ function buildMapDeck() {
     {
       name: "Electronics Store",
       type: "named",
+      count: 1,
       connectors: ["S", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -582,6 +522,7 @@ function buildMapDeck() {
     {
       name: "House A",
       type: "named",
+      count: 1,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -602,6 +543,7 @@ function buildMapDeck() {
     {
       name: "House B",
       type: "named",
+      count: 1,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -626,6 +568,7 @@ function buildMapDeck() {
   const helipad = {
     name: "Helipad",
     type: "helipad",
+    count: 1,
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
     zombieCount: 9,
@@ -645,15 +588,20 @@ function buildMapDeck() {
     }
   };
 
+  const townSquare = buildTownSquareTile();
+
   shuffle(cards);
   cards.push(helipad);
+  cards.push(townSquare);
   return cards;
 }
 
 function buildTownSquareTile() {
   return {
     name: "Town Square",
-    type: "town",
+    type: "special",
+    count: 1,
+    isTownSquare: true,
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
     zombieCount: 0,

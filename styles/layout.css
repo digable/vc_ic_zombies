@@ -52,6 +52,214 @@
   margin-top: 0.5rem;
 }
 
+.map-deck-debug-wrap {
+  margin-top: 0.8rem;
+  border-top: 2px solid #8d9aa6;
+  padding-top: 0.6rem;
+  background: #eef3f7;
+  border-radius: 8px;
+  padding: 0.6rem;
+}
+
+.map-deck-debug-header {
+  margin-bottom: 0.4rem;
+}
+
+.map-deck-debug-header h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: #1c2a38;
+}
+
+#mapDeckDebugCount {
+  color: #27445d;
+  font-weight: 700;
+}
+
+#mapDeckDebug {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.map-deck-group {
+  border: 1px solid #9eb0c0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.56);
+  padding: 0.35rem;
+}
+
+.map-deck-group-title {
+  margin: 0 0 0.32rem;
+  font-size: 0.9rem;
+  color: #1c2a38;
+}
+
+.map-deck-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 0.4rem;
+  align-items: start;
+}
+
+.deck-tile {
+  border: 1px solid #7f8f9f;
+  border-radius: 6px;
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: #102030;
+  box-shadow: 0 1px 2px rgba(9, 24, 40, 0.12);
+}
+
+#mapDeckDebug .deck-tile,
+#mapDeckDebug .deck-tile strong,
+#mapDeckDebug .deck-tile .small,
+#mapDeckDebug .deck-subtile-row,
+#mapDeckDebug .deck-subtile-row strong,
+#mapDeckDebug .deck-subtile-row code,
+#mapDeckDebug .deck-subtile-row span,
+#mapDeckDebug .deck-subtile-row div {
+  color: #102030;
+}
+
+.deck-tile .micro-grid {
+  width: min(100%, 180px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  margin: 0 auto;
+  flex: 0 0 auto;
+}
+
+.deck-subtiles {
+  margin-top: 0.2rem;
+  border-top: 1px dashed #8fa1b3;
+  padding-top: 0.2rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.2rem;
+}
+
+.deck-subtile-row {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  background: #ffffff;
+  border: 1px solid #9aa9b7;
+  border-radius: 4px;
+  padding: 0.3rem;
+}
+
+.deck-subtile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #c2cdda;
+  padding-bottom: 0.16rem;
+}
+
+.deck-subtile-coord {
+  font-weight: 700;
+}
+
+.deck-subtile-type {
+  border: 1px solid #8ca1b5;
+  border-radius: 999px;
+  padding: 0.02rem 0.38rem;
+  font-size: 0.68rem;
+  background: #edf4fb;
+  color: #18334a;
+}
+
+.deck-subtile-flow {
+  font-size: 0.7rem;
+  opacity: 1;
+  color: #2b4358;
+}
+
+.deck-subtile-edit-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.deck-subtile-edit-line select {
+  min-width: 84px;
+  font-size: 0.72rem;
+  padding: 0.08rem 0.16rem;
+}
+
+.deck-subtile-edit-dirs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.15rem;
+  font-size: 0.68rem;
+}
+
+.deck-subtile-edit-dirs strong {
+  grid-column: 1 / -1;
+}
+
+.deck-subtile-edit-dirs label {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+}
+
+.deck-code-wrap {
+  margin-top: 0.25rem;
+  border: 1px solid #9aa9b7;
+  border-radius: 4px;
+  background: #f8fbff;
+}
+
+.deck-code-wrap summary {
+  cursor: pointer;
+  padding: 0.22rem 0.28rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.deck-code-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.28rem 0;
+}
+
+.deck-copy-btn {
+  font-size: 0.68rem;
+  padding: 0.14rem 0.42rem;
+}
+
+.deck-copy-status {
+  font-size: 0.68rem;
+  color: #2b4358;
+}
+
+.deck-code {
+  margin: 0;
+  border-top: 1px solid #d3dde7;
+  padding: 0.3rem;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  overflow: auto;
+  max-height: 220px;
+  white-space: pre;
+}
+
+#mapDeckDebug .micro-grid {
+  border-color: rgba(8, 27, 48, 0.45);
+}
+
+#mapDeckDebug .micro-cell {
+  background: rgba(255, 255, 255, 0.72);
+  border-right-color: rgba(8, 27, 48, 0.4);
+  border-bottom-color: rgba(8, 27, 48, 0.4);
+}
+
 #log {
   max-height: 250px;
   overflow: auto;

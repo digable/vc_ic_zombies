@@ -1,0 +1,82 @@
+.tile-debug-page {
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.tile-debug-page .map-deck-debug-wrap {
+  margin-top: 0;
+}
+
+.tile-generator {
+  background: #f4f8fc;
+}
+
+.tile-generator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.tile-generator-grid label,
+.tile-generator-block {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.tile-generator-check {
+  align-items: center;
+  grid-auto-flow: column;
+  justify-content: start;
+  gap: 0.35rem;
+}
+
+.tile-generator-connectors {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.tile-generator-connectors label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.tile-generator-block {
+  margin-top: 0.5rem;
+}
+
+.tile-generator textarea {
+  width: 100%;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.8rem;
+}
+
+.tile-generator-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#newTileCodeStatus {
+  font-size: 0.8rem;
+  color: #24415a;
+}
+
+.tile-generator-output {
+  margin: 0.5rem 0 0;
+  max-height: 320px;
+  overflow: auto;
+  background: #ffffff;
+  border: 1px solid #b4c1cd;
+  border-radius: 6px;
+  padding: 0.45rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
