@@ -1,3 +1,100 @@
+function chooseZombieCombatTarget(playersOnSpace, options = {}) {
+  const { specifiedPlayerId = null } = options;
+  if (!playersOnSpace || playersOnSpace.length === 0) {
+    return null;
+  }
+
+  if (specifiedPlayerId !== null && specifiedPlayerId !== undefined) {
+    const specified = playersOnSpace.find((p) => p.id === specifiedPlayerId);
+    if (specified) {
+      return specified;
+    }
+  }
+
+  if (playersOnSpace.length === 1) {
+    return playersOnSpace[0];
+  }
+
+  const turnDistance = (player) => {
+    const i = state.players.indexOf(player);
+    if (i < 0) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    return (i - state.currentPlayerIndex + state.players.length) % state.players.length;
+  };
+
+  const ordered = [...playersOnSpace].sort((a, b) => {
+    const d = turnDistance(a) - turnDistance(b);
+    if (d !== 0) {
+      return d;
+    }
+    return a.id - b.id;
+  });
+
+  return ordered[0];
+}
+
+function pickNearestZombieToMove(availableZombieKeys) {
+  let nearest = [];
+  let nearestDist = Infinity;
+
+  availableZombieKeys.forEach((zk) => {
+    const { x, y } = parseKey(zk);
+    const d = nearestPlayerDistance(x, y);
+    if (d < nearestDist) {
+      nearestDist = d;
+      nearest = [zk];
+    } else if (d === nearestDist) {
+      nearest.push(zk);
+    }
+  });
+
+  if (nearest.length <= 1) {
+    return nearest[0];
+  }
+
+  nearest.sort((a, b) => {
+    const pa = parseKey(a);
+    const pb = parseKey(b);
+    if (pa.y !== pb.y) {
+      return pa.y - pb.y;
+    }
+    return pa.x - pb.x;
+  });
+
+  const chosenZombie = nearest[0];
+  const chosenPos = parseKey(chosenZombie);
+  logLine(`Zombie tie auto-resolved: moved zombie at (${chosenPos.x}, ${chosenPos.y}).`);
+  return chosenZombie;
+}
+
+function handleZombieEnteringPlayerSpace(spaceKey) {
+  const occupants = state.players.filter((p) => key(p.x, p.y) === spaceKey);
+  const target = chooseZombieCombatTarget(occupants);
+  if (!target) {
+    return false;
+  }
+
+  const active = currentPlayer();
+  if (target.id !== active.id) {
+    logLine(`A zombie moved into ${target.name}'s space. Combat is deferred until ${target.name}'s turn.`);
+    return false;
+  }
+
+  if (occupants.length > 1) {
+    logLine(`A zombie moved into a shared space and targets ${target.name} for combat.`);
+  } else {
+    logLine(`A zombie moved into ${target.name}'s space. Combat starts immediately.`);
+  }
+
+  const combat = resolveCombatForPlayer(target, {
+    advanceStepWhenClear: false,
+    endStepOnKnockout: false,
+    resumeStepAfterPending: STEP.DISCARD
+  });
+  return Boolean(combat.pending);
+}
+
 function moveZombies() {
   if (state.gameOver) {
     return;
@@ -24,75 +121,13 @@ function moveZombies() {
     let movedCount = 0;
     let combatDecisionPending = false;
 
-    const chooseZombieCombatTarget = (playersOnSpace, options = {}) => {
-      const { specifiedPlayerId = null } = options;
-      if (!playersOnSpace || playersOnSpace.length === 0) {
-        return null;
-      }
-
-      if (specifiedPlayerId !== null && specifiedPlayerId !== undefined) {
-        const specified = playersOnSpace.find((p) => p.id === specifiedPlayerId);
-        if (specified) {
-          return specified;
-        }
-      }
-
-      if (playersOnSpace.length === 1) {
-        return playersOnSpace[0];
-      }
-
-      const turnDistance = (player) => {
-        const i = state.players.indexOf(player);
-        if (i < 0) {
-          return Number.MAX_SAFE_INTEGER;
-        }
-        return (i - state.currentPlayerIndex + state.players.length) % state.players.length;
-      };
-
-      const ordered = [...playersOnSpace].sort((a, b) => {
-        const d = turnDistance(a) - turnDistance(b);
-        if (d !== 0) {
-          return d;
-        }
-        return a.id - b.id;
-      });
-
-      return ordered[0];
-    };
-
     for (let i = 0; i < moveLimit; i += 1) {
       const available = [...state.zombies].filter((zk) => !movedThisPhase.has(zk));
       if (available.length === 0) {
         break;
       }
 
-      let nearest = [];
-      let nearestDist = Infinity;
-      available.forEach((zk) => {
-        const { x, y } = parseKey(zk);
-        const d = nearestPlayerDistance(x, y);
-        if (d < nearestDist) {
-          nearestDist = d;
-          nearest = [zk];
-        } else if (d === nearestDist) {
-          nearest.push(zk);
-        }
-      });
-
-      let chosenZombie = nearest[0];
-      if (nearest.length > 1) {
-        nearest.sort((a, b) => {
-          const pa = parseKey(a);
-          const pb = parseKey(b);
-          if (pa.y !== pb.y) {
-            return pa.y - pb.y;
-          }
-          return pa.x - pb.x;
-        });
-        chosenZombie = nearest[0];
-        const chosenPos = parseKey(chosenZombie);
-        logLine(`Zombie tie auto-resolved: moved zombie at (${chosenPos.x}, ${chosenPos.y}).`);
-      }
+      const chosenZombie = pickNearestZombieToMove(available);
 
       movedThisPhase.add(chosenZombie);
       const next = moveZombieOneStep(chosenZombie, { resolveTiesDeterministically: false });
@@ -101,30 +136,7 @@ function moveZombies() {
         state.zombies.add(next);
         movedThisPhase.add(next);
         movedCount += 1;
-
-        const occupants = state.players.filter((p) => key(p.x, p.y) === next);
-        const target = chooseZombieCombatTarget(occupants);
-        if (target) {
-          const active = currentPlayer();
-          if (target.id === active.id) {
-            if (occupants.length > 1) {
-              logLine(`A zombie moved into a shared space and targets ${target.name} for combat.`);
-            } else {
-              logLine(`A zombie moved into ${target.name}'s space. Combat starts immediately.`);
-            }
-
-            const combat = resolveCombatForPlayer(target, {
-              advanceStepWhenClear: false,
-              endStepOnKnockout: false,
-              resumeStepAfterPending: STEP.DISCARD
-            });
-            if (combat.pending) {
-              combatDecisionPending = true;
-            }
-          } else {
-            logLine(`A zombie moved into ${target.name}'s space. Combat is deferred until ${target.name}'s turn.`);
-          }
-        }
+        combatDecisionPending = handleZombieEnteringPlayerSpace(next);
       }
 
       if (combatDecisionPending) {

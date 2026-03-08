@@ -3,20 +3,78 @@ function getRoadLineDirs(tileLike, lx, ly) {
     return [];
   }
 
+  const readEdgeFlag = (cell, field, dir) => {
+    if (!cell) {
+      return false;
+    }
+    const raw = cell[field] || cell[field.slice(0, -1)];
+    if (!raw) {
+      return false;
+    }
+    if (Array.isArray(raw)) {
+      return raw.includes(dir);
+    }
+    if (typeof raw === "object") {
+      return Boolean(raw[dir]);
+    }
+    return false;
+  };
+
+  const edgeIsOpen = (fromX, fromY, dir, toX, toY) => {
+    const fromCell = tileLike?.subTiles?.[key(fromX, fromY)];
+    const toCell = toX >= 0 && toX <= 2 && toY >= 0 && toY <= 2
+      ? tileLike?.subTiles?.[key(toX, toY)]
+      : null;
+
+    // If no subtile edge metadata exists, keep legacy walkability behavior.
+    if (!fromCell) {
+      return true;
+    }
+
+    const fromWall = readEdgeFlag(fromCell, "walls", dir);
+    const fromDoor = readEdgeFlag(fromCell, "doors", dir);
+    if (fromWall && !fromDoor) {
+      return false;
+    }
+
+    if (!toCell) {
+      return true;
+    }
+
+    if (toCell.walkable === false) {
+      return false;
+    }
+
+    const opposite = DIRS[dir].opposite;
+    const toWall = readEdgeFlag(toCell, "walls", opposite);
+    const toDoor = readEdgeFlag(toCell, "doors", opposite);
+    if (toWall && !toDoor) {
+      return false;
+    }
+
+    return true;
+  };
+
   const dirs = [];
   Object.entries(DIRS).forEach(([dir, d]) => {
     const nx = lx + d.x;
     const ny = ly + d.y;
 
     if (nx >= 0 && nx <= 2 && ny >= 0 && ny <= 2) {
-      if (isLocalWalkable(tileLike, nx, ny)) {
+      if (isLocalWalkable(tileLike, nx, ny) && edgeIsOpen(lx, ly, dir, nx, ny)) {
         dirs.push(dir);
       }
       return;
     }
 
     const door = DOOR_LOCAL[dir];
-    if (door && door.x === lx && door.y === ly && (tileLike.connectors || []).includes(dir)) {
+    if (
+      door &&
+      door.x === lx &&
+      door.y === ly &&
+      (tileLike.connectors || []).includes(dir) &&
+      edgeIsOpen(lx, ly, dir, nx, ny)
+    ) {
       dirs.push(dir);
     }
   });
@@ -108,6 +166,32 @@ function getSubTileWallDirs(tileLike, lx, ly) {
   });
 }
 
+function getSubTileType(tileLike, lx, ly) {
+  const sub = tileLike?.subTiles?.[key(lx, ly)];
+  if (!sub) {
+    return null;
+  }
+  const raw = sub.type ?? sub.subTileType ?? sub.subtype ?? null;
+  if (typeof raw !== "string") {
+    return null;
+  }
+  const normalized = raw.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function isRoadStyledSubtile(tileLike, lx, ly, isWalkable) {
+  if (!isWalkable) {
+    return false;
+  }
+
+  const subTileType = getSubTileType(tileLike, lx, ly);
+  if (subTileType) {
+    return subTileType === "road";
+  }
+
+  return tileLike?.type === "road" || tileLike?.type === "town" || tileLike?.type === "helipad";
+}
+
 function renderBoard() {
   const { minX, maxX, minY, maxY } = boardBounds();
   const cols = maxX - minX + 1;
@@ -168,8 +252,7 @@ function renderBoard() {
                 const door = DOOR_LOCAL[dir];
                 return door && door.x === lx && door.y === ly;
               });
-              const isRoadTileType = previewTile.type === "road" || previewTile.type === "town" || previewTile.type === "helipad";
-              const isRoadSubtile = isRoadTileType && isWalkable;
+              const isRoadSubtile = isRoadStyledSubtile(previewTileForWalk, lx, ly, isWalkable);
               const lineDirs = isRoadSubtile ? getRoadLineDirs(previewTileForWalk, lx, ly) : [];
               const lanes = lineDirs
                 .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
@@ -262,8 +345,7 @@ function renderBoard() {
           const isWalkable = isLocalWalkable(tile, lx, ly);
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
           const parts = [];
-          const isRoadTileType = tile.type === "road" || tile.type === "town" || tile.type === "helipad";
-          const isRoadSubtile = isRoadTileType && isWalkable;
+          const isRoadSubtile = isRoadStyledSubtile(tile, lx, ly, isWalkable);
           const lineDirs = isRoadSubtile ? getRoadLineDirs(tile, lx, ly) : [];
           const lanes = lineDirs
             .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)

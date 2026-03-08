@@ -13,10 +13,10 @@ function handleKnockout(player, options = {}) {
   logLine(`${player.name} was knocked out, lost ${lostKills} kills, and respawned at Town Square.`);
 }
 
-function applyCombatPostStep(player, pKey, options = {}) {
+function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   const { resumeStepAfterPending = null } = options;
 
-  if (resumeStepAfterPending && !state.zombies.has(pKey)) {
+  if (resumeStepAfterPending && !state.zombies.has(playerSpaceKey)) {
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
       state.step = STEP.MOVE_ZOMBIES;
       autoSkipZombieMoveIfClear();
@@ -35,7 +35,7 @@ function applyCombatPostStep(player, pKey, options = {}) {
     return;
   }
 
-  if (state.step === STEP.COMBAT && !state.zombies.has(pKey)) {
+  if (state.step === STEP.COMBAT && !state.zombies.has(playerSpaceKey)) {
     state.step = STEP.DRAW_EVENTS;
   }
 }
@@ -53,10 +53,10 @@ function resolvePendingCombatDecision(actionCode) {
     return;
   }
 
-  const pKey = key(player.x, player.y);
-  if (!state.zombies.has(pKey)) {
+  const playerSpaceKey = key(player.x, player.y);
+  if (!state.zombies.has(playerSpaceKey)) {
     state.pendingCombatDecision = null;
-    applyCombatPostStep(player, pKey, pending.options);
+    applyCombatPostStep(player, playerSpaceKey, pending.options);
     render();
     return;
   }
@@ -73,7 +73,7 @@ function resolvePendingCombatDecision(actionCode) {
     logLine(`${player.name} spent 1 bullet. Combat roll is now ${pending.modifiedRoll}.`);
 
     if (pending.modifiedRoll >= 4) {
-      state.zombies.delete(pKey);
+      state.zombies.delete(playerSpaceKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       const bonusText = ` (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus})`;
@@ -82,7 +82,7 @@ function resolvePendingCombatDecision(actionCode) {
       const options = pending.options;
       state.pendingCombatDecision = null;
       checkWin(player);
-      applyCombatPostStep(player, pKey, options);
+      applyCombatPostStep(player, playerSpaceKey, options);
       render();
       return;
     }
@@ -140,9 +140,9 @@ function resolveCombatForPlayer(player, options = {}) {
     return { fought: false, knockedOut: false, pending: false };
   }
 
-  const pKey = key(player.x, player.y);
+  const playerSpaceKey = key(player.x, player.y);
 
-  if (!state.zombies.has(pKey)) {
+  if (!state.zombies.has(playerSpaceKey)) {
     if (advanceStepWhenClear && state.step === STEP.COMBAT) {
       state.step = STEP.DRAW_EVENTS;
     }
@@ -152,47 +152,45 @@ function resolveCombatForPlayer(player, options = {}) {
   const permanentBonus = player.attack || 0;
   const tempBonus = player.tempCombatBonus || 0;
 
-  while (true) {
-    const roll = rollD6();
-    const baseCombatRoll = roll + permanentBonus + tempBonus;
-    const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus})`;
+  const roll = rollD6();
+  const baseCombatRoll = roll + permanentBonus + tempBonus;
+  const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus})`;
 
-    if (baseCombatRoll >= 4) {
-      state.zombies.delete(pKey);
-      player.kills += 1;
-      state.lastCombatResult = `Success (${baseCombatRoll})`;
-      logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and claimed a zombie kill.`);
-      checkWin(player);
-      applyCombatPostStep(player, pKey, { resumeStepAfterPending });
-      return { fought: true, knockedOut: false, pending: false };
-    }
-
-    if (player.bullets <= 0 && player.hearts <= 0) {
-      state.lastCombatResult = `Knocked Out (${baseCombatRoll})`;
-      logLine(`${player.name} lost the fight and was knocked out.`);
-      handleKnockout(player, { endStep: endStepOnKnockout });
-      return { fought: true, knockedOut: true, pending: false };
-    }
-
-    state.pendingCombatDecision = {
-      playerId: player.id,
-      pKey,
-      roll,
-      baseRoll: baseCombatRoll,
-      modifiedRoll: baseCombatRoll,
-      permanentBonus,
-      tempBonus,
-      options: {
-        advanceStepWhenClear,
-        endStepOnKnockout,
-        resumeStepAfterPending
-      }
-    };
-    state.lastCombatResult = `Pending (${baseCombatRoll})`;
-    logLine(`${player.name} failed combat with a ${baseCombatRoll}. Choose how to resolve the fight.`);
-    state.step = STEP.COMBAT;
-    return { fought: false, knockedOut: false, pending: true };
+  if (baseCombatRoll >= 4) {
+    state.zombies.delete(playerSpaceKey);
+    player.kills += 1;
+    state.lastCombatResult = `Success (${baseCombatRoll})`;
+    logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and claimed a zombie kill.`);
+    checkWin(player);
+    applyCombatPostStep(player, playerSpaceKey, { resumeStepAfterPending });
+    return { fought: true, knockedOut: false, pending: false };
   }
+
+  if (player.bullets <= 0 && player.hearts <= 0) {
+    state.lastCombatResult = `Knocked Out (${baseCombatRoll})`;
+    logLine(`${player.name} lost the fight and was knocked out.`);
+    handleKnockout(player, { endStep: endStepOnKnockout });
+    return { fought: true, knockedOut: true, pending: false };
+  }
+
+  state.pendingCombatDecision = {
+    playerId: player.id,
+    pKey: playerSpaceKey,
+    roll,
+    baseRoll: baseCombatRoll,
+    modifiedRoll: baseCombatRoll,
+    permanentBonus,
+    tempBonus,
+    options: {
+      advanceStepWhenClear,
+      endStepOnKnockout,
+      resumeStepAfterPending
+    }
+  };
+  state.lastCombatResult = `Pending (${baseCombatRoll})`;
+  logLine(`${player.name} failed combat with a ${baseCombatRoll}. Choose how to resolve the fight.`);
+  state.step = STEP.COMBAT;
+  return { fought: false, knockedOut: false, pending: true };
 }
 
 function resolveCombatOnCurrentTile() {

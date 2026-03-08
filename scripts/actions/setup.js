@@ -29,20 +29,11 @@ function setupGame(playerCount) {
   state.discardPile = [];
   state.zombies = new Set();
   state.spaceTokens = new Map();
-  state.step = STEP.DRAW_TILE;
-  state.movesRemaining = 0;
-  state.currentMoveRoll = null;
-  state.currentZombieRoll = null;
-  state.selectedHandIndex = null;
+  resetStepProgress(STEP.DRAW_TILE);
   state.turnNumber = 1;
   state.gameOver = false;
   state.lastCombatResult = null;
-  state.pendingCombatDecision = null;
-  state.movementBonus = 0;
-  state.moveFloorThisTurn = 0;
-  state.pendingTile = null;
-  state.pendingRotation = 0;
-  state.pendingTileOptions = [];
+  clearPendingTileState();
   state.logs = [];
 
   addTile(0, 0, buildTownSquareTile());
@@ -138,9 +129,7 @@ function placePendingTileAt(x, y) {
     logLine(`${placedName} received item tokens (H${tile.hearts || 0}, B${tile.bullets || 0}).`);
   }
 
-  state.pendingTile = null;
-  state.pendingRotation = 0;
-  state.pendingTileOptions = [];
+  clearPendingTileState();
   state.step = STEP.COMBAT;
   autoSkipCombatIfClear();
   render();

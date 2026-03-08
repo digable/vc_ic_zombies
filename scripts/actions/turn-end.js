@@ -24,14 +24,7 @@ function endTurn() {
   if (player.cannotPlayCardTurns > 0) {
     player.cannotPlayCardTurns -= 1;
   }
-  state.step = STEP.DRAW_TILE;
-  state.movesRemaining = 0;
-  state.currentMoveRoll = null;
-  state.currentZombieRoll = null;
-  state.selectedHandIndex = null;
-  state.pendingCombatDecision = null;
-  state.movementBonus = 0;
-  state.moveFloorThisTurn = 0;
+  resetStepProgress(STEP.DRAW_TILE);
 
   logLine(`Turn passes to ${player.name}.`);
 

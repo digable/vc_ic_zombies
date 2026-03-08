@@ -134,7 +134,7 @@
 .micro-cell.road-subtile .lane-s {
   width: 2px;
   left: calc(50% - 1px);
-  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 0 4px, transparent 4px 8px);
+  background: repeating-linear-gradient(to bottom, rgba(246, 212, 75, 0.95) 0 4px, transparent 4px 8px);
 }
 
 .micro-cell.road-subtile .lane-n {
@@ -151,7 +151,7 @@
 .micro-cell.road-subtile .lane-w {
   height: 2px;
   top: calc(50% - 1px);
-  background: repeating-linear-gradient(to right, rgba(255, 255, 255, 0.95) 0 4px, transparent 4px 8px);
+  background: repeating-linear-gradient(to right, rgba(246, 212, 75, 0.95) 0 4px, transparent 4px 8px);
 }
 
 .micro-cell.road-subtile .lane-w {

@@ -75,6 +75,23 @@ const refs = {
   playerCount: document.getElementById("playerCount")
 };
 
+function resetStepProgress(nextStep = STEP.DRAW_TILE) {
+  state.step = nextStep;
+  state.movesRemaining = 0;
+  state.currentMoveRoll = null;
+  state.currentZombieRoll = null;
+  state.selectedHandIndex = null;
+  state.pendingCombatDecision = null;
+  state.movementBonus = 0;
+  state.moveFloorThisTurn = 0;
+}
+
+function clearPendingTileState() {
+  state.pendingTile = null;
+  state.pendingRotation = 0;
+  state.pendingTileOptions = [];
+}
+
 function key(x, y) {
   return `${x},${y}`;
 }
@@ -284,6 +301,18 @@ function buildSubTilesForTile(tile) {
   const subTiles = {};
   const customSubTiles = getTileSubTileMap(tile);
 
+  const getCustomSubTileType = (cell) => {
+    if (!cell) {
+      return null;
+    }
+    const raw = cell.type ?? cell.subTileType ?? cell.subtype ?? null;
+    if (typeof raw !== "string") {
+      return null;
+    }
+    const normalized = raw.trim().toLowerCase();
+    return normalized.length > 0 ? normalized : null;
+  };
+
   const baseWalkable = (lx, ly) => {
     if (tile.fullAccess) {
       return true;
@@ -306,10 +335,12 @@ function buildSubTilesForTile(tile) {
           : custom?.blocked
             ? false
             : baseWalkable(lx, ly);
+      const subTileType = getCustomSubTileType(custom);
       subTiles[key(lx, ly)] = {
         walkable,
         enterFrom: { N: false, E: false, S: false, W: false },
         exitTo: { N: false, E: false, S: false, W: false },
+        ...(subTileType ? { type: subTileType } : {}),
         ...(walkable ? {} : { walls: ["N", "E", "S", "W"] })
       };
     }

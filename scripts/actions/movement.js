@@ -33,6 +33,11 @@ function rollMovement() {
   render();
 }
 
+function moveToZombiePhase() {
+  state.step = STEP.MOVE_ZOMBIES;
+  autoSkipZombieMoveIfClear();
+}
+
 function movePlayer(dir) {
   if (state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0) {
     return;
@@ -72,8 +77,7 @@ function movePlayer(dir) {
     if (player.noCombatThisTurn) {
       logLine(`${player.name} is under a no-combat effect and ignores zombie battle this turn.`);
       if (state.movesRemaining <= 0) {
-        state.step = STEP.MOVE_ZOMBIES;
-        autoSkipZombieMoveIfClear();
+        moveToZombiePhase();
       }
       render();
       return;
@@ -105,8 +109,7 @@ function movePlayer(dir) {
     }
 
     if (state.movesRemaining <= 0) {
-      state.step = STEP.MOVE_ZOMBIES;
-      autoSkipZombieMoveIfClear();
+      moveToZombiePhase();
     } else {
       state.step = STEP.MOVE;
       logLine(`${player.name} may continue moving (${state.movesRemaining} space(s) remaining).`);
@@ -116,8 +119,7 @@ function movePlayer(dir) {
   }
 
   if (state.movesRemaining <= 0) {
-    state.step = STEP.MOVE_ZOMBIES;
-    autoSkipZombieMoveIfClear();
+    moveToZombiePhase();
   }
 
   render();
@@ -128,8 +130,7 @@ function endMovementEarly() {
     return;
   }
   state.movesRemaining = 0;
-  state.step = STEP.MOVE_ZOMBIES;
-  autoSkipZombieMoveIfClear();
+  moveToZombiePhase();
   logLine(`${currentPlayer().name} ended movement early.`);
   render();
 }

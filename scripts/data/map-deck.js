@@ -377,6 +377,26 @@ function buildMapDeck() {
         "2,2": { blocked: true }
       }
     },
+    {
+      name: "Hardware Store",
+      type: "named",
+      connectors: ["N", "E"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 3,
+      hearts: 1,
+      bullets: 2,
+      subTilesTemplate: {
+        "0,0": { walkable: true, walls: ["N", "W"] },
+        "1,0": { walkable: true, walls: ["N"], doors: ["S"], type: "road" },
+        "2,0": { walkable: true, walls: ["N", "E", "S"] },
+        "0,1": { walkable: true, doors: ["E"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, walls: ["N", "S"], type: "road" },
+        "0,2": { walkable: true, walls: ["E", "S", "W"] },
+        "1,2": { walkable: true },
+        "2,2": { blocked: true }
+      }
+    },
 
     // INFO: These are not in the main game
     {
