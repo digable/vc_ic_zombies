@@ -480,6 +480,18 @@ function renderMapDeckDebug() {
     }
 
     const generatedCode = buildSubTilesTemplateCode(editedCells);
+    const fullTileCode = JSON.stringify({
+      name: tileForRender.name,
+      type: tileForRender.type,
+      count: tileForRender.count,
+      connectors: tileForRender.connectors,
+      zombieSpawnMode: tileForRender.zombieSpawnMode,
+      zombieCount: tileForRender.zombieCount,
+      hearts: tileForRender.hearts,
+      bullets: tileForRender.bullets,
+      fullAccess: tileForRender.fullAccess,
+      subTilesTemplate: editableTemplate
+    }, null, 2);
 
     return `
       <div class="deck-tile ${getTileClassName(tileForRender)}">
@@ -506,6 +518,14 @@ function renderMapDeckDebug() {
             <span class="deck-copy-status" aria-live="polite"></span>
           </div>
           <pre class="deck-code">${escapeHtml(generatedCode)}</pre>
+        </details>
+        <details class="deck-code-wrap">
+          <summary>Generated full tile object code</summary>
+          <div class="deck-code-actions">
+            <button type="button" class="deck-copy-btn" data-debug-copy-code="2">Copy</button>
+            <span class="deck-copy-status" aria-live="polite"></span>
+          </div>
+          <pre class="deck-code">${escapeHtml(fullTileCode)}</pre>
         </details>
       </div>
     `;

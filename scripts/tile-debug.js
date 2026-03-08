@@ -94,6 +94,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     } else {
       set.delete(dir);
     }
+    // Update connectors and force re-render with new reference
     tile.connectors = ["N", "E", "S", "W"].filter((d) => set.has(d));
     renderMapDeckDebug();
     return;
