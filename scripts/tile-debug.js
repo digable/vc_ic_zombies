@@ -142,10 +142,23 @@ function renderNewTileSubtileEditor() {
         `<span class="micro-cell${!cell.walkable ? " blocked-subtile" : ""}" data-gen-coord="${coord}">${!cell.walkable ? '<span class="mark blocked">X</span>' : ""}</span>`
       );
 
-      const dirCheckboxes = (field) =>
-        ["N", "E", "S", "W"].map((dir) =>
-          `<label><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="${dir}" ${cell[field].includes(dir) ? "checked" : ""}/>${dir}</label>`
-        ).join("");
+
+      // Arrange checkboxes in a compass layout
+      const dirCheckboxes = (field) => `
+        <div class="compass-checkboxes">
+          <div class="compass-row compass-n">
+            <label><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="N" ${cell[field].includes("N") ? "checked" : ""}/></label>
+          </div>
+          <div class="compass-row compass-middle">
+            <label class="compass-w"><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="W" ${cell[field].includes("W") ? "checked" : ""}/></label>
+            <span class="compass-center"></span>
+            <label class="compass-e"><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="E" ${cell[field].includes("E") ? "checked" : ""}/></label>
+          </div>
+          <div class="compass-row compass-s">
+            <label><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="S" ${cell[field].includes("S") ? "checked" : ""}/></label>
+          </div>
+        </div>
+      `;
 
       subtileRows.push(`
         <div class="deck-subtile-row">
@@ -162,15 +175,18 @@ function renderNewTileSubtileEditor() {
               <option value="" ${!cell.type ? "selected" : ""}>-</option>
               <option value="road" ${cell.type === "road" ? "selected" : ""}>road</option>
               <option value="building" ${cell.type === "building" ? "selected" : ""}>building</option>
+              <option value="grass" ${cell.type === "grass" ? "selected" : ""}>grass</option>
             </select>
           </label>
-          <div class="deck-subtile-edit-dirs">
-            <strong>Walls</strong>
-            ${dirCheckboxes("walls")}
-          </div>
-          <div class="deck-subtile-edit-dirs">
-            <strong>Doors</strong>
-            ${dirCheckboxes("doors")}
+          <div class="deck-subtile-edit-dirs-row side-by-side">
+            <div class="deck-subtile-edit-dirs">
+              <strong>Walls</strong>
+              ${dirCheckboxes("walls")}
+            </div>
+            <div class="deck-subtile-edit-dirs">
+              <strong>Doors</strong>
+              ${dirCheckboxes("doors")}
+            </div>
           </div>
         </div>
       `);
@@ -178,7 +194,6 @@ function renderNewTileSubtileEditor() {
   }
 
   container.innerHTML = `
-    <div class="micro-grid">${microCells.join("")}</div>
     <div class="deck-subtiles">${subtileRows.join("")}</div>
   `;
 
@@ -214,43 +229,82 @@ function renderNewTileSubtileEditor() {
     }
 
     refreshNewTilePreview();
-    event.stopPropagation();
   });
 }
 
 function refreshNewTilePreview() {
   const outputEl = document.getElementById("newTileCodeOutput");
   const statusEl = document.getElementById("newTileCodeStatus");
-  const { output } = buildNewTileCodeFromInputs();
+  const previewEl = document.getElementById("newTileLivePreview");
+  // Build a tile object using the same logic as map deck debug
+  const tileObj = buildNewTileObjectFromInputs();
+  // Remove _isGeneratedPreview for code output
+  const { _isGeneratedPreview, ...tileForCode } = tileObj;
+  // Format as pretty JSON, matching in-game structure
+  const code = JSON.stringify(tileForCode, null, 2);
   if (outputEl instanceof HTMLElement) {
-    outputEl.textContent = output;
+    outputEl.textContent = code;
   }
   if (statusEl instanceof HTMLElement) {
     statusEl.textContent = "";
   }
-  const previewTile = state.mapDeck.find((t) => t._isGeneratedPreview);
-  if (previewTile) {
-    Object.assign(previewTile, buildNewTileObjectFromInputs());
-    renderMapDeckDebug();
+  // Build a tile object using the same logic as map deck debug
+  const tile = buildNewTileObjectFromInputs();
+  // Use helpers from render.js to build the micro-grid and subtile rows
+  if (previewEl instanceof HTMLElement) {
+    // Use the same rendering as renderMapDeckDebug's renderCard
+    const editedCells = window.createEditableSubtileCells ? window.createEditableSubtileCells(tile) : (typeof createEditableSubtileCells !== 'undefined' ? createEditableSubtileCells(tile) : {});
+    const editableTemplate = window.editableCellsToTemplate ? window.editableCellsToTemplate(editedCells) : (typeof editableCellsToTemplate !== 'undefined' ? editableCellsToTemplate(editedCells) : {});
+    const tileForRender = {
+      ...tile,
+      subTilesTemplate: editableTemplate,
+      subTiles: window.buildSubTilesForTile ? window.buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate }) : (typeof buildSubTilesForTile !== 'undefined' ? buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate }) : {})
+    };
+    let micro = [];
+    for (let ly = 0; ly < 3; ly += 1) {
+      for (let lx = 0; lx < 3; lx += 1) {
+        const isWalkable = typeof isLocalWalkable !== 'undefined' ? isLocalWalkable(tileForRender, lx, ly) : true;
+        const isRoadSubtile = typeof isRoadStyledSubtile !== 'undefined' ? isRoadStyledSubtile(tileForRender, lx, ly, isWalkable) : false;
+        const subType = tileForRender.subTiles && tileForRender.subTiles[key(lx, ly)] && tileForRender.subTiles[key(lx, ly)].type;
+        const isGrass = subType === 'grass';
+        const lineDirs = isRoadSubtile && typeof getRoadLineDirs !== 'undefined' ? getRoadLineDirs(tileForRender, lx, ly) : [];
+        const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
+        const wallDirs = typeof getSubTileWallDirs !== 'undefined' ? getSubTileWallDirs(tileForRender, lx, ly) : [];
+        const walls = wallDirs.map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`).join("");
+        const isExit = (tileForRender.connectors || []).some((dir) => {
+          if (typeof DOOR_LOCAL !== 'undefined') {
+            const door = DOOR_LOCAL[dir];
+            return door && door.x === lx && door.y === ly;
+          }
+          return false;
+        });
+        micro.push(
+          `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+        );
+      }
+    }
+    // Add tile name and info for consistency with map deck debug
+    previewEl.innerHTML = `
+      <div><strong>${tileForRender.name || "New Tile"}</strong></div>
+      <div class="small">
+        Z${tileForRender.zombieCount || 0},
+        L${tileForRender.hearts || 0},
+        B${tileForRender.bullets || 0}
+      </div>
+      <div class="micro-grid">${micro.join("")}</div>
+    `;
   }
 }
 
 function attachNewTileGenerator() {
-  const generateBtn = document.getElementById("generateNewTileCodeBtn");
   const copyBtn = document.getElementById("copyNewTileCodeBtn");
   const outputEl = document.getElementById("newTileCodeOutput");
   const statusEl = document.getElementById("newTileCodeStatus");
-  if (!(generateBtn instanceof HTMLButtonElement) || !(copyBtn instanceof HTMLButtonElement) || !(outputEl instanceof HTMLElement) || !(statusEl instanceof HTMLElement)) {
+  if (!(copyBtn instanceof HTMLButtonElement) || !(outputEl instanceof HTMLElement) || !(statusEl instanceof HTMLElement)) {
     return;
   }
 
-  generateBtn.addEventListener("click", () => {
-    refreshNewTilePreview();
-    state.mapDeck = state.mapDeck.filter((t) => !t._isGeneratedPreview);
-    state.mapDeck.push(buildNewTileObjectFromInputs());
-    renderMapDeckDebug();
-    refs.mapDeckDebug?.closest("section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+  // Removed generateBtn click handler as code updates on change
 
   const container = document.getElementById("newTileGenerator");
   container?.addEventListener("change", refreshNewTilePreview);

@@ -26,6 +26,7 @@
             <select id="newTileType">
               <option value="road">road</option>
               <option value="building">building</option>
+              <option value="grass">grass</option>
               <option value="named" selected>named</option>
               <option value="town">town</option>
               <option value="helipad">helipad</option>
@@ -55,11 +56,11 @@
 
         <div class="tile-generator-block">
           <strong>SubTiles</strong>
+            <div id="newTileLivePreview" class="deck-tile tile-generator-preview"></div>
           <div id="newTileSubtileEditor"></div>
         </div>
 
         <div class="tile-generator-actions">
-          <button id="generateNewTileCodeBtn" type="button">Generate Tile Code</button>
           <button id="copyNewTileCodeBtn" type="button">Copy Code</button>
           <span id="newTileCodeStatus" aria-live="polite"></span>
         </div>

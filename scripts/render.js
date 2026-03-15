@@ -208,6 +208,9 @@ function getTileClassName(tile) {
   if (tile?.type === "building") {
     return "tile-building";
   }
+  if (tile?.type === "grass") {
+    return "tile-grass";
+  }
   if (tile?.type === "named") {
     return "tile-named";
   }
@@ -388,6 +391,7 @@ function renderMapDeckDebug() {
   const renderCard = ({ tile, deckIndex }) => {
     const { tileId, editedCells } = ensureMapDeckDebugEdits(tile);
     const editableTemplate = editableCellsToTemplate(editedCells);
+    // Always use the latest editedCells for subTiles
     const tileForRender = {
       ...tile,
       subTilesTemplate: editableTemplate,
@@ -432,8 +436,9 @@ function renderMapDeckDebug() {
           const door = DOOR_LOCAL[dir];
           return door && door.x === lx && door.y === ly;
         });
+        const isGrass = sub && sub.type === 'grass';
         micro.push(
-          `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+          `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
         );
 
         subtileRows.push(`
@@ -455,24 +460,45 @@ function renderMapDeckDebug() {
             <label class="deck-subtile-edit-line">
               <strong>Type</strong>
               <select data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="type">
-                <option value="" ${!editedCell.type ? "selected" : ""}>-</option>
-                <option value="road" ${editedCell.type === "road" ? "selected" : ""}>road</option>
-                <option value="building" ${editedCell.type === "building" ? "selected" : ""}>building</option>
-              </select>
+                  <option value="" ${!editedCell.type ? "selected" : ""}>-</option>
+                  <option value="road" ${editedCell.type === "road" ? "selected" : ""}>road</option>
+                  <option value="building" ${editedCell.type === "building" ? "selected" : ""}>building</option>
+                  <option value="grass" ${editedCell.type === "grass" ? "selected" : ""}>grass</option>
+                </select>
             </label>
-            <div class="deck-subtile-edit-dirs">
-              <strong>Walls</strong>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="N" ${editedCell.walls.includes("N") ? "checked" : ""}/>N</label>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="E" ${editedCell.walls.includes("E") ? "checked" : ""}/>E</label>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="S" ${editedCell.walls.includes("S") ? "checked" : ""}/>S</label>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="W" ${editedCell.walls.includes("W") ? "checked" : ""}/>W</label>
-            </div>
-            <div class="deck-subtile-edit-dirs">
-              <strong>Doors</strong>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="N" ${editedCell.doors.includes("N") ? "checked" : ""}/>N</label>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="E" ${editedCell.doors.includes("E") ? "checked" : ""}/>E</label>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="S" ${editedCell.doors.includes("S") ? "checked" : ""}/>S</label>
-              <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="W" ${editedCell.doors.includes("W") ? "checked" : ""}/>W</label>
+            <div class="deck-subtile-edit-dirs-row side-by-side">
+              <div class="deck-subtile-edit-dirs">
+                <strong>Walls</strong>
+                <div class="compass-checkboxes">
+                  <div class="compass-row compass-n">
+                    <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="N" ${editedCell.walls.includes("N") ? "checked" : ""}/></label>
+                  </div>
+                  <div class="compass-row compass-middle">
+                    <label class="compass-w"><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="W" ${editedCell.walls.includes("W") ? "checked" : ""}/></label>
+                    <span class="compass-center"></span>
+                    <label class="compass-e"><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="E" ${editedCell.walls.includes("E") ? "checked" : ""}/></label>
+                  </div>
+                  <div class="compass-row compass-s">
+                    <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="walls" data-debug-dir="S" ${editedCell.walls.includes("S") ? "checked" : ""}/></label>
+                  </div>
+                </div>
+              </div>
+              <div class="deck-subtile-edit-dirs">
+                <strong>Doors</strong>
+                <div class="compass-checkboxes">
+                  <div class="compass-row compass-n">
+                    <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="N" ${editedCell.doors.includes("N") ? "checked" : ""}/></label>
+                  </div>
+                  <div class="compass-row compass-middle">
+                    <label class="compass-w"><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="W" ${editedCell.doors.includes("W") ? "checked" : ""}/></label>
+                    <span class="compass-center"></span>
+                    <label class="compass-e"><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="E" ${editedCell.doors.includes("E") ? "checked" : ""}/></label>
+                  </div>
+                  <div class="compass-row compass-s">
+                    <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-coord="${coord}" data-debug-field="doors" data-debug-dir="S" ${editedCell.doors.includes("S") ? "checked" : ""}/></label>
+                  </div>
+                </div>
+              </div>
             </div>
             <div><strong>Road Lines:</strong> ${formatDirs(lineDirs)}</div>
             <div class="deck-subtile-flow"><strong>Flow:</strong> in ${formatDirs(sub?.enterFrom)} | out ${formatDirs(sub?.exitTo)}</div>
@@ -482,23 +508,15 @@ function renderMapDeckDebug() {
     }
 
     const generatedCode = buildSubTilesTemplateCode(editedCells);
-    const fullTileCode = JSON.stringify({
-      name: tileForRender.name,
-      type: tileForRender.type,
-      count: tileForRender.count,
-      connectors: tileForRender.connectors,
-      zombieSpawnMode: tileForRender.zombieSpawnMode,
-      zombieCount: tileForRender.zombieCount,
-      hearts: tileForRender.hearts,
-      bullets: tileForRender.bullets,
-      fullAccess: tileForRender.fullAccess,
-      subTilesTemplate: editableTemplate
-    }, null, 2);
+    // Remove _debugTileId if present for code output
+    const { _debugTileId, ...tileForCode } = tileForRender;
+    const fullTileCode = JSON.stringify(tileForCode, null, 2);
 
     return `
       <div class="deck-tile ${getTileClassName(tileForRender)}">
         <div class="small">#${deckIndex + 1}</div>
         <div><strong>${getTileDisplayName(tileForRender)}</strong></div>
+        <div class="small deck-tile-type">Type: <span>${tileForRender.type || '-'}</span></div>
         <label class="deck-tile-edit-line">
           <strong>Count</strong>
           <input type="number" min="1" value="${tileForRender.count || 1}" data-debug-tile-id="${tileId}" data-debug-field="count" class="deck-tile-count-input" />
