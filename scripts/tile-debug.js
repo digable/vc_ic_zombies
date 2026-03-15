@@ -1,8 +1,60 @@
+// Attach event listeners for subtile editor controls
+function attachNewTileSubtileEditorListeners() {
+  const container = document.getElementById("newTileSubtileEditor");
+  if (!container) return;
+  container.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const coord = target.getAttribute("data-debug-coord");
+    const field = target.getAttribute("data-debug-field");
+    const dir = target.getAttribute("data-debug-dir");
+    if (!coord || !field || !newTileGeneratorCells[coord]) return;
+    if (field === "walkable" && target instanceof HTMLInputElement) {
+      newTileGeneratorCells[coord].walkable = target.checked;
+    } else if (field === "type" && target instanceof HTMLSelectElement) {
+      newTileGeneratorCells[coord].type = target.value;
+    } else if ((field === "walls" || field === "doors") && dir && target instanceof HTMLInputElement) {
+      const set = new Set(newTileGeneratorCells[coord][field] || []);
+      if (target.checked) {
+        set.add(dir);
+      } else {
+        set.delete(dir);
+      }
+      newTileGeneratorCells[coord][field] = ["N", "E", "S", "W"].filter((d) => set.has(d));
+    }
+    refreshNewTilePreview();
+  });
+}
+// Renders the subtile editor UI for the new tile generator
+function renderNewTileSubtileEditor() {
+  const container = document.getElementById("newTileSubtileEditor");
+  if (!container) return;
+  const subtileRows = [];
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      const coord = key(lx, ly);
+      const cell = newTileGeneratorCells[coord];
+      if (window.renderSubtileEditorRow && window.renderCompassCheckboxes) {
+        subtileRows.push(window.renderSubtileEditorRow({
+          prefix: "data-debug-",
+          coord,
+          lx,
+          ly,
+          cell,
+          renderCompassCheckboxes: window.renderCompassCheckboxes
+        }));
+      } else {
+        // fallback: simple display
+        subtileRows.push(`<div>${coord}</div>`);
+      }
+    }
+  }
+  container.innerHTML = `<div class="deck-subtiles">${subtileRows.join("")}</div>`;
+}
 function copyTextToClipboard(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     return navigator.clipboard.writeText(text);
   }
-
   return new Promise((resolve, reject) => {
     try {
       const fallback = document.createElement("textarea");
@@ -122,115 +174,9 @@ const newTileGeneratorCells = {};
       newTileGeneratorCells[key(lx, ly)] = { walkable: lx === 1 && ly === 1, type: "", walls: [], doors: [] };
     }
   }
-}());
-
-function renderNewTileSubtileEditor() {
-  const container = document.getElementById("newTileSubtileEditor");
-  if (!(container instanceof HTMLElement)) {
-    return;
-  }
-
-  const microCells = [];
-  const subtileRows = [];
-
-  for (let ly = 0; ly < 3; ly += 1) {
-    for (let lx = 0; lx < 3; lx += 1) {
-      const coord = key(lx, ly);
-      const cell = newTileGeneratorCells[coord];
-
-      microCells.push(
-        `<span class="micro-cell${!cell.walkable ? " blocked-subtile" : ""}" data-gen-coord="${coord}">${!cell.walkable ? '<span class="mark blocked">X</span>' : ""}</span>`
-      );
+})();
 
 
-      // Arrange checkboxes in a compass layout
-      const dirCheckboxes = (field) => `
-        <div class="compass-checkboxes">
-          <div class="compass-row compass-n">
-            <label><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="N" ${cell[field].includes("N") ? "checked" : ""}/></label>
-          </div>
-          <div class="compass-row compass-middle">
-            <label class="compass-w"><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="W" ${cell[field].includes("W") ? "checked" : ""}/></label>
-            <span class="compass-center"></span>
-            <label class="compass-e"><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="E" ${cell[field].includes("E") ? "checked" : ""}/></label>
-          </div>
-          <div class="compass-row compass-s">
-            <label><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="S" ${cell[field].includes("S") ? "checked" : ""}/></label>
-          </div>
-        </div>
-      `;
-
-      subtileRows.push(`
-        <div class="deck-subtile-row">
-          <div class="deck-subtile-head">
-            <code class="deck-subtile-coord">${lx},${ly}</code>
-          </div>
-          <label class="deck-subtile-edit-line">
-            <strong>Walkable</strong>
-            <input type="checkbox" data-gen-coord="${coord}" data-gen-field="walkable" ${cell.walkable ? "checked" : ""} />
-          </label>
-          <label class="deck-subtile-edit-line">
-            <strong>Type</strong>
-            <select data-gen-coord="${coord}" data-gen-field="type">
-              <option value="" ${!cell.type ? "selected" : ""}>-</option>
-              <option value="road" ${cell.type === "road" ? "selected" : ""}>road</option>
-              <option value="building" ${cell.type === "building" ? "selected" : ""}>building</option>
-              <option value="grass" ${cell.type === "grass" ? "selected" : ""}>grass</option>
-            </select>
-          </label>
-          <div class="deck-subtile-edit-dirs-row side-by-side">
-            <div class="deck-subtile-edit-dirs">
-              <strong>Walls</strong>
-              ${dirCheckboxes("walls")}
-            </div>
-            <div class="deck-subtile-edit-dirs">
-              <strong>Doors</strong>
-              ${dirCheckboxes("doors")}
-            </div>
-          </div>
-        </div>
-      `);
-    }
-  }
-
-  container.innerHTML = `
-    <div class="deck-subtiles">${subtileRows.join("")}</div>
-  `;
-
-  container.addEventListener("change", (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-    const coord = target.getAttribute("data-gen-coord");
-    const field = target.getAttribute("data-gen-field");
-    const dir = target.getAttribute("data-gen-dir");
-    if (!coord || !field || !newTileGeneratorCells[coord]) {
-      return;
-    }
-
-    if (field === "walkable" && target instanceof HTMLInputElement) {
-      newTileGeneratorCells[coord].walkable = target.checked;
-      const microCell = container.querySelector(`.micro-cell[data-gen-coord="${coord}"]`);
-      if (microCell instanceof HTMLElement) {
-        microCell.className = `micro-cell${!target.checked ? " blocked-subtile" : ""}`;
-        microCell.innerHTML = !target.checked ? '<span class="mark blocked">X</span>' : "";
-      }
-    } else if (field === "type" && target instanceof HTMLSelectElement) {
-      newTileGeneratorCells[coord].type = target.value;
-    } else if ((field === "walls" || field === "doors") && dir && target instanceof HTMLInputElement) {
-      const set = new Set(newTileGeneratorCells[coord][field] || []);
-      if (target.checked) {
-        set.add(dir);
-      } else {
-        set.delete(dir);
-      }
-      newTileGeneratorCells[coord][field] = ["N", "E", "S", "W"].filter((d) => set.has(d));
-    }
-
-    refreshNewTilePreview();
-  });
-}
 
 function refreshNewTilePreview() {
   const outputEl = document.getElementById("newTileCodeOutput");
@@ -410,6 +356,7 @@ refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
 state.mapDeck = buildMapDeck();
 renderNewTileSubtileEditor();
+attachNewTileSubtileEditorListeners();
 attachNewTileGenerator();
 attachTileDebugListeners();
 renderMapDeckDebug();
