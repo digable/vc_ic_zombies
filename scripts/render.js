@@ -251,16 +251,18 @@ function normalizeDirList(value) {
 
 function createEditableSubtileCells(tile) {
   const base = buildSubTilesForTile(tile);
+  const rawTemplate = getTileSubTileMap(tile) || {};
   const out = {};
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
       const coord = key(lx, ly);
       const cell = base?.[coord] || {};
+      const raw = rawTemplate[coord] || {};
       out[coord] = {
         walkable: Boolean(cell.walkable),
         type: typeof cell.type === "string" ? cell.type : "",
-        walls: normalizeDirList(cell.walls || cell.wall),
-        doors: normalizeDirList(cell.doors || cell.door)
+        walls: normalizeDirList(raw.walls || raw.wall || cell.walls || cell.wall),
+        doors: normalizeDirList(raw.doors || raw.door || cell.doors || cell.door)
       };
     }
   }

@@ -36,51 +36,25 @@ function buildNewTileCodeFromInputs() {
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
 
   const fullAccess = Boolean(document.getElementById("newTileFullAccess")?.checked);
-  // Connectors field (comma-separated directions)
-  const connectorsRaw = (document.getElementById("newTileConnectors")?.value || "").trim();
-  const connectorsText = connectorsRaw.length > 0
-    ? connectorsRaw.split(/[,\s]+/).map((d) => d.trim().toUpperCase()).filter((d) => ["N","E","S","W"].includes(d))
-    : [];
-
-  const connectorIds = ["N", "E", "S", "W"];
-  const connectors = connectorIds.filter((dir) => {
+  const connectors = ["N", "E", "S", "W"].filter((dir) => {
     const el = document.getElementById(`newTileConnector${dir}`);
     return Boolean(el?.checked);
   });
 
-  const subTilesTemplateRaw = (document.getElementById("newTileSubTilesTemplate")?.value || "").trim();
-  const extraParamsRaw = (document.getElementById("newTileExtraParams")?.value || "").trim();
-
-  let extraParams = {};
-  let extraParamsError = "";
-  if (extraParamsRaw.length > 0) {
-    try {
-      const parsed = JSON.parse(extraParamsRaw);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        extraParams = parsed;
-      } else {
-        extraParamsError = "Extra Parameters JSON must be an object.";
-      }
-    } catch {
-      extraParamsError = "Extra Parameters JSON is invalid.";
-    }
-  }
-
-  // Build the output code (minimal placeholder, you may want to expand this)
-  let output = `{
+  const subTilesCode = buildSubTilesTemplateCode(newTileGeneratorCells).replace(/\n/g, "\n  ");
+  const output = `{
   name: "${name}",
   type: "${type}",
   count: ${count},
-  connectors: ${JSON.stringify(connectors.length ? connectors : connectorsText)},
+  connectors: ${JSON.stringify(connectors)},
   zombieSpawnMode: "${zombieSpawnMode}",
   zombieCount: ${zombieCount},
   hearts: ${hearts},
   bullets: ${bullets},
   fullAccess: ${fullAccess},
-  subTilesTemplate: ${subTilesTemplateRaw || '{}'},
-  extraParams: ${JSON.stringify(extraParams)}
+  ${subTilesCode}
 }`;
-  return { output, extraParamsError };
+  return { output };
 }
 
 function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
@@ -123,6 +97,144 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
 }
 
 
+function buildNewTileObjectFromInputs() {
+  const name = (document.getElementById("newTileName")?.value || "New Tile").trim();
+  const type = (document.getElementById("newTileType")?.value || "named").trim();
+  const count = Number(document.getElementById("newTileCount")?.value || 1);
+  const zombieSpawnMode = (document.getElementById("newTileSpawnMode")?.value || "by_card").trim();
+  const zombieCount = Number(document.getElementById("newTileZombieCount")?.value || 0);
+  const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
+  const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
+  const fullAccess = Boolean(document.getElementById("newTileFullAccess")?.checked);
+
+  const connectors = ["N", "E", "S", "W"].filter((dir) => {
+    const el = document.getElementById(`newTileConnector${dir}`);
+    return Boolean(el?.checked);
+  });
+
+  return { name, type, count, connectors, zombieSpawnMode, zombieCount, hearts, bullets, fullAccess, subTilesTemplate: editableCellsToTemplate(newTileGeneratorCells), _isGeneratedPreview: true };
+}
+
+const newTileGeneratorCells = {};
+(function () {
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      newTileGeneratorCells[key(lx, ly)] = { walkable: lx === 1 && ly === 1, type: "", walls: [], doors: [] };
+    }
+  }
+}());
+
+function renderNewTileSubtileEditor() {
+  const container = document.getElementById("newTileSubtileEditor");
+  if (!(container instanceof HTMLElement)) {
+    return;
+  }
+
+  const microCells = [];
+  const subtileRows = [];
+
+  for (let ly = 0; ly < 3; ly += 1) {
+    for (let lx = 0; lx < 3; lx += 1) {
+      const coord = key(lx, ly);
+      const cell = newTileGeneratorCells[coord];
+
+      microCells.push(
+        `<span class="micro-cell${!cell.walkable ? " blocked-subtile" : ""}" data-gen-coord="${coord}">${!cell.walkable ? '<span class="mark blocked">X</span>' : ""}</span>`
+      );
+
+      const dirCheckboxes = (field) =>
+        ["N", "E", "S", "W"].map((dir) =>
+          `<label><input type="checkbox" data-gen-coord="${coord}" data-gen-field="${field}" data-gen-dir="${dir}" ${cell[field].includes(dir) ? "checked" : ""}/>${dir}</label>`
+        ).join("");
+
+      subtileRows.push(`
+        <div class="deck-subtile-row">
+          <div class="deck-subtile-head">
+            <code class="deck-subtile-coord">${lx},${ly}</code>
+          </div>
+          <label class="deck-subtile-edit-line">
+            <strong>Walkable</strong>
+            <input type="checkbox" data-gen-coord="${coord}" data-gen-field="walkable" ${cell.walkable ? "checked" : ""} />
+          </label>
+          <label class="deck-subtile-edit-line">
+            <strong>Type</strong>
+            <select data-gen-coord="${coord}" data-gen-field="type">
+              <option value="" ${!cell.type ? "selected" : ""}>-</option>
+              <option value="road" ${cell.type === "road" ? "selected" : ""}>road</option>
+              <option value="building" ${cell.type === "building" ? "selected" : ""}>building</option>
+            </select>
+          </label>
+          <div class="deck-subtile-edit-dirs">
+            <strong>Walls</strong>
+            ${dirCheckboxes("walls")}
+          </div>
+          <div class="deck-subtile-edit-dirs">
+            <strong>Doors</strong>
+            ${dirCheckboxes("doors")}
+          </div>
+        </div>
+      `);
+    }
+  }
+
+  container.innerHTML = `
+    <div class="micro-grid">${microCells.join("")}</div>
+    <div class="deck-subtiles">${subtileRows.join("")}</div>
+  `;
+
+  container.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+    const coord = target.getAttribute("data-gen-coord");
+    const field = target.getAttribute("data-gen-field");
+    const dir = target.getAttribute("data-gen-dir");
+    if (!coord || !field || !newTileGeneratorCells[coord]) {
+      return;
+    }
+
+    if (field === "walkable" && target instanceof HTMLInputElement) {
+      newTileGeneratorCells[coord].walkable = target.checked;
+      const microCell = container.querySelector(`.micro-cell[data-gen-coord="${coord}"]`);
+      if (microCell instanceof HTMLElement) {
+        microCell.className = `micro-cell${!target.checked ? " blocked-subtile" : ""}`;
+        microCell.innerHTML = !target.checked ? '<span class="mark blocked">X</span>' : "";
+      }
+    } else if (field === "type" && target instanceof HTMLSelectElement) {
+      newTileGeneratorCells[coord].type = target.value;
+    } else if ((field === "walls" || field === "doors") && dir && target instanceof HTMLInputElement) {
+      const set = new Set(newTileGeneratorCells[coord][field] || []);
+      if (target.checked) {
+        set.add(dir);
+      } else {
+        set.delete(dir);
+      }
+      newTileGeneratorCells[coord][field] = ["N", "E", "S", "W"].filter((d) => set.has(d));
+    }
+
+    refreshNewTilePreview();
+    event.stopPropagation();
+  });
+}
+
+function refreshNewTilePreview() {
+  const outputEl = document.getElementById("newTileCodeOutput");
+  const statusEl = document.getElementById("newTileCodeStatus");
+  const { output } = buildNewTileCodeFromInputs();
+  if (outputEl instanceof HTMLElement) {
+    outputEl.textContent = output;
+  }
+  if (statusEl instanceof HTMLElement) {
+    statusEl.textContent = "";
+  }
+  const previewTile = state.mapDeck.find((t) => t._isGeneratedPreview);
+  if (previewTile) {
+    Object.assign(previewTile, buildNewTileObjectFromInputs());
+    renderMapDeckDebug();
+  }
+}
+
 function attachNewTileGenerator() {
   const generateBtn = document.getElementById("generateNewTileCodeBtn");
   const copyBtn = document.getElementById("copyNewTileCodeBtn");
@@ -132,23 +244,23 @@ function attachNewTileGenerator() {
     return;
   }
 
-  const refreshOutput = () => {
-    const { output, extraParamsError } = buildNewTileCodeFromInputs();
-    outputEl.textContent = output;
-    statusEl.textContent = extraParamsError || "";
-  };
-
-  generateBtn.addEventListener("click", refreshOutput);
+  generateBtn.addEventListener("click", () => {
+    refreshNewTilePreview();
+    state.mapDeck = state.mapDeck.filter((t) => !t._isGeneratedPreview);
+    state.mapDeck.push(buildNewTileObjectFromInputs());
+    renderMapDeckDebug();
+    refs.mapDeckDebug?.closest("section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   const container = document.getElementById("newTileGenerator");
-  container?.addEventListener("change", refreshOutput);
+  container?.addEventListener("change", refreshNewTilePreview);
   container?.addEventListener("input", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
       return;
     }
     if (target.tagName === "TEXTAREA" || target.tagName === "INPUT" || target.tagName === "SELECT") {
-      refreshOutput();
+      refreshNewTilePreview();
     }
   });
 
@@ -167,7 +279,7 @@ function attachNewTileGenerator() {
     }
   });
 
-  refreshOutput();
+  refreshNewTilePreview();
 }
 
 function attachTileDebugListeners() {
@@ -186,9 +298,9 @@ function attachTileDebugListeners() {
       return;
     }
 
-    const card = copyBtn.closest(".deck-tile");
-    const codeBlock = card?.querySelector(".deck-code");
-    const statusEl = card?.querySelector(".deck-copy-status");
+    const details = copyBtn.closest("details");
+    const codeBlock = details?.querySelector(".deck-code");
+    const statusEl = details?.querySelector(".deck-copy-status");
     if (!(codeBlock instanceof HTMLElement) || !(statusEl instanceof HTMLElement)) {
       return;
     }
@@ -243,6 +355,7 @@ refs.mapDeckDebug = document.getElementById("mapDeckDebug");
 refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
 state.mapDeck = buildMapDeck();
+renderNewTileSubtileEditor();
 attachNewTileGenerator();
 attachTileDebugListeners();
 renderMapDeckDebug();

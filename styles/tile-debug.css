@@ -80,3 +80,15 @@
   font-size: 0.78rem;
   line-height: 1.35;
 }
+
+#newTileSubtileEditor {
+  width: min(100%, 420px);
+}
+
+#newTileSubtileEditor .micro-grid {
+  width: min(100%, 180px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  margin: 0 auto;
+  flex: 0 0 auto;
+}
