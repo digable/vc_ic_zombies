@@ -79,6 +79,16 @@ function copyTextToClipboard(text) {
 
 
 function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
+  // Handle tile-level type change
+  if (field === "tileType") {
+    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
+    if (!tile) return;
+    const newType = typeof value === "string" ? value.trim().toLowerCase() : tile.type;
+    tile.type = newType;
+    renderMapDeckDebug();
+    return;
+  }
+
   // Handle connectors (tile-level)
   if (field === "connectors") {
     const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
@@ -273,6 +283,14 @@ function attachTileDebugListeners() {
     }
     if (field === "count" && target instanceof HTMLInputElement && target.type === "number") {
       updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "tileType" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "connectors" && target instanceof HTMLInputElement && target.type === "checkbox") {
+      updateMapDeckDebugEdit(tileId, null, field, target.checked, dir);
       return;
     }
     if (!coord) {

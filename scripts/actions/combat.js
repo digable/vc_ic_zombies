@@ -16,6 +16,10 @@ function handleKnockout(player, options = {}) {
 function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   const { resumeStepAfterPending = null } = options;
 
+  if (!state.zombies.has(playerSpaceKey)) {
+    collectTokensAtPlayerSpace(player);
+  }
+
   if (resumeStepAfterPending && !state.zombies.has(playerSpaceKey)) {
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
       state.step = STEP.MOVE_ZOMBIES;

@@ -311,7 +311,7 @@ function buildMapDeck() {
       name: "Hardware Store",
       type: "named",
       count: 1,
-      connectors: ["N", "E"],
+      connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
       hearts: 1,

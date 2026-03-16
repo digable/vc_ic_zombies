@@ -12,86 +12,22 @@ function renderDeckInfo() {
   `;
 }
 
-function getRoadLineDirs(tileLike, lx, ly) {
-  if (!tileLike || !isLocalWalkable(tileLike, lx, ly)) {
+function getRoadLineDirs(tileLike, lx, ly, getAdjacentTile) {
+  if (!tileLike || getSubTileType(tileLike, lx, ly) !== "road") {
     return [];
   }
-
-  const readEdgeFlag = (cell, field, dir) => {
-    if (!cell) {
-      return false;
-    }
-    const raw = cell[field] || cell[field.slice(0, -1)];
-    if (!raw) {
-      return false;
-    }
-    if (Array.isArray(raw)) {
-      return raw.includes(dir);
-    }
-    if (typeof raw === "object") {
-      return Boolean(raw[dir]);
-    }
-    return false;
-  };
-
-  const edgeIsOpen = (fromX, fromY, dir, toX, toY) => {
-    const fromCell = tileLike?.subTiles?.[key(fromX, fromY)];
-    const toCell = toX >= 0 && toX <= 2 && toY >= 0 && toY <= 2
-      ? tileLike?.subTiles?.[key(toX, toY)]
-      : null;
-
-    if (!fromCell) {
-      return true;
-    }
-
-    const fromWall = readEdgeFlag(fromCell, "walls", dir);
-    const fromDoor = readEdgeFlag(fromCell, "doors", dir);
-    if (fromWall && !fromDoor) {
-      return false;
-    }
-
-    if (!toCell) {
-      return true;
-    }
-
-    if (toCell.walkable === false) {
-      return false;
-    }
-
-    const opposite = DIRS[dir].opposite;
-    const toWall = readEdgeFlag(toCell, "walls", opposite);
-    const toDoor = readEdgeFlag(toCell, "doors", opposite);
-    if (toWall && !toDoor) {
-      return false;
-    }
-
-    return true;
-  };
-
   const dirs = [];
   Object.entries(DIRS).forEach(([dir, d]) => {
     const nx = lx + d.x;
     const ny = ly + d.y;
-
     if (nx >= 0 && nx <= 2 && ny >= 0 && ny <= 2) {
-      if (isLocalWalkable(tileLike, nx, ny) && edgeIsOpen(lx, ly, dir, nx, ny)) {
+      if (getSubTileType(tileLike, nx, ny) === "road") {
         dirs.push(dir);
       }
-      return;
-    }
-
-    const door = DOOR_LOCAL[dir];
-    if (
-      door &&
-      door.x === lx &&
-      door.y === ly &&
-      (tileLike.connectors || []).includes(dir) &&
-      edgeIsOpen(lx, ly, dir, nx, ny)
-    ) {
+    } else if (getAdjacentTile && getAdjacentTile(dir)?.type === "road") {
       dirs.push(dir);
     }
   });
-
   return dirs;
 }
 
@@ -205,6 +141,18 @@ function getTileClassName(tile) {
   if (tile?.type === "named") return "tile-named";
   if (tile?.type === "helipad") return "tile-helipad";
   return "tile-road";
+}
+
+function getTileBackgroundStyle(type) {
+  const map = {
+    named: "#8f6b40",
+    building: "#c59f6a",
+    road: "#9faab4",
+    helipad: "#2f9e44",
+    town: "linear-gradient(135deg, #f7c88f 0%, #ebb36e 100%)",
+    grass: "linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%)",
+  };
+  return map[type] || "#9faab4";
 }
 
 let mapDeckDebugIdCounter = 1;
@@ -350,7 +298,7 @@ function buildMicroGridHtml(tileForRender) {
       const isRoadSubtile = typeof isRoadStyledSubtile !== "undefined" ? isRoadStyledSubtile(tileForRender, lx, ly, isWalkable) : false;
       const subType = tileForRender.subTiles?.[key(lx, ly)]?.type;
       const isGrass = subType === "grass";
-      const lineDirs = isRoadSubtile && typeof getRoadLineDirs !== "undefined" ? getRoadLineDirs(tileForRender, lx, ly) : [];
+      const lineDirs = typeof getRoadLineDirs !== "undefined" ? getRoadLineDirs(tileForRender, lx, ly) : [];
       const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
       const wallDirs = typeof getSubTileWallDirs !== "undefined" ? getSubTileWallDirs(tileForRender, lx, ly) : [];
       const walls = wallDirs.map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`).join("");
@@ -460,10 +408,19 @@ function renderMapDeckDebug() {
     const fullTileCode = JSON.stringify(tileForCode, null, 2);
 
     return `
-      <div class="deck-tile ${getTileClassName(tileForRender)}">
+      <div class="deck-tile ${getTileClassName(tileForRender)}" data-debug-card-id="${tileId}" style="background: ${getTileBackgroundStyle(tileForRender.type)}">
         <div class="small">#${deckIndex + 1}</div>
         <div><strong>${getTileDisplayName(tileForRender)}</strong></div>
-        <div class="small deck-tile-type">Type: <span>${tileForRender.type || '-'}</span></div>
+        <div class="deck-tile-edit-line">
+          <strong>Type</strong>
+          <select data-debug-tile-id="${tileId}" data-debug-field="tileType">
+            <option value="named" ${tileForRender.type === "named" ? "selected" : ""}>named</option>
+            <option value="building" ${tileForRender.type === "building" ? "selected" : ""}>building</option>
+            <option value="road" ${tileForRender.type === "road" ? "selected" : ""}>road</option>
+            <option value="helipad" ${tileForRender.type === "helipad" ? "selected" : ""}>helipad</option>
+            <option value="town" ${tileForRender.type === "town" ? "selected" : ""}>town</option>
+          </select>
+        </div>
         <label class="deck-tile-edit-line">
           <strong>Count</strong>
           <input type="number" min="1" value="${tileForRender.count || 1}" data-debug-tile-id="${tileId}" data-debug-field="count" class="deck-tile-count-input" />
@@ -629,7 +586,10 @@ function renderBoard() {
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
           const parts = [];
           const isRoadSubtile = isRoadStyledSubtile(tile, lx, ly, isWalkable);
-          const lineDirs = isRoadSubtile ? getRoadLineDirs(tile, lx, ly) : [];
+          const lineDirs = getRoadLineDirs(tile, lx, ly, (dir) => {
+            const d = DIRS[dir];
+            return state.board.get(key(x + d.x, y + d.y));
+          });
           const lanes = lineDirs
             .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
             .join("");
