@@ -24,12 +24,16 @@
           <label>Name <input id="newTileName" type="text" value="New Tile" /></label>
           <label>Type
             <select id="newTileType">
-              <option value="road">road</option>
-              <option value="building">building</option>
-              <option value="grass">grass</option>
-              <option value="named" selected>named</option>
-              <option value="town">town</option>
-              <option value="helipad">helipad</option>
+              <optgroup label="Standard">
+                <option value="road">road</option>
+                <option value="building">building</option>
+                <option value="grass">grass</option>
+                <option value="named" selected>named</option>
+              </optgroup>
+              <optgroup label="Special">
+                <option value="town">town</option>
+                <option value="helipad">helipad</option>
+              </optgroup>
             </select>
           </label>
           <label>Count <input id="newTileCount" type="number" min="1" value="1" /></label>

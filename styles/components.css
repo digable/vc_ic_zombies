@@ -124,6 +124,19 @@
   background: #ffd6d6;
 }
 
+.micro-cell.parking-subtile {
+  background: #4a4a4a;
+}
+
+.micro-cell.parking-subtile::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .micro-cell.road-subtile .lane {
   position: absolute;
   z-index: 0;

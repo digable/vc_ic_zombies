@@ -298,6 +298,7 @@ function buildMicroGridHtml(tileForRender) {
       const isRoadSubtile = typeof isRoadStyledSubtile !== "undefined" ? isRoadStyledSubtile(tileForRender, lx, ly, isWalkable) : false;
       const subType = tileForRender.subTiles?.[key(lx, ly)]?.type;
       const isGrass = subType === "grass";
+      const isParking = subType === "parking";
       const lineDirs = typeof getRoadLineDirs !== "undefined" ? getRoadLineDirs(tileForRender, lx, ly) : [];
       const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
       const wallDirs = typeof getSubTileWallDirs !== "undefined" ? getSubTileWallDirs(tileForRender, lx, ly) : [];
@@ -310,7 +311,7 @@ function buildMicroGridHtml(tileForRender) {
         return false;
       });
       micro.push(
-        `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+        `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${isParking ? " parking-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
       );
     }
   }
@@ -586,6 +587,7 @@ function renderBoard() {
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
           const parts = [];
           const isRoadSubtile = isRoadStyledSubtile(tile, lx, ly, isWalkable);
+          const isParking = getSubTileType(tile, lx, ly) === "parking";
           const lineDirs = getRoadLineDirs(tile, lx, ly, (dir) => {
             const d = DIRS[dir];
             return state.board.get(key(x + d.x, y + d.y));
@@ -622,7 +624,7 @@ function renderBoard() {
           if (data.bullets > 0) {
             parts.push(`<span class="mark token">B${data.bullets}</span>`);
           }
-          micro.push(`<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${parts.join("")}</span>`);
+          micro.push(`<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isParking ? " parking-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${parts.join("")}</span>`);
         }
       }
 

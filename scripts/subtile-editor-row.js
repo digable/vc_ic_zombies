@@ -3,7 +3,7 @@
 //   coord, lx, ly, cell, prefix, tileId, typeOptions, renderCompassCheckboxes
 // })
 function renderSubtileEditorRow({
-  coord, lx, ly, cell, prefix, tileId = '', typeOptions = ["road", "building", "grass"], renderCompassCheckboxes
+  coord, lx, ly, cell, prefix, tileId = '', typeOptions = ["road", "building", "grass", "parking"], renderCompassCheckboxes
 }) {
   const tileAttr = tileId ? ` ${prefix}tile-id="${tileId}"` : '';
   return `

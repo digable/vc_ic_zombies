@@ -66,15 +66,15 @@ function buildMapDeck() {
       fullAccess: true,
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
-        "0,0": { walkable: true, walls: ["N", "W"] },
-        "1,0": { walkable: true, doors: ["N"] },
-        "2,0": { walkable: true, walls: ["N", "E"] },
-        "0,1": { walkable: true, doors: ["W"] },
-        "1,1": { walkable: true },
-        "2,1": { walkable: true, doors: ["E"] },
-        "0,2": { walkable: true, walls: ["S", "W"] },
-        "1,2": { walkable: true, doors: ["S"] },
-        "2,2": { walkable: true, walls: ["S", "E"] }
+        "0,0": { walkable: true, type: "parking", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "parking", doors: ["N"] },
+        "2,0": { walkable: true, type: "parking", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "parking", doors: ["W"] },
+        "1,1": { walkable: true, type: "parking" },
+        "2,1": { walkable: true, type: "parking", doors: ["E"] },
+        "0,2": { walkable: true, type: "parking", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "parking", doors: ["S"] },
+        "2,2": { walkable: true, type: "parking", walls: ["S", "E"] }
       }
     }
   ];
@@ -599,7 +599,7 @@ function buildMapDeck() {
 function buildTownSquareTile() {
   return {
     name: "Town Square",
-    type: "special",
+    type: "town",
     count: 1,
     isTownSquare: true,
     connectors: ["N", "E", "S", "W"],
