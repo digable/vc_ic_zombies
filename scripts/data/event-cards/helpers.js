@@ -6,15 +6,8 @@ function buildEventDeckHelpers() {
     return state.players[(i + 1) % state.players.length];
   };
 
-  const nearestZombieDistance = (x, y) => {
-    let best = Infinity;
-    state.zombies.forEach((zKey) => {
-      const [zx, zy] = zKey.split(",").map(Number);
-      const d = Math.abs(zx - x) + Math.abs(zy - y);
-      if (d < best) best = d;
-    });
-    return best;
-  };
+  const nearestZombieDistance = (x, y) =>
+    nearestEntityDistance(x, y, [...state.zombies].map(parseKey));
 
   const moveAwayFromNearestZombie = (target) => {
     if (state.zombies.size === 0) {
@@ -49,7 +42,7 @@ function buildEventDeckHelpers() {
     let removed = 0;
     state.zombies.forEach((zKey) => {
       const [zx, zy] = zKey.split(",").map(Number);
-      if (Math.floor(zx / 3) === tileX && Math.floor(zy / 3) === tileY) {
+      if (spaceToTileCoord(zx) === tileX && spaceToTileCoord(zy) === tileY) {
         state.zombies.delete(zKey);
         removed += 1;
       }

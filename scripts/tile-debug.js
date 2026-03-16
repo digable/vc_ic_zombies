@@ -78,37 +78,6 @@ function copyTextToClipboard(text) {
 }
 
 
-function buildNewTileCodeFromInputs() {
-  const name = (document.getElementById("newTileName")?.value || "New Tile").trim();
-  const type = (document.getElementById("newTileType")?.value || "named").trim();
-  const count = Number(document.getElementById("newTileCount")?.value || 1);
-  const zombieSpawnMode = (document.getElementById("newTileSpawnMode")?.value || "by_card").trim();
-  const zombieCount = Number(document.getElementById("newTileZombieCount")?.value || 0);
-  const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
-  const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
-
-  const fullAccess = Boolean(document.getElementById("newTileFullAccess")?.checked);
-  const connectors = ["N", "E", "S", "W"].filter((dir) => {
-    const el = document.getElementById(`newTileConnector${dir}`);
-    return Boolean(el?.checked);
-  });
-
-  const subTilesCode = buildSubTilesTemplateCode(newTileGeneratorCells).replace(/\n/g, "\n  ");
-  const output = `{
-  name: "${name}",
-  type: "${type}",
-  count: ${count},
-  connectors: ${JSON.stringify(connectors)},
-  zombieSpawnMode: "${zombieSpawnMode}",
-  zombieCount: ${zombieCount},
-  hearts: ${hearts},
-  bullets: ${bullets},
-  fullAccess: ${fullAccess},
-  ${subTilesCode}
-}`;
-  return { output };
-}
-
 function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
   // Handle connectors (tile-level)
   if (field === "connectors") {
@@ -149,7 +118,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
 }
 
 
-function buildNewTileObjectFromInputs() {
+function extractTileInputValues() {
   const name = (document.getElementById("newTileName")?.value || "New Tile").trim();
   const type = (document.getElementById("newTileType")?.value || "named").trim();
   const count = Number(document.getElementById("newTileCount")?.value || 1);
@@ -158,13 +127,15 @@ function buildNewTileObjectFromInputs() {
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
   const fullAccess = Boolean(document.getElementById("newTileFullAccess")?.checked);
-
   const connectors = ["N", "E", "S", "W"].filter((dir) => {
     const el = document.getElementById(`newTileConnector${dir}`);
     return Boolean(el?.checked);
   });
+  return { name, type, count, connectors, zombieSpawnMode, zombieCount, hearts, bullets, fullAccess };
+}
 
-  return { name, type, count, connectors, zombieSpawnMode, zombieCount, hearts, bullets, fullAccess, subTilesTemplate: editableCellsToTemplate(newTileGeneratorCells), _isGeneratedPreview: true };
+function buildNewTileObjectFromInputs() {
+  return { ...extractTileInputValues(), subTilesTemplate: editableCellsToTemplate(newTileGeneratorCells), _isGeneratedPreview: true };
 }
 
 const newTileGeneratorCells = {};
@@ -182,54 +153,22 @@ function refreshNewTilePreview() {
   const outputEl = document.getElementById("newTileCodeOutput");
   const statusEl = document.getElementById("newTileCodeStatus");
   const previewEl = document.getElementById("newTileLivePreview");
-  // Build a tile object using the same logic as map deck debug
-  const tileObj = buildNewTileObjectFromInputs();
-  // Remove _isGeneratedPreview for code output
-  const { _isGeneratedPreview, ...tileForCode } = tileObj;
-  // Format as pretty JSON, matching in-game structure
-  const code = JSON.stringify(tileForCode, null, 2);
+  const tile = buildNewTileObjectFromInputs();
+  const { _isGeneratedPreview, ...tileForCode } = tile;
   if (outputEl instanceof HTMLElement) {
-    outputEl.textContent = code;
+    outputEl.textContent = JSON.stringify(tileForCode, null, 2);
   }
   if (statusEl instanceof HTMLElement) {
     statusEl.textContent = "";
   }
-  // Build a tile object using the same logic as map deck debug
-  const tile = buildNewTileObjectFromInputs();
-  // Use helpers from render.js to build the micro-grid and subtile rows
   if (previewEl instanceof HTMLElement) {
-    // Use the same rendering as renderMapDeckDebug's renderCard
-    const editedCells = window.createEditableSubtileCells ? window.createEditableSubtileCells(tile) : (typeof createEditableSubtileCells !== 'undefined' ? createEditableSubtileCells(tile) : {});
-    const editableTemplate = window.editableCellsToTemplate ? window.editableCellsToTemplate(editedCells) : (typeof editableCellsToTemplate !== 'undefined' ? editableCellsToTemplate(editedCells) : {});
+    const editedCells = typeof createEditableSubtileCells !== 'undefined' ? createEditableSubtileCells(tile) : {};
+    const editableTemplate = typeof editableCellsToTemplate !== 'undefined' ? editableCellsToTemplate(editedCells) : {};
     const tileForRender = {
       ...tile,
       subTilesTemplate: editableTemplate,
-      subTiles: window.buildSubTilesForTile ? window.buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate }) : (typeof buildSubTilesForTile !== 'undefined' ? buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate }) : {})
+      subTiles: typeof buildSubTilesForTile !== 'undefined' ? buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate }) : {}
     };
-    let micro = [];
-    for (let ly = 0; ly < 3; ly += 1) {
-      for (let lx = 0; lx < 3; lx += 1) {
-        const isWalkable = typeof isLocalWalkable !== 'undefined' ? isLocalWalkable(tileForRender, lx, ly) : true;
-        const isRoadSubtile = typeof isRoadStyledSubtile !== 'undefined' ? isRoadStyledSubtile(tileForRender, lx, ly, isWalkable) : false;
-        const subType = tileForRender.subTiles && tileForRender.subTiles[key(lx, ly)] && tileForRender.subTiles[key(lx, ly)].type;
-        const isGrass = subType === 'grass';
-        const lineDirs = isRoadSubtile && typeof getRoadLineDirs !== 'undefined' ? getRoadLineDirs(tileForRender, lx, ly) : [];
-        const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
-        const wallDirs = typeof getSubTileWallDirs !== 'undefined' ? getSubTileWallDirs(tileForRender, lx, ly) : [];
-        const walls = wallDirs.map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`).join("");
-        const isExit = (tileForRender.connectors || []).some((dir) => {
-          if (typeof DOOR_LOCAL !== 'undefined') {
-            const door = DOOR_LOCAL[dir];
-            return door && door.x === lx && door.y === ly;
-          }
-          return false;
-        });
-        micro.push(
-          `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
-        );
-      }
-    }
-    // Add tile name and info for consistency with map deck debug
     previewEl.innerHTML = `
       <div><strong>${tileForRender.name || "New Tile"}</strong></div>
       <div class="small">
@@ -237,7 +176,7 @@ function refreshNewTilePreview() {
         L${tileForRender.hearts || 0},
         B${tileForRender.bullets || 0}
       </div>
-      <div class="micro-grid">${micro.join("")}</div>
+      <div class="micro-grid">${buildMicroGridHtml(tileForRender)}</div>
     `;
   }
 }

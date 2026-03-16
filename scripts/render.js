@@ -551,20 +551,8 @@ function renderBoard() {
           );
           const previewTile = state.pendingTile;
 
-          let previewClass = "tile-road";
-          if (previewTile.type === "town") {
-            previewClass = "tile-town";
-          } else if (previewTile.type === "building") {
-            previewClass = "tile-building";
-          } else if (previewTile.type === "named") {
-            previewClass = "tile-named";
-          } else if (previewTile.type === "helipad") {
-            previewClass = "tile-helipad";
-          }
+          cell.classList.add(getTileClassName(previewTile));
 
-          cell.classList.add(previewClass);
-
-          const previewMicro = [];
           const sourceSubTiles = getTileSubTileMap(previewTile);
           const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, state.pendingRotation);
           const previewTileForWalk = {
@@ -573,28 +561,6 @@ function renderBoard() {
             fullAccess: previewTile.fullAccess,
             ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
           };
-          for (let ly = 0; ly < 3; ly += 1) {
-            for (let lx = 0; lx < 3; lx += 1) {
-              const isWalkable = isLocalWalkable(previewTileForWalk, lx, ly);
-              const isExit = (option?.connectors || []).some((dir) => {
-                const door = DOOR_LOCAL[dir];
-                return door && door.x === lx && door.y === ly;
-              });
-              const isRoadSubtile = isRoadStyledSubtile(previewTileForWalk, lx, ly, isWalkable);
-              const lineDirs = isRoadSubtile ? getRoadLineDirs(previewTileForWalk, lx, ly) : [];
-              const lanes = lineDirs
-                .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
-                .join("");
-              const wallDirs = getSubTileWallDirs(previewTileForWalk, lx, ly);
-              const walls = wallDirs
-                .map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`)
-                .join("");
-              const blocked = !isWalkable ? '<span class="mark blocked">X</span>' : "";
-              previewMicro.push(
-                `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${blocked}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
-              );
-            }
-          }
 
           cell.innerHTML = `
             <div><strong>${getTileDisplayName(previewTile)}</strong></div>
@@ -603,7 +569,7 @@ function renderBoard() {
               L${previewTile.hearts || 0},
               B${previewTile.bullets || 0}
             </div>
-            <div class="micro-grid">${previewMicro.join("")}</div>
+            <div class="micro-grid">${buildMicroGridHtml(previewTileForWalk)}</div>
             <div class="small">Click to place</div>
           `;
         }
@@ -611,18 +577,7 @@ function renderBoard() {
         continue;
       }
 
-      let tileClass = "tile-road";
-      if (tile.type === "town") {
-        tileClass = "tile-town";
-      } else if (tile.type === "building") {
-        tileClass = "tile-building";
-      } else if (tile.type === "named") {
-        tileClass = "tile-named";
-      } else if (tile.type === "helipad") {
-        tileClass = "tile-helipad";
-      }
-
-      cell.classList.add(tileClass);
+      cell.classList.add(getTileClassName(tile));
 
       const occupantMap = new Map();
       const ensureCell = (lx, ly) => {

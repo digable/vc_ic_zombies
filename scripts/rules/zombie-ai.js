@@ -1,12 +1,14 @@
-function nearestPlayerDistance(x, y) {
+function nearestEntityDistance(x, y, positions) {
   let best = Infinity;
-  state.players.forEach((p) => {
+  positions.forEach((p) => {
     const dist = Math.abs(p.x - x) + Math.abs(p.y - y);
-    if (dist < best) {
-      best = dist;
-    }
+    if (dist < best) best = dist;
   });
   return best;
+}
+
+function nearestPlayerDistance(x, y) {
+  return nearestEntityDistance(x, y, state.players);
 }
 
 function isBuildingTile(tile) {
