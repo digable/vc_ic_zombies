@@ -260,6 +260,18 @@
   border-bottom-color: rgba(8, 27, 48, 0.4);
 }
 
+#mapDeckDebug .micro-cell.road-subtile {
+  background: #74787d;
+}
+
+#mapDeckDebug .micro-cell.parking-subtile {
+  background: #4a4a4a;
+}
+
+#mapDeckDebug .micro-cell.blocked-subtile {
+  background: #ffd6d6;
+}
+
 #log {
   max-height: 250px;
   overflow: auto;

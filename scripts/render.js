@@ -294,21 +294,18 @@ function buildMicroGridHtml(tileForRender) {
   const micro = [];
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
-      const isWalkable = typeof isLocalWalkable !== "undefined" ? isLocalWalkable(tileForRender, lx, ly) : true;
-      const isRoadSubtile = typeof isRoadStyledSubtile !== "undefined" ? isRoadStyledSubtile(tileForRender, lx, ly, isWalkable) : false;
-      const subType = tileForRender.subTiles?.[key(lx, ly)]?.type;
+      const isWalkable = isLocalWalkable(tileForRender, lx, ly);
+      const isRoadSubtile = isRoadStyledSubtile(tileForRender, lx, ly, isWalkable);
+      const subType = getSubTileType(tileForRender, lx, ly);
       const isGrass = subType === "grass";
       const isParking = subType === "parking";
-      const lineDirs = typeof getRoadLineDirs !== "undefined" ? getRoadLineDirs(tileForRender, lx, ly) : [];
+      const lineDirs = getRoadLineDirs(tileForRender, lx, ly);
       const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
-      const wallDirs = typeof getSubTileWallDirs !== "undefined" ? getSubTileWallDirs(tileForRender, lx, ly) : [];
+      const wallDirs = getSubTileWallDirs(tileForRender, lx, ly);
       const walls = wallDirs.map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`).join("");
       const isExit = (tileForRender.connectors || []).some((dir) => {
-        if (typeof DOOR_LOCAL !== "undefined") {
-          const door = DOOR_LOCAL[dir];
-          return door && door.x === lx && door.y === ly;
-        }
-        return false;
+        const door = DOOR_LOCAL[dir];
+        return door && door.x === lx && door.y === ly;
       });
       micro.push(
         `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${isParking ? " parking-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
