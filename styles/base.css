@@ -9,6 +9,12 @@
   --helipad: #2f9e44;
   --zombie: #395b2f;
   --player: #2d6a9f;
+
+  --subtile-road: #74787d;
+  --subtile-parking: #4a4a4a;
+  --subtile-blocked: #ffd6d6;
+  --subtile-grass: linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%);
+  --subtile-grass-border: #4caf50;
 }
 
 * {

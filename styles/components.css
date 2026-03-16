@@ -58,6 +58,12 @@
   color: #fff;
 }
 
+.tile-grass {
+  background: var(--subtile-grass);
+  border: 2px solid var(--subtile-grass-border);
+  box-shadow: 0 2px 8px 0 rgba(60, 120, 60, 0.10);
+}
+
 .badges {
   position: absolute;
   left: 4px;
@@ -117,15 +123,15 @@
 }
 
 .micro-cell.road-subtile {
-  background: #74787d;
+  background: var(--subtile-road);
 }
 
 .micro-cell.blocked-subtile {
-  background: #ffd6d6;
+  background: var(--subtile-blocked);
 }
 
 .micro-cell.parking-subtile {
-  background: #4a4a4a;
+  background: var(--subtile-parking);
 }
 
 .micro-cell.parking-subtile::before {
@@ -135,6 +141,23 @@
   border: 2px solid rgba(255, 255, 255, 0.75);
   pointer-events: none;
   z-index: 0;
+}
+
+.micro-cell.grass-subtile {
+  background: var(--subtile-grass);
+  box-shadow: 0 0 0 2px var(--subtile-grass-border) inset, 0 2px 8px 0 rgba(60, 120, 60, 0.08);
+  position: relative;
+}
+
+.micro-cell.grass-subtile::after {
+  content: "✿";
+  color: #388e3c;
+  font-size: 0.9em;
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .micro-cell.road-subtile .lane {

@@ -250,26 +250,17 @@
   white-space: pre;
 }
 
-#mapDeckDebug .micro-grid {
+.deck-debug .micro-grid {
   border-color: rgba(8, 27, 48, 0.45);
 }
 
-#mapDeckDebug .micro-cell {
-  background: rgba(255, 255, 255, 0.72);
+.deck-debug .micro-cell {
   border-right-color: rgba(8, 27, 48, 0.4);
   border-bottom-color: rgba(8, 27, 48, 0.4);
 }
 
-#mapDeckDebug .micro-cell.road-subtile {
-  background: #74787d;
-}
-
-#mapDeckDebug .micro-cell.parking-subtile {
-  background: #4a4a4a;
-}
-
-#mapDeckDebug .micro-cell.blocked-subtile {
-  background: #ffd6d6;
+.deck-debug .micro-cell:not([class*="-subtile"]) {
+  background: rgba(255, 255, 255, 0.72);
 }
 
 #log {
