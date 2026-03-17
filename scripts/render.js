@@ -319,10 +319,7 @@ function buildMicroGridHtml(tileForRender) {
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
       const isWalkable = isLocalWalkable(tileForRender, lx, ly);
-      const isRoadSubtile = isRoadStyledSubtile(tileForRender, lx, ly, isWalkable);
       const subType = getSubTileType(tileForRender, lx, ly);
-      const isGrass = subType === "grass";
-      const isParking = subType === "parking";
       const lineDirs = getRoadLineDirs(tileForRender, lx, ly);
       const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
       const wallDirs = getSubTileWallDirs(tileForRender, lx, ly);
@@ -332,7 +329,7 @@ function buildMicroGridHtml(tileForRender) {
         return door && door.x === lx && door.y === ly;
       });
       micro.push(
-        `<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isGrass ? " grass-subtile" : ""}${isParking ? " parking-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+        `<span class="micro-cell${subType ? ` ${subType}-subtile` : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
       );
     }
   }
@@ -607,8 +604,7 @@ function renderBoard() {
           const isWalkable = isLocalWalkable(tile, lx, ly);
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
           const parts = [];
-          const isRoadSubtile = isRoadStyledSubtile(tile, lx, ly, isWalkable);
-          const isParking = getSubTileType(tile, lx, ly) === "parking";
+          const subType = getSubTileType(tile, lx, ly);
           const lineDirs = getRoadLineDirs(tile, lx, ly, (dir) => {
             const d = DIRS[dir];
             return state.board.get(key(x + d.x, y + d.y));
@@ -645,7 +641,7 @@ function renderBoard() {
           if (data.bullets > 0) {
             parts.push(`<span class="mark token">B${data.bullets}</span>`);
           }
-          micro.push(`<span class="micro-cell${isRoadSubtile ? " road-subtile" : ""}${isParking ? " parking-subtile" : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${parts.join("")}</span>`);
+          micro.push(`<span class="micro-cell${subType ? ` ${subType}-subtile` : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${parts.join("")}</span>`);
         }
       }
 
