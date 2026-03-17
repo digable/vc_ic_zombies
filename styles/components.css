@@ -58,6 +58,41 @@
   color: #fff;
 }
 
+.tile-helipad .micro-cell {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: none;
+  position: relative;
+  z-index: 1;
+}
+
+.tile-helipad .micro-grid {
+  position: relative;
+  isolation: isolate;
+}
+
+.tile-helipad .micro-grid::after {
+  content: "H";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 88%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  color: #fff;
+  font-size: 10rem;
+  font-weight: 900;
+  line-height: 0.85;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
 .tile-grass {
   background: var(--subtile-grass);
   border: 2px solid var(--subtile-grass-border);
