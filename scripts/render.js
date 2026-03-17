@@ -265,7 +265,7 @@ function editableCellsToTemplate(editedCells) {
       const coord = key(lx, ly);
       const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [] };
       if (!cell.walkable) {
-        template[coord] = { blocked: true };
+        template[coord] = { walkable: false };
       } else {
         const row = { walkable: true };
         if (cell.type && cell.type.trim()) {
@@ -292,8 +292,8 @@ function buildSubTilesTemplateCode(editedCells) {
       const coord = key(lx, ly);
       const row = template[coord];
       const parts = [];
-      if (row.blocked) {
-        parts.push("blocked: true");
+      if (row.walkable === false) {
+        parts.push("walkable: false");
       } else {
         parts.push("walkable: true");
         if (row.type) {

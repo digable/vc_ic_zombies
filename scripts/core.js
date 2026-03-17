@@ -334,9 +334,7 @@ function buildSubTilesForTile(tile) {
       const walkable =
         typeof custom?.walkable === "boolean"
           ? custom.walkable
-          : custom?.blocked
-            ? false
-            : baseWalkable(lx, ly);
+          : baseWalkable(lx, ly);
       const subTileType = getCustomSubTileType(custom);
       subTiles[key(lx, ly)] = {
         walkable,
