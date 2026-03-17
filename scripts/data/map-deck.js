@@ -9,14 +9,14 @@ function buildMapDeck() {
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
         "0,0": { blocked: true },
-        "1,0": { walkable: true, walls: ["E", "W"], doors: ["N"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
         "2,0": { blocked: true },
         "0,1": { blocked: true },
-        "1,1": { walkable: true, walls: ["E", "W"] },
+        "1,1": { walkable: true, type: "road", walls: ["E", "W"] },
         "2,1": { blocked: true },
         "0,2": { blocked: true },
-        "1,2": { walkable: true, walls: ["E", "W"], doors: ["S"] },
-        "2,2": { blocked: true }
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { blocked: true },
       }
     },
     // Corner (N-E, E-S, S-W, N-W) - only one needed, can rotate
@@ -28,14 +28,14 @@ function buildMapDeck() {
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
         "0,0": { blocked: true },
-        "1,0": { walkable: true, walls: ["E", "W"], doors: ["N"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
         "2,0": { blocked: true },
         "0,1": { blocked: true },
-        "1,1": { walkable: true, walls: ["S", "W"] },
-        "2,1": { walkable: true, walls: ["N", "S"], doors: ["E"] },
+        "1,1": { walkable: true, type: "road", walls: ["S", "W"] },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
         "0,2": { blocked: true },
         "1,2": { blocked: true },
-        "2,2": { blocked: true }
+        "2,2": { blocked: true },
       }
     },
     // T-Junction (N-E-W, N-E-S, E-S-W, N-S-W) - only one needed, can rotate
@@ -47,14 +47,14 @@ function buildMapDeck() {
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
         "0,0": { blocked: true },
-        "1,0": { walkable: true, walls: ["E", "W"], doors: ["N"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
         "2,0": { blocked: true },
-        "0,1": { walkable: true, walls: ["N", "S"], doors: ["W"] },
-        "1,1": { walkable: true, walls: ["S"] },
-        "2,1": { walkable: true, walls: ["N", "S"], doors: ["E"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road", walls: ["S"] },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
         "0,2": { blocked: true },
         "1,2": { blocked: true },
-        "2,2": { blocked: true }
+        "2,2": { blocked: true },
       }
     },
     // 4-way (Parking Lot)
@@ -598,25 +598,25 @@ function buildMapDeck() {
 
 function buildTownSquareTile() {
   return {
-    name: "Town Square",
-    type: "town",
-    count: 1,
-    isTownSquare: true,
-    connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_card",
-    zombieCount: 0,
-    hearts: 0,
-    bullets: 0,
-    subTilesTemplate: {
-      "0,0": { blocked: true },
-      "1,0": { walkable: true, walls: ["E", "W"] },
-      "2,0": { blocked: true},
-      "0,1": { walkable: true, walls: ["N", "S"] },
-      "1,1": { walkable: true },
-      "2,1": { walkable: true, walls: ["N", "S"] },
-      "0,2": { blocked: true },
-      "1,2": { walkable: true, walls: ["E", "W"] },
-      "2,2": { blocked: true }
-    }
-  };
+  name: "Town Square",
+  type: "town",
+  count: 1,
+  isTownSquare: true,
+  connectors: ["N", "E", "S", "W"],
+  zombieSpawnMode: "by_card",
+  zombieCount: 0,
+  hearts: 0,
+  bullets: 0,
+  subTilesTemplate: {
+    "0,0": { blocked: true },
+    "1,0": { walkable: true, type: "road", walls: ["E", "W"] },
+    "2,0": { blocked: true },
+    "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+    "1,1": { walkable: true, type: "grass" },
+    "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+    "0,2": { blocked: true },
+    "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+    "2,2": { blocked: true }
+  }
+};
 }

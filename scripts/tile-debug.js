@@ -166,7 +166,7 @@ function refreshNewTilePreview() {
   const tile = buildNewTileObjectFromInputs();
   const { _isGeneratedPreview, ...tileForCode } = tile;
   if (outputEl instanceof HTMLElement) {
-    outputEl.textContent = JSON.stringify(tileForCode, null, 2);
+    outputEl.textContent = formatTileCode(tileForCode);
   }
   if (statusEl instanceof HTMLElement) {
     statusEl.textContent = "";

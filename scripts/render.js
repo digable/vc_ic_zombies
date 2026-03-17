@@ -1,3 +1,27 @@
+function formatTileCode(obj) {
+  const identRe = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+  function fmtKey(k) {
+    return identRe.test(k) ? k : JSON.stringify(k);
+  }
+  function fmt(val, depth) {
+    if (val === null) return "null";
+    if (typeof val === "string") return JSON.stringify(val);
+    if (typeof val !== "object") return String(val);
+    if (Array.isArray(val)) {
+      return "[" + val.map((v) => fmt(v, depth + 1)).join(", ") + "]";
+    }
+    const entries = Object.entries(val);
+    if (entries.length === 0) return "{}";
+    if (depth >= 2) {
+      return "{ " + entries.map(([k, v]) => `${fmtKey(k)}: ${fmt(v, depth + 1)}`).join(", ") + " }";
+    }
+    const pad = "  ".repeat(depth + 1);
+    const close = "  ".repeat(depth);
+    return "{\n" + entries.map(([k, v]) => `${pad}${fmtKey(k)}: ${fmt(v, depth + 1)}`).join(",\n") + "\n" + close + "}";
+  }
+  return fmt(obj, 0);
+}
+
 function renderDeckInfo() {
   const box = document.getElementById("deckInfoBox");
   if (!box) return;
@@ -402,8 +426,8 @@ function renderMapDeckDebug() {
     };
 
     const generatedCode = buildSubTilesTemplateCode(editedCells);
-    const { _debugTileId, ...tileForCode } = tileForRender;
-    const fullTileCode = JSON.stringify(tileForCode, null, 2);
+    const { _debugTileId, subTiles, ...tileForCode } = tileForRender;
+    const fullTileCode = formatTileCode(tileForCode);
 
     return `
       <div class="deck-tile ${getTileClassName(tileForRender)}" data-debug-card-id="${tileId}" style="background: ${getTileBackgroundStyle(tileForRender.type)}">
