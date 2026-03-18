@@ -65,6 +65,22 @@
   margin-bottom: 0.4rem;
 }
 
+.deck-debug-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.deck-debug-filters label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .map-deck-debug-header h3 {
   margin: 0;
   font-size: 0.98rem;
@@ -300,6 +316,12 @@
   font-style: normal;
   opacity: 0.6;
   font-size: 0.75rem;
+}
+
+.deck-info-collection {
+  font-size: 0.72rem;
+  opacity: 0.55;
+  font-style: italic;
 }
 
 .deck-info-copy {

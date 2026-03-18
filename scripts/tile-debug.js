@@ -76,6 +76,15 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     return;
   }
 
+  // Handle collection (tile-level)
+  if (field === "collection") {
+    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
+    if (!tile) return;
+    tile.collection = typeof value === "string" ? value.trim() : tile.collection;
+    renderMapDeckDebug();
+    return;
+  }
+
   // Handle zombieSpawnMode (tile-level)
   if (field === "zombieSpawnMode") {
     const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
@@ -270,6 +279,13 @@ function attachTileDebugListeners() {
       return;
     }
 
+    const filterKey = target.getAttribute("data-debug-filter");
+    if (filterKey && target instanceof HTMLSelectElement) {
+      mapDeckDebugFilters[filterKey] = target.value;
+      renderMapDeckDebug();
+      return;
+    }
+
     const tileId = target.getAttribute("data-debug-tile-id");
     const coord = target.getAttribute("data-debug-coord");
     const field = target.getAttribute("data-debug-field");
@@ -282,6 +298,10 @@ function attachTileDebugListeners() {
       return;
     }
     if (field === "tileType" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "collection" && target instanceof HTMLSelectElement) {
       updateMapDeckDebugEdit(tileId, null, field, target.value, null);
       return;
     }
@@ -315,7 +335,8 @@ function attachTileDebugListeners() {
 refs.mapDeckDebug = document.getElementById("mapDeckDebug");
 refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
-state.mapDeck = buildMapDeck();
+state.mapDeck = buildMapDeck(true);
+state.mapDeck.push(buildTownSquareTile());
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();
 attachNewTileGenerator();

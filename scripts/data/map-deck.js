@@ -1,4 +1,4 @@
-function buildMapDeck() {
+function buildMapDeck(includeDisabled = false) {
   const roadTiles = [
     // Straight (N-S or E-W)
     {
@@ -6,6 +6,7 @@ function buildMapDeck() {
       type: "road",
       count: 4,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -26,6 +27,7 @@ function buildMapDeck() {
       type: "road",
       count: 4,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -46,6 +48,7 @@ function buildMapDeck() {
       type: "road",
       count: 4,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["N", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -66,6 +69,7 @@ function buildMapDeck() {
       type: "road",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["N", "S", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -88,6 +92,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -110,6 +115,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -132,6 +138,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -154,6 +161,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 8,
@@ -176,6 +184,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -198,6 +207,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -220,6 +230,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -242,6 +253,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -264,6 +276,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -286,6 +299,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -308,6 +322,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -330,6 +345,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: true,
+      collection: TILE_COLLECTIONS.ORIGINAL,
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -348,12 +364,337 @@ function buildMapDeck() {
       }
     },
 
+    // INFO: These are not in the main game — Iowa City locations
+    {
+      name: "The Deadwood",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["S", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 4,
+      hearts: 2,
+      bullets: 1,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "building", walls: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+        "0,2": { walkable: false },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: false }
+      }
+    },
+    {
+      name: "Hamburg Inn",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 3,
+      hearts: 3,
+      bullets: 0,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road", walls: ["S", "E"] },
+        "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+        "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "building", walls: ["S"], doors: ["N"] },
+        "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+      }
+    },
+    {
+      name: "Ped Mall",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "E", "S", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 5,
+      hearts: 2,
+      bullets: 2,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "parking", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "parking", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: true, type: "parking", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: true, type: "parking", walls: ["E", "S"] }
+      }
+    },
+    {
+      name: "Old Capitol",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "E", "S", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 6,
+      hearts: 1,
+      bullets: 3,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "building" },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
+      }
+    },
+    {
+      name: "Kinnick Stadium",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "S"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 10,
+      hearts: 3,
+      bullets: 4,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "building", walls: ["E"], doors: ["W"] },
+        "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
+      }
+    },
+    {
+      name: "Main Library",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "E"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 4,
+      hearts: 2,
+      bullets: 1,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+        "1,1": { walkable: true, type: "road", walls: ["S", "W"] },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: false },
+        "1,2": { walkable: false },
+        "2,2": { walkable: false }
+      }
+    },
+    {
+      name: "Oakland Cemetery",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "S"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 8,
+      hearts: 1,
+      bullets: 2,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "building", walls: ["E"], doors: ["W"] },
+        "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
+      }
+    },
+    {
+      name: "City Park",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["E", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 3,
+      hearts: 2,
+      bullets: 0,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "parking", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "parking", walls: ["N"] },
+        "2,0": { walkable: true, type: "parking", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: true, type: "parking", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "parking", walls: ["S"] },
+        "2,2": { walkable: true, type: "parking", walls: ["E", "S"] }
+      }
+    },
+    {
+      name: "Sanctuary",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["S", "E"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 3,
+      hearts: 1,
+      bullets: 1,
+      subTilesTemplate: {
+        "0,0": { walkable: false },
+        "1,0": { walkable: false },
+        "2,0": { walkable: false },
+        "0,1": { walkable: false },
+        "1,1": { walkable: true, type: "building", walls: ["N", "W"] },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: false },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: false }
+      }
+    },
+    {
+      name: "Prairie Lights",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "E"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 2,
+      hearts: 0,
+      bullets: 1,
+      subTilesTemplate: {
+        "0,0": { walkable: false },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: false },
+        "0,1": { walkable: false },
+        "1,1": { walkable: true, type: "road", walls: ["S", "W"] },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: false },
+        "1,2": { walkable: false },
+        "2,2": { walkable: false }
+      }
+    },
+    {
+      name: "FilmScene",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["S", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 3,
+      hearts: 1,
+      bullets: 0,
+      subTilesTemplate: {
+        "0,0": { walkable: false },
+        "1,0": { walkable: false },
+        "2,0": { walkable: false },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "building", walls: ["N", "E"] },
+        "2,1": { walkable: false },
+        "0,2": { walkable: false },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: false }
+      }
+    },
+    {
+      name: "UIHC",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "S"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 9,
+      hearts: 5,
+      bullets: 0,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "building", walls: ["W"] },
+        "1,1": { walkable: true, type: "building", doors: ["S"] },
+        "2,1": { walkable: true, type: "building", walls: ["E"] },
+        "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+      }
+    },
+    {
+      name: "IMU",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["E", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 4,
+      hearts: 2,
+      bullets: 1,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+        "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: false },
+        "1,2": { walkable: false },
+        "2,2": { walkable: false }
+      }
+    },
+    {
+      name: "Hy-Vee",
+      type: "named",
+      count: 1,
+      enabled: false,
+      collection: TILE_COLLECTIONS.IOWA_CITY,
+      connectors: ["N", "E", "S"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 5,
+      hearts: 4,
+      bullets: 1,
+      subTilesTemplate: {
+        "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "0,2": { walkable: false },
+        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "2,2": { walkable: false }
+      }
+    },
+
     // INFO: These are not in the main game
     {
       name: "Bank",
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -376,6 +717,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["S", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -398,6 +740,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -420,6 +763,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -442,6 +786,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -464,6 +809,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 0,
@@ -486,6 +832,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 1,
@@ -508,6 +855,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["W", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 1,
@@ -530,6 +878,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["S", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -552,6 +901,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -574,6 +924,7 @@ function buildMapDeck() {
       type: "named",
       count: 1,
       enabled: false,
+      collection: TILE_COLLECTIONS.NOT_USED,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -594,7 +945,7 @@ function buildMapDeck() {
   ];
 
   const expanded = [...roadTiles, ...namedTiles]
-    .filter((t) => t.enabled !== false)
+    .filter((t) => includeDisabled || t.enabled !== false)
     .flatMap((t) => Array.from({ length: t.count || 1 }, () => ({ ...t })));
 
   const cards = expanded;
@@ -604,6 +955,7 @@ function buildMapDeck() {
     type: "helipad",
     count: 1,
     enabled: true,
+    collection: TILE_COLLECTIONS.ORIGINAL,
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
     zombieCount: 9,
@@ -624,7 +976,7 @@ function buildMapDeck() {
   };
 
   shuffle(cards);
-  if (helipad.enabled !== false) {
+  if (includeDisabled || helipad.enabled !== false) {
     const start = Math.floor(cards.length / 2);
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
     cards.splice(pos, 0, helipad);
@@ -638,6 +990,7 @@ function buildTownSquareTile() {
   type: "town",
   count: 1,
   enabled: true,
+  collection: TILE_COLLECTIONS.ORIGINAL,
   isTownSquare: true,
   connectors: ["N", "E", "S", "W"],
   zombieSpawnMode: "by_card",

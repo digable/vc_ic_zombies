@@ -12,6 +12,12 @@ const DOOR_LOCAL = {
   W: { x: 0, y: 1 }
 };
 
+const TILE_COLLECTIONS = {
+  NOT_USED: "not_used",
+  ORIGINAL: "original",
+  IOWA_CITY: "iowa_city"
+};
+
 const STEP = {
   DRAW_TILE: "DRAW_TILE",
   COMBAT: "COMBAT",

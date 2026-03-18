@@ -34,7 +34,7 @@ function renderDeckInfo() {
     const total = meta?.count ?? 1;
     const copy = total > 1 ? ` <span class="deck-info-copy">${t._copyNum}/${total}</span>` : "";
     return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
-      + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${copy}</span>`
+      + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${t.collection ? ` <em class="deck-info-collection">${t.collection}</em>` : ""}${copy}</span>`
       + `<span class="deck-info-pos">${posStr}</span>`
       + `</div>`;
   }
@@ -204,6 +204,7 @@ function getTileBackgroundStyle(type) {
 
 let mapDeckDebugIdCounter = 1;
 const mapDeckDebugEdits = new Map();
+const mapDeckDebugFilters = { collection: "all", enabled: "all" };
 
 function escapeHtml(value) {
   return String(value)
@@ -382,7 +383,29 @@ function renderMapDeckDebug() {
     ["Special Cards", []]
   ]);
 
+  const collectionOptions = [["all", "All Collections"], ...Object.entries(TILE_COLLECTIONS).map(([k, v]) => [v, k])];
+  const enabledOptions = [["all", "All"], ["true", "Enabled"], ["false", "Disabled"]];
+  const filterBar = `
+    <div class="deck-debug-filters">
+      <label>Collection
+        <select data-debug-filter="collection">
+          ${collectionOptions.map(([v, label]) => `<option value="${v}" ${mapDeckDebugFilters.collection === v ? "selected" : ""}>${label}</option>`).join("")}
+        </select>
+      </label>
+      <label>Enabled
+        <select data-debug-filter="enabled">
+          ${enabledOptions.map(([v, label]) => `<option value="${v}" ${mapDeckDebugFilters.enabled === v ? "selected" : ""}>${label}</option>`).join("")}
+        </select>
+      </label>
+    </div>
+  `;
+
+  const seenNames = new Set();
   state.mapDeck.forEach((tile, index) => {
+    if (seenNames.has(tile.name)) return;
+    seenNames.add(tile.name);
+    if (mapDeckDebugFilters.collection !== "all" && (tile.collection || TILE_COLLECTIONS.ORIGINAL) !== mapDeckDebugFilters.collection) return;
+    if (mapDeckDebugFilters.enabled !== "all" && String(tile.enabled !== false) !== mapDeckDebugFilters.enabled) return;
     const group = getDebugGroup(tile);
     grouped.get(group)?.push({ tile, deckIndex: index });
   });
@@ -451,7 +474,14 @@ function renderMapDeckDebug() {
     return `
       <div class="deck-tile ${getTileClassName(tileForRender)}" data-debug-card-id="${tileId}" style="background: ${getTileBackgroundStyle(tileForRender.type)}">
         <div class="small">#${deckIndex + 1}</div>
-        <div><strong>${getTileDisplayName(tileForRender)}</strong></div>
+        <div class="deck-tile-edit-line">
+          <strong>${getTileDisplayName(tileForRender)}</strong>
+          <select data-debug-tile-id="${tileId}" data-debug-field="collection">
+            ${Object.entries(TILE_COLLECTIONS).map(([key, val]) =>
+              `<option value="${val}" ${(tileForRender.collection || TILE_COLLECTIONS.ORIGINAL) === val ? "selected" : ""}>${key}</option>`
+            ).join("")}
+          </select>
+        </div>
         <div class="deck-tile-edit-line">
           <strong>Type</strong>
           <select data-debug-tile-id="${tileId}" data-debug-field="tileType">
@@ -527,7 +557,7 @@ function renderMapDeckDebug() {
     `;
   });
 
-  refs.mapDeckDebug.innerHTML = sections.join("");
+  refs.mapDeckDebug.innerHTML = filterBar + sections.join("");
 }
 
 function renderBoard() {
