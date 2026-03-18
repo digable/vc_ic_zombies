@@ -52,29 +52,7 @@ function renderNewTileSubtileEditor() {
   container.innerHTML = `<div class="deck-subtiles">${subtileRows.join("")}</div>`;
 }
 function copyTextToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    return navigator.clipboard.writeText(text);
-  }
-  return new Promise((resolve, reject) => {
-    try {
-      const fallback = document.createElement("textarea");
-      fallback.value = text;
-      fallback.setAttribute("readonly", "");
-      fallback.style.position = "absolute";
-      fallback.style.left = "-9999px";
-      document.body.appendChild(fallback);
-      fallback.select();
-      const success = document.execCommand("copy");
-      document.body.removeChild(fallback);
-      if (!success) {
-        reject(new Error("copy command failed"));
-        return;
-      }
-      resolve();
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return navigator.clipboard.writeText(text);
 }
 
 
