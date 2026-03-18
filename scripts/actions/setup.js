@@ -26,6 +26,7 @@ function setupGame(playerCount, deckFilters = null) {
   state.board = new Map();
   state.mapDeck = buildMapDeck(deckFilters);
   state.eventDeck = buildEventDeck();
+  state.eventDiscardPile = [];
   state.discardPile = [];
   state.zombies = new Set();
   state.spaceTokens = new Map();
@@ -50,6 +51,7 @@ function setupGame(playerCount, deckFilters = null) {
 
   state.deckStartCounts = deckMeta;
   state.deckStartTotal = state.mapDeck.length;
+  state.eventDeckStartTotal = state.eventDeck.length;
 
   addTile(0, 0, buildTownSquareTile());
 

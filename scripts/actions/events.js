@@ -49,7 +49,7 @@ function playEvent(index) {
 
   player.hand.splice(index, 1);
   card.apply(player, buildEventDeckHelpers());
-  state.discardPile.push(card);
+  state.eventDiscardPile.push(card);
   player.eventUsedThisRound = true;
 
   const pKey = key(player.x, player.y);
@@ -70,7 +70,7 @@ function discardSelected() {
   const player = currentPlayer();
   if (state.selectedHandIndex !== null && player.hand[state.selectedHandIndex]) {
     const [card] = player.hand.splice(state.selectedHandIndex, 1);
-    state.discardPile.push(card);
+    state.eventDiscardPile.push(card);
     logLine(`${player.name} discarded ${card.name}.`);
   } else {
     logLine(`${player.name} skipped discard.`);

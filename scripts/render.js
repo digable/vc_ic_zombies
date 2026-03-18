@@ -59,6 +59,47 @@ function renderDeckInfo() {
   `;
 }
 
+function renderEventDeckInfo() {
+  const box = document.getElementById("eventDeckInfoBox");
+  if (!box) return;
+
+  const totalStart = state.eventDeckStartTotal ?? 0;
+
+  const inDeck = state.eventDeck.length;
+  const inHands = state.players?.reduce((s, p) => s + (p.hand?.length ?? 0), 0) ?? 0;
+  const discarded = state.eventDiscardPile?.length ?? 0;
+
+  function cardRow(c, label, played) {
+    const total = c.count ?? 1;
+    return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
+      + `<span class="deck-info-name">${c.name}${c.collection ? ` <em class="deck-info-collection">${c.collection}</em>` : ""}</span>`
+      + `<span class="deck-info-pos">${label}</span>`
+      + `</div>`;
+  }
+
+  const deckRows = state.eventDeck.map((c, i) => cardRow(c, `#${i + 1}`, false)).join("");
+
+  const handRows = (state.players ?? []).flatMap((p) =>
+    (p.hand ?? []).map((c) => cardRow(c, p.name, false))
+  ).join("");
+
+  const playedRows = (state.eventDiscardPile ?? []).map((c) => cardRow(c, "played", true)).join("");
+
+  const detailsOpen = box.querySelector(".deck-info-details")?.open ?? false;
+  box.innerHTML = `
+    <div>Total in Deck (start): ${totalStart}</div>
+    <div>In Deck: ${inDeck} &nbsp; In Hands: ${inHands} &nbsp; Played: ${discarded}</div>
+    <details class="deck-info-details"${detailsOpen ? " open" : ""}>
+      <summary>Show cards</summary>
+      <div class="deck-info-breakdown">
+        ${deckRows}
+        ${handRows ? `<div class="deck-info-divider"></div>${handRows}` : ""}
+        ${playedRows ? `<div class="deck-info-divider"></div>${playedRows}` : ""}
+      </div>
+    </details>
+  `;
+}
+
 function getRoadLineDirs(tileLike, lx, ly, getAdjacentTile) {
   if (!tileLike || getSubTileType(tileLike, lx, ly) !== "road") {
     return [];
@@ -886,6 +927,7 @@ function render() {
   renderPlayers();
   renderHand();
   renderDeckInfo();
+  renderEventDeckInfo();
   renderCombatDecision();
   renderLog();
   updateButtons();
