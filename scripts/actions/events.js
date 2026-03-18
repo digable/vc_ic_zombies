@@ -48,7 +48,7 @@ function playEvent(index) {
   }
 
   player.hand.splice(index, 1);
-  card.apply(player);
+  card.apply(player, buildEventDeckHelpers());
   state.discardPile.push(card);
   player.eventUsedThisRound = true;
 
