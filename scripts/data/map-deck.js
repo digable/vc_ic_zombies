@@ -982,7 +982,7 @@ function buildMapDeck(filters = null) {
   };
 
   shuffle(cards);
-  if (!filters || (() => { const r = filters[helipad.collection || TILE_COLLECTIONS.ORIGINAL]; return r && (helipad.enabled !== false ? r.enabled : r.disabled); })()) {
+  if (helipad.enabled !== false) {
     const start = Math.floor(cards.length / 2);
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
     cards.splice(pos, 0, helipad);

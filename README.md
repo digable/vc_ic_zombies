@@ -42,7 +42,7 @@ Open `index.html` in your browser. No server or build step required.
 - Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves
 
 ### 🏆 Win Conditions
-- **Escape** — reach the Helipad tile
+- **Escape** — reach the center square of the Helipad tile
 - **Last Stand** — accumulate 25 zombie kills
 
 ---
@@ -162,6 +162,7 @@ Supported per-subtile properties:
 | `type` | `"road"`, `"named"`, `"helipad"`, `"special"` |
 | `count` | Number of copies in the deck |
 | `enabled` | `false` to exclude from play |
+| `collection` | `TILE_COLLECTIONS.ORIGINAL`, `IOWA_CITY`, or `NOT_USED` — used to filter tiles at game setup |
 | `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
 | `zombieSpawnMode` | `"by_card"` uses `zombieCount`; `"by_exits"` spawns one per connector |
 | `zombieCount` | Zombies to spawn when placed (by_card mode) |
@@ -173,6 +174,7 @@ Supported per-subtile properties:
 ## 📋 Rule Summary
 
 - Players start at Town Square with 3 hearts and 3 bullets
+- Before starting, choose which tile collections (Original, Iowa City, Not Used) and which enabled/disabled tiles to include — Helipad and Town Square are always included
 - Tile placement requires connector alignment — roads must connect to roads
 - Helipad is shuffled into the second half of the deck
 - Zombies spawn on tiles when placed based on `zombieSpawnMode`
@@ -182,7 +184,7 @@ Supported per-subtile properties:
 - Hearts are capped at 5
 - One event card may be played per turn cycle
 - Zombie movement is non-diagonal, one step, one zombie per space
-- Win by reaching the Helipad or reaching 25 kills
+- Win by reaching the **center square** of the Helipad or reaching 25 kills
 
 ---
 
