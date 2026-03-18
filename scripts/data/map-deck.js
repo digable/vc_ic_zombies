@@ -593,7 +593,11 @@ function buildMapDeck() {
     }
   ];
 
-  const cards = [...roadTiles, ...namedTiles].filter((t) => t.enabled !== false);
+  const expanded = [...roadTiles, ...namedTiles]
+    .filter((t) => t.enabled !== false)
+    .flatMap((t) => Array.from({ length: t.count || 1 }, () => ({ ...t })));
+
+  const cards = expanded;
 
   const helipad = {
     name: "Helipad",
@@ -619,11 +623,8 @@ function buildMapDeck() {
     }
   };
 
-  const townSquare = buildTownSquareTile();
-
   shuffle(cards);
   if (helipad.enabled !== false) cards.push(helipad);
-  if (townSquare.enabled !== false) cards.push(townSquare);
   return cards;
 }
 

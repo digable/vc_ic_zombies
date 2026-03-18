@@ -36,8 +36,25 @@ function setupGame(playerCount) {
   clearPendingTileState();
   state.logs = [];
 
+  const deckMeta = {};
+  state.mapDeck.forEach((t) => {
+    if (!deckMeta[t.name]) deckMeta[t.name] = { count: 0, type: t.type };
+    deckMeta[t.name].count += 1;
+    t._copyNum = deckMeta[t.name].count;
+  });
+
+  const townSquare = buildTownSquareTile();
+  townSquare._copyNum = 1;
+  deckMeta[townSquare.name] = { count: 1, type: townSquare.type, prePlaced: true };
+  state.discardPile.push(townSquare);
+
+  state.deckStartCounts = deckMeta;
+  state.deckStartTotal = state.mapDeck.length;
+
   addTile(0, 0, buildTownSquareTile());
 
+  const summaryParts = Object.entries(deckMeta).map(([name, m]) => `${name} ×${m.count}`).join(", ");
+  logLine(`Tile deck: ${state.deckStartTotal} card(s) — ${summaryParts}`);
   logLine("Town Square deployed. No zombies are auto-placed at setup.");
   logLine(`${currentPlayer().name} goes first (most recent zombie movie watcher).`);
 
@@ -61,6 +78,7 @@ function drawAndPlaceTile() {
   const options = getPlacementOptions(tile);
   if (options.length === 0) {
     logLine(`No valid placement for ${drawnName}; tile discarded.`);
+    state.discardPile.push(tile);
     state.step = STEP.COMBAT;
     render();
     return;
@@ -129,6 +147,7 @@ function placePendingTileAt(x, y) {
     logLine(`${placedName} received item tokens (H${tile.hearts || 0}, B${tile.bullets || 0}).`);
   }
 
+  state.discardPile.push(tile);
   clearPendingTileState();
   state.step = STEP.COMBAT;
   autoSkipCombatIfClear();

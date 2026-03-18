@@ -456,33 +456,29 @@ function canExitSubTile(tile, lx, ly, toDir) {
   return Boolean(sub.enterFrom?.[toDir]);
 }
 
+function isBuildingSubtileOpen(tile, lx, ly) {
+  if (getSubTileType(tile, lx, ly) !== "building") return false;
+  const walls = tile.subTiles?.[key(lx, ly)]?.walls;
+  return !walls || walls.length < 4;
+}
+
 function findSpawnSpaceOnTile(tx, ty) {
   const tile = state.board.get(key(tx, ty));
   if (!tile) {
     return null;
   }
 
-  const offsets = [
-    [1, 1],
-    [1, 0],
-    [2, 1],
-    [1, 2],
-    [0, 1],
-    [0, 0],
-    [2, 0],
-    [0, 2],
-    [2, 2]
+  const allOffsets = [
+    [1, 1], [1, 0], [2, 1], [1, 2], [0, 1], [0, 0], [2, 0], [0, 2], [2, 2]
   ];
 
-  for (const [lx, ly] of offsets) {
-    if (!isLocalWalkable(tile, lx, ly)) {
-      continue;
-    }
-    const sx = tx * 3 + lx;
-    const sy = ty * 3 + ly;
-    const sk = key(sx, sy);
+  const building = allOffsets.filter(([lx, ly]) => isLocalWalkable(tile, lx, ly) && isBuildingSubtileOpen(tile, lx, ly));
+  const others = allOffsets.filter(([lx, ly]) => isLocalWalkable(tile, lx, ly) && !isBuildingSubtileOpen(tile, lx, ly));
+
+  for (const [lx, ly] of [...building, ...others]) {
+    const sk = key(tx * 3 + lx, ty * 3 + ly);
     if (!state.zombies.has(sk)) {
-      return { x: sx, y: sy };
+      return { x: tx * 3 + lx, y: ty * 3 + ly };
     }
   }
   return null;
@@ -577,14 +573,19 @@ function placeBuildingTokens(tx, ty, hearts, bullets) {
     return;
   }
 
-  const offsets = [];
+  const building = [];
+  const others = [];
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
-      if (isLocalWalkable(tile, lx, ly)) {
-        offsets.push([lx, ly]);
+      if (!isLocalWalkable(tile, lx, ly)) continue;
+      if (isBuildingSubtileOpen(tile, lx, ly)) {
+        building.push([lx, ly]);
+      } else {
+        others.push([lx, ly]);
       }
     }
   }
+  const offsets = [...building, ...others];
 
   let h = hearts || 0;
   let b = bullets || 0;

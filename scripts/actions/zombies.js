@@ -118,26 +118,31 @@ function moveZombies() {
 
     const moveLimit = Math.min(roll, state.zombies.size);
     const movedThisPhase = new Set();
+    const stuckThisPhase = new Set();
     let movedCount = 0;
     let combatDecisionPending = false;
 
     for (let i = 0; i < moveLimit; i += 1) {
-      const available = [...state.zombies].filter((zk) => !movedThisPhase.has(zk));
+      const available = [...state.zombies].filter((zk) => !movedThisPhase.has(zk) && !stuckThisPhase.has(zk));
       if (available.length === 0) {
         break;
       }
 
       const chosenZombie = pickNearestZombieToMove(available);
+      const next = moveZombieOneStep(chosenZombie);
+
+      if (next === chosenZombie) {
+        stuckThisPhase.add(chosenZombie);
+        i -= 1;
+        continue;
+      }
 
       movedThisPhase.add(chosenZombie);
-      const next = moveZombieOneStep(chosenZombie, { resolveTiesDeterministically: false });
-      if (next !== chosenZombie) {
-        state.zombies.delete(chosenZombie);
-        state.zombies.add(next);
-        movedThisPhase.add(next);
-        movedCount += 1;
-        combatDecisionPending = handleZombieEnteringPlayerSpace(next);
-      }
+      state.zombies.delete(chosenZombie);
+      state.zombies.add(next);
+      movedThisPhase.add(next);
+      movedCount += 1;
+      combatDecisionPending = handleZombieEnteringPlayerSpace(next);
 
       if (combatDecisionPending) {
         break;

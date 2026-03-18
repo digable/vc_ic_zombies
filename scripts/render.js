@@ -25,14 +25,37 @@ function formatTileCode(obj) {
 function renderDeckInfo() {
   const box = document.getElementById("deckInfoBox");
   if (!box) return;
-  const totalStart = state.mapDeck.length + state.discardPile.length;
+  const totalStart = state.deckStartTotal ?? (state.mapDeck.length + state.discardPile.length);
   const totalPlayed = state.discardPile.length;
   const totalLeft = state.mapDeck.length;
+
+  function tileRow(t, posStr, played) {
+    const meta = state.deckStartCounts?.[t.name];
+    const total = meta?.count ?? 1;
+    const copy = total > 1 ? ` <span class="deck-info-copy">${t._copyNum}/${total}</span>` : "";
+    return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
+      + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${copy}</span>`
+      + `<span class="deck-info-pos">${posStr}</span>`
+      + `</div>`;
+  }
+
+  const deckRows = state.mapDeck.map((t, i) => tileRow(t, `#${i + 1}`, false)).join("");
+
+  const playedRows = state.discardPile.map((t) => {
+    const meta = state.deckStartCounts?.[t.name];
+    const posStr = meta?.prePlaced ? "pre-placed" : "played";
+    return tileRow(t, posStr, true);
+  }).join("");
+
+  const detailsOpen = box.querySelector(".deck-info-details")?.open ?? false;
   box.innerHTML = `
-    <div><strong>Deck Info</strong></div>
     <div>Total in Deck (start): ${totalStart}</div>
     <div>Total Played: ${totalPlayed}</div>
     <div>Total Left: ${totalLeft}</div>
+    <details class="deck-info-details"${detailsOpen ? " open" : ""}>
+      <summary>Show cards</summary>
+      <div class="deck-info-breakdown">${deckRows}${playedRows ? `<div class="deck-info-divider"></div>${playedRows}` : ""}</div>
+    </details>
   `;
 }
 
