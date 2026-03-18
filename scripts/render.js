@@ -440,6 +440,14 @@ function renderMapDeckDebug() {
             <option value="town" ${tileForRender.type === "town" ? "selected" : ""}>town</option>
           </select>
         </div>
+        <div class="deck-tile-edit-line">
+          <strong>Spawn Mode</strong>
+          <select data-debug-tile-id="${tileId}" data-debug-field="zombieSpawnMode">
+            <option value="by_card" ${(tileForRender.zombieSpawnMode || "by_card") === "by_card" ? "selected" : ""}>by_card</option>
+            <option value="by_exits" ${tileForRender.zombieSpawnMode === "by_exits" ? "selected" : ""}>by_exits</option>
+            <option value="none" ${tileForRender.zombieSpawnMode === "none" ? "selected" : ""}>none</option>
+          </select>
+        </div>
         <label class="deck-tile-edit-line">
           <strong>Count</strong>
           <input type="number" min="1" value="${tileForRender.count || 1}" data-debug-tile-id="${tileId}" data-debug-field="count" class="deck-tile-count-input" />

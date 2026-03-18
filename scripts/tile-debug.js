@@ -89,6 +89,15 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     return;
   }
 
+  // Handle zombieSpawnMode (tile-level)
+  if (field === "zombieSpawnMode") {
+    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
+    if (!tile) return;
+    tile.zombieSpawnMode = typeof value === "string" ? value.trim() : tile.zombieSpawnMode;
+    renderMapDeckDebug();
+    return;
+  }
+
   // Handle connectors (tile-level)
   if (field === "connectors") {
     const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
@@ -286,6 +295,10 @@ function attachTileDebugListeners() {
       return;
     }
     if (field === "tileType" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "zombieSpawnMode" && target instanceof HTMLSelectElement) {
       updateMapDeckDebugEdit(tileId, null, field, target.value, null);
       return;
     }
