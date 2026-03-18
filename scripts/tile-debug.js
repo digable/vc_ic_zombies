@@ -142,11 +142,12 @@ function extractTileInputValues() {
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
   const enabled = Boolean(document.getElementById("newTileEnabled")?.checked);
+  const collection = (document.getElementById("newTileCollection")?.value || TILE_COLLECTIONS.ORIGINAL);
   const connectors = ["N", "E", "S", "W"].filter((dir) => {
     const el = document.getElementById(`newTileConnector${dir}`);
     return Boolean(el?.checked);
   });
-  return { name, type, count, connectors, zombieSpawnMode, zombieCount, hearts, bullets, enabled };
+  return { name, type, count, collection, connectors, zombieSpawnMode, zombieCount, hearts, bullets, enabled };
 }
 
 function buildNewTileObjectFromInputs() {
@@ -335,7 +336,7 @@ function attachTileDebugListeners() {
 refs.mapDeckDebug = document.getElementById("mapDeckDebug");
 refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
-state.mapDeck = buildMapDeck({ showEnabled: true, showDisabled: true });
+state.mapDeck = buildMapDeck(null);
 state.mapDeck.push(buildTownSquareTile());
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();

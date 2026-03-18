@@ -403,12 +403,12 @@ function buildMapDeck(filters = null) {
         "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
         "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
         "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
-        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
-        "1,1": { walkable: true, type: "road", walls: ["S", "E"] },
-        "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+        "0,1": { walkable: true, type: "road", walls: ["S"], doors: ["W"] },
+        "1,1": { walkable: true, type: "road" },
+        "2,1": { walkable: true, type: "building", walls: ["E"] },
         "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
-        "1,2": { walkable: true, type: "building", walls: ["S"], doors: ["N"] },
-        "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+        "1,2": { walkable: true, type: "building", walls: ["S"] },
+        "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
       }
     },
     {
@@ -423,15 +423,15 @@ function buildMapDeck(filters = null) {
       hearts: 2,
       bullets: 2,
       subTilesTemplate: {
-        "0,0": { walkable: true, type: "parking", walls: ["N", "W"] },
-        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
-        "2,0": { walkable: true, type: "parking", walls: ["N", "E"] },
-        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
+        "1,0": { walkable: true, type: "road", doors: ["N"] },
+        "2,0": { walkable: true, type: "grass", walls: ["N", "E"] },
+        "0,1": { walkable: true, type: "road", doors: ["W"] },
         "1,1": { walkable: true, type: "road" },
-        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
-        "0,2": { walkable: true, type: "parking", walls: ["S", "W"] },
-        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
-        "2,2": { walkable: true, type: "parking", walls: ["E", "S"] }
+        "2,1": { walkable: true, type: "road", doors: ["E"] },
+        "0,2": { walkable: true, type: "grass", walls: ["S", "W"] },
+        "1,2": { walkable: true, type: "road", doors: ["S"] },
+        "2,2": { walkable: true, type: "grass", walls: ["E", "S"] }
       }
     },
     {
@@ -447,13 +447,13 @@ function buildMapDeck(filters = null) {
       bullets: 3,
       subTilesTemplate: {
         "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
-        "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+        "1,0": { walkable: true, type: "road", doors: ["N"] },
         "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
-        "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
+        "0,1": { walkable: true, type: "road", doors: ["W"] },
         "1,1": { walkable: true, type: "building" },
-        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "2,1": { walkable: true, type: "road", doors: ["E"] },
         "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
-        "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
+        "1,2": { walkable: true, type: "road", doors: ["S"] },
         "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
       }
     },
@@ -496,8 +496,8 @@ function buildMapDeck(filters = null) {
         "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
         "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
         "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
-        "1,1": { walkable: true, type: "road", walls: ["S", "W"] },
-        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "1,1": { walkable: true, type: "road", walls: ["S"] },
+        "2,1": { walkable: true, type: "road", walls: ["S"], doors: ["E"] },
         "0,2": { walkable: false },
         "1,2": { walkable: false },
         "2,2": { walkable: false }
@@ -681,7 +681,7 @@ function buildMapDeck(filters = null) {
         "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
         "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
         "1,1": { walkable: true, type: "road" },
-        "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+        "2,1": { walkable: true, type: "road", walls: ["S"], doors: ["E"] },
         "0,2": { walkable: false },
         "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
         "2,2": { walkable: false }
