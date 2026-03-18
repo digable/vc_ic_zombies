@@ -285,10 +285,6 @@ function isLocalWalkable(tile, lx, ly) {
     return Boolean(tile.subTiles[key(lx, ly)]?.walkable);
   }
 
-  if (tile.fullAccess) {
-    return true;
-  }
-
   if (lx === 1 && ly === 1) {
     return true;
   }
@@ -316,9 +312,6 @@ function buildSubTilesForTile(tile) {
   };
 
   const baseWalkable = (lx, ly) => {
-    if (tile.fullAccess) {
-      return true;
-    }
     if (lx === 1 && ly === 1) {
       return true;
     }

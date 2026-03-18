@@ -89,6 +89,15 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     return;
   }
 
+  // Handle enabled (tile-level)
+  if (field === "enabled") {
+    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
+    if (!tile) return;
+    tile.enabled = Boolean(value);
+    renderMapDeckDebug();
+    return;
+  }
+
   // Handle zombieSpawnMode (tile-level)
   if (field === "zombieSpawnMode") {
     const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
@@ -145,12 +154,12 @@ function extractTileInputValues() {
   const zombieCount = Number(document.getElementById("newTileZombieCount")?.value || 0);
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
-  const fullAccess = Boolean(document.getElementById("newTileFullAccess")?.checked);
+  const enabled = Boolean(document.getElementById("newTileEnabled")?.checked);
   const connectors = ["N", "E", "S", "W"].filter((dir) => {
     const el = document.getElementById(`newTileConnector${dir}`);
     return Boolean(el?.checked);
   });
-  return { name, type, count, connectors, zombieSpawnMode, zombieCount, hearts, bullets, fullAccess };
+  return { name, type, count, connectors, zombieSpawnMode, zombieCount, hearts, bullets, enabled };
 }
 
 function buildNewTileObjectFromInputs() {
@@ -300,6 +309,10 @@ function attachTileDebugListeners() {
     }
     if (field === "zombieSpawnMode" && target instanceof HTMLSelectElement) {
       updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "enabled" && target instanceof HTMLInputElement && target.type === "checkbox") {
+      updateMapDeckDebugEdit(tileId, null, field, target.checked, null);
       return;
     }
     if (field === "connectors" && target instanceof HTMLInputElement && target.type === "checkbox") {

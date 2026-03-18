@@ -448,6 +448,10 @@ function renderMapDeckDebug() {
           </select>
         </div>
         <label class="deck-tile-edit-line">
+          <strong>Enabled</strong>
+          <input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="enabled" ${tileForRender.enabled !== false ? "checked" : ""} />
+        </label>
+        <label class="deck-tile-edit-line">
           <strong>Count</strong>
           <input type="number" min="1" value="${tileForRender.count || 1}" data-debug-tile-id="${tileId}" data-debug-field="count" class="deck-tile-count-input" />
         </label>
@@ -541,7 +545,6 @@ function renderBoard() {
           const previewTileForWalk = {
             type: previewTile.type,
             connectors: option?.connectors || [],
-            fullAccess: previewTile.fullAccess,
             ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
           };
 

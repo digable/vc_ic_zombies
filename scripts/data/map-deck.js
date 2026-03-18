@@ -63,7 +63,6 @@ function buildMapDeck() {
       type: "road",
       count: 1,
       connectors: ["N", "S", "E", "W"],
-      fullAccess: true,
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
         "0,0": { walkable: true, type: "parking", walls: ["N", "W"] },
@@ -563,7 +562,7 @@ function buildMapDeck() {
     }
   ];
 
-  const cards = [...roadTiles, ...namedTiles];
+  const cards = [...roadTiles, ...namedTiles].filter((t) => t.enabled !== false);
 
   const helipad = {
     name: "Helipad",
@@ -591,8 +590,8 @@ function buildMapDeck() {
   const townSquare = buildTownSquareTile();
 
   shuffle(cards);
-  cards.push(helipad);
-  cards.push(townSquare);
+  if (helipad.enabled !== false) cards.push(helipad);
+  if (townSquare.enabled !== false) cards.push(townSquare);
   return cards;
 }
 
