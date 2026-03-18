@@ -4,7 +4,13 @@ function drawEventsToThree() {
   }
 
   const player = currentPlayer();
-  while (player.hand.length < 3 && state.eventDeck.length > 0) {
+  while (player.hand.length < 3) {
+    if (state.eventDeck.length === 0) {
+      if (state.eventDiscardPile.length === 0) break;
+      state.eventDeck = shuffle([...state.eventDiscardPile]);
+      state.eventDiscardPile = [];
+      logLine("Event deck exhausted — discard pile shuffled back in.");
+    }
     player.hand.push(state.eventDeck.shift());
   }
 
