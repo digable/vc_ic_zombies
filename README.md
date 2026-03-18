@@ -1,117 +1,202 @@
-# VC IC Zombies (Browser Prototype)
+# 🧟 Iowa City Zombies
 
-A JavaScript/HTML/CSS board-game adaptation of your zombie survival rules.
+A browser-based board game adaptation of zombie survival set in Iowa City. Draw tiles to build the city, fight zombies, grab loot, and reach the Helipad before the horde overwhelms you.
 
-## Run
+![Game Type](https://img.shields.io/badge/Type-Board%20Game-red)
+![Platform](https://img.shields.io/badge/Platform-Web-green)
+![Build](https://img.shields.io/badge/Build-None%20Required-brightgreen)
 
-1. Open `index.html` in your browser.
-2. Choose player count (1-4).
-3. Click `New Game`.
+## 📖 Story
 
-No build step is required.
+The dead have risen in Iowa City. Streets are overrun, buildings are locked down, and the only way out is the Helipad on the edge of town. You and your fellow survivors must draw tiles to reveal the city block by block, battle zombies in every corner, scavenge hearts and bullets from named buildings, and race to escape — or rack up 25 kills and prove you're the last one standing.
 
-## Gameplay Flow
+## 🕹️ Play Now
 
-Use the control buttons in order each turn:
+Open `index.html` in your browser. No server or build step required.
 
-1. `Draw & Place Tile`
-2. `Combat Current Space`
-3. `Draw to 3 Events`
-4. `Roll Movement`, then move with direction buttons
-5. `Move Zombies`
-6. `Discard Selected Event`
-7. `End Turn`
+## ✨ Features
 
-## Rule Coverage Implemented
+### 🗺️ Tile-Based City Building
+- Draw and place map tiles each turn to reveal new city blocks
+- Road tiles connect via compass connectors — roads must align
+- Named buildings spawn zombies and loot when placed
+- Helipad shuffled into the second half of the deck — escape is possible but never guaranteed
+- Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles
 
-- Town Square starts at the center with all players on it.
-- Players start with 3 hearts and 3 bullets.
-- Tile deck is shuffled and Helipad is placed as the last map tile.
-- Tile placement obeys connector matching (roads must connect).
-- Zombie spawn on tiles that indicate spawn.
-- Combat is required when entering a zombie space.
-- Combat total is `d6 + attack bonus + temporary combat bonus`; 4+ wins.
-- On failed combat, the active player must choose in the in-page combat decision box: spend bullet (+1), spend life token to reroll, or lose combat.
-- The combat decision box always names the player who must choose and pauses other actions until a choice is made.
-- If hearts run out, player loses half kills (rounded down), respawns at Town Square, and resets to 3 hearts/3 bullets.
-- Named tiles place zombies/items based on card stats when played.
-- Hearts are capped at 5.
-- Event cards can be played at any time during your turn, max one from the start of your turn to the start of your next turn.
-- Zombie movement is non-diagonal, one step each, and one zombie per space.
-- Win by reaching Helipad or getting 25 zombie kills.
+### ⚔️ Combat System
+- Combat triggers when entering or sharing a space with a zombie
+- Roll d6 + attack bonus + temporary bonus; 4+ wins
+- On failure: spend a bullet for +1, spend a heart to reroll, or take the loss
+- All decisions resolved in-page — no browser prompts
+- Knockout: lose half your kills (rounded down), respawn at Town Square, reset to 3 hearts / 3 bullets
 
-## Project Structure
+### 🧟 Zombie AI
+- Zombies move toward the nearest player each phase
+- Movement respects walls, doors, and tile connectors
+- One zombie per space; blocked zombies skip their move slot
+- Zombie count per roll capped at total zombies on the board
 
-The code is split into small browser scripts for easier human maintenance:
+### 🎴 Event Cards
+- Draw up to 3 event cards per turn
+- Play one card per turn cycle (resets at the start of your next turn)
+- Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves
 
-- `scripts/core.js`: shared constants, state, refs, utility helpers, token and zombie spawn helpers
-- `scripts/data/map-deck.js`: map deck definitions and tile stats
-- `scripts/data/event-deck.js`: event deck builder/orchestrator
-- `scripts/data/event-cards/helpers.js`: shared event helper utilities
-- `scripts/data/event-cards/player-cards.js`: self-targeting player buff/recovery cards
-- `scripts/data/event-cards/opponent-cards.js`: opponent-targeting disruption cards
-- `scripts/data/event-cards/zombie-cards.js`: zombie spawn/remove/move cards
-- `scripts/rules/placement.js`: tile placement and connector validation rules
-- `scripts/rules/combat-flow.js`: current-player and combat/zombie-step skip gating
-- `scripts/rules/movement.js`: player/zombie step legality across subtiles and tile edges
-- `scripts/rules/zombie-ai.js`: zombie targeting and one-step movement selection
-- `scripts/rules/board-bounds.js`: dynamic board render bounds helper
-- `scripts/actions/setup.js`: game setup and map draw/place actions
-- `scripts/actions/win.js`: win condition checks
-- `scripts/actions/combat.js`: combat resolution and knockout handling
-- `scripts/actions/movement.js`: player movement roll/step/end-move flow
-- `scripts/actions/zombies.js`: zombie movement phase actions
-- `scripts/actions/events.js`: draw/play/discard event-hand actions
-- `scripts/actions/turn-end.js`: end-turn cleanup and hand-limit enforcement
-- `scripts/render.js`: board/UI rendering and button state updates
-- `scripts/bootstrap.js`: event listeners and initial game boot
+### 🏆 Win Conditions
+- **Escape** — reach the Helipad tile
+- **Last Stand** — accumulate 25 zombie kills
 
-`index.html` loads these files in order.
+---
 
-Styles are also split for readability:
+## 🎮 Turn Order
 
-- `styles/base.css`: design tokens and global element defaults
-- `styles/layout.css`: page/layout/section structure and responsive rules
-- `styles/components.css`: game UI components (tiles, cards, micro-grid markers)
+Each turn follows this sequence:
 
-## Notes
+| Step | Action |
+|------|--------|
+| 1 | **Draw & Place Tile** — reveal and place a new city block |
+| 2 | **Combat Current Space** — fight any zombies sharing your space |
+| 3 | **Draw to 3 Events** — top up your event hand |
+| 4 | **Roll Movement** — roll and move with direction buttons |
+| 5 | **Move Zombies** — roll and advance the horde |
+| 6 | **Discard Event** — discard a card from your hand if desired |
+| 7 | **End Turn** — pass to the next player |
 
-- No build step is required.
-- The board uses 3x3 movement spaces inside each tile.
-- Combat does not rely on browser `prompt()` dialogs; decisions are handled in-page.
+---
 
-## Subtile Authoring Syntax
+## 📁 Project Structure
 
-You can define explicit 3x3 movement data on a tile using `subTiles` (or aliases `subTilesTemplate`, `subtiles`, `subtitles`).
+```
+vc_ic_zombies/
+├── index.html                        # Game UI
+├── tile-editor.html                  # Tile debug / editor panel
+├── README.md                         # This file
+├── scripts/
+│   ├── core.js                       # State, constants, shared helpers
+│   ├── render.js                     # Board/UI rendering, formatTileCode
+│   ├── bootstrap.js                  # Event listener wiring, game boot
+│   ├── tile-debug.js                 # Tile editor page logic
+│   ├── subtile-editor-row.js         # Subtile editor row renderer
+│   ├── compass-checkboxes.js         # Compass direction checkbox helper
+│   ├── actions/
+│   │   ├── setup.js                  # Game setup, tile draw/place
+│   │   ├── combat.js                 # Combat resolution and knockout
+│   │   ├── movement.js               # Player movement roll/step/end
+│   │   ├── zombies.js                # Zombie movement phase
+│   │   ├── events.js                 # Event hand draw/play/discard
+│   │   ├── turn-end.js               # End-turn cleanup
+│   │   └── win.js                    # Win condition checks
+│   ├── rules/
+│   │   ├── placement.js              # Tile placement and connector validation
+│   │   ├── combat-flow.js            # Combat/zombie-step skip gating
+│   │   ├── movement.js               # Step legality across subtiles and tile edges
+│   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
+│   │   └── board-bounds.js           # Dynamic board render bounds
+│   └── data/
+│       ├── map-deck.js               # Tile definitions and buildMapDeck()
+│       ├── event-deck.js             # Event deck builder
+│       └── event-cards/
+│           ├── helpers.js            # Shared event utilities
+│           ├── player-cards.js       # Player buff/recovery cards
+│           ├── opponent-cards.js     # Opponent disruption cards
+│           └── zombie-cards.js       # Zombie spawn/remove/move cards
+└── styles/
+    ├── base.css                      # Design tokens, global element defaults
+    ├── layout.css                    # Page layout, panels, responsive rules
+    ├── components.css                # Tiles, micro-grid, badges, markers
+    └── tile-debug.css                # Tile editor specific styles
+```
 
-Each subtile key is `"x,y"` where `x` and `y` are `0..2`.
+---
+
+## 🛠️ Technical Details
+
+- **Pure Vanilla JS** — no frameworks, no bundler, no build step
+- **Global scope** — all files load via `<script>` tags in order; no ES modules
+- **3×3 subtile grid** — each map tile has a 3×3 movement grid with walkability, walls, and doors
+- **In-page decisions** — combat choices, rotation, and placement are all handled in the UI
+
+### Subtile Authoring
+
+Tiles can define explicit 3×3 movement data via `subTilesTemplate`. Each key is `"x,y"` where x and y are `0..2`.
 
 Supported per-subtile properties:
 
-- `walkable: true|false`
-- `blocked: true` (alias for `walkable: false`)
-- `sides` / `open`: direction map or direction array, applied to both enter+exit
-- `enterFrom` / `enter`: direction map or direction array
-- `exitTo` / `exit`: direction map or direction array
-- `walls` / `wall`: direction map or direction array; forces closed on those edges
-- `doors` / `door`: direction map or direction array; forces open on those edges
+| Property | Description |
+|----------|-------------|
+| `walkable: true\|false` | Whether the subtile can be entered |
+| `walls: ["N","E","S","W"]` | Directions that are always closed |
+| `doors: ["N","E","S","W"]` | Directions that are always open |
+| `type: "road"\|"building"\|...` | Visual and logic type |
 
-Direction values are `N`, `E`, `S`, `W`.
-
-Example:
-
+**Example:**
 ```js
 {
-	name: "Custom Building",
-	type: "named",
-	connectors: ["N", "E"],
-	zombieSpawnMode: "by_card",
-	zombieCount: 3,
-	subTiles: {
-		"1,1": { walkable: true, sides: ["N", "E", "W"] },
-		"1,0": { walkable: true, doors: ["N"], walls: ["E", "W"] },
-		"0,1": { walkable: true, enterFrom: ["E"], exitTo: ["E", "W"] },
-		"2,2": { blocked: true }
-	}
+  name: "Corner Store",
+  type: "named",
+  count: 1,
+  enabled: true,
+  connectors: ["N", "E"],
+  zombieSpawnMode: "by_card",
+  zombieCount: 2,
+  hearts: 1,
+  bullets: 1,
+  subTilesTemplate: {
+    "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+    "1,1": { walkable: true, type: "road" },
+    "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
+    "0,0": { walkable: false },
+    "2,0": { walkable: false },
+    "0,1": { walkable: false },
+    "0,2": { walkable: false },
+    "1,2": { walkable: false },
+    "2,2": { walkable: false }
+  }
 }
 ```
+
+### Tile Properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Display name |
+| `type` | `"road"`, `"named"`, `"helipad"`, `"special"` |
+| `count` | Number of copies in the deck |
+| `enabled` | `false` to exclude from play |
+| `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
+| `zombieSpawnMode` | `"by_card"` uses `zombieCount`; `"by_exits"` spawns one per connector |
+| `zombieCount` | Zombies to spawn when placed (by_card mode) |
+| `hearts` | Heart tokens placed on the tile when drawn |
+| `bullets` | Bullet tokens placed on the tile when drawn |
+
+---
+
+## 📋 Rule Summary
+
+- Players start at Town Square with 3 hearts and 3 bullets
+- Tile placement requires connector alignment — roads must connect to roads
+- Helipad is shuffled into the second half of the deck
+- Zombies spawn on tiles when placed based on `zombieSpawnMode`
+- Combat roll: d6 + attack bonus + temp bonus; 4+ = win
+- Failed combat options: spend bullet (+1), spend heart (reroll), or accept loss
+- Knockout: lose half kills (rounded down), respawn Town Square, reset stats
+- Hearts are capped at 5
+- One event card may be played per turn cycle
+- Zombie movement is non-diagonal, one step, one zombie per space
+- Win by reaching the Helipad or reaching 25 kills
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Feel free to:
+- Report bugs or broken tile definitions
+- Suggest new named tiles or event cards
+- Submit pull requests for rule clarifications or balance tweaks
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+Made with ❤️ for Iowa City

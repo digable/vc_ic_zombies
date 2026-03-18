@@ -624,7 +624,11 @@ function buildMapDeck() {
   };
 
   shuffle(cards);
-  if (helipad.enabled !== false) cards.push(helipad);
+  if (helipad.enabled !== false) {
+    const start = Math.floor(cards.length / 2);
+    const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
+    cards.splice(pos, 0, helipad);
+  }
   return cards;
 }
 
