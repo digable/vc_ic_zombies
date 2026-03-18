@@ -563,6 +563,13 @@ function renderBoard() {
 
       cell.classList.add(getTileClassName(tile));
 
+      const getAdjacentTile = (dir) => {
+        const d = DIRS[dir];
+        return state.board.get(key(x + d.x, y + d.y));
+      };
+      if (getRoadLineDirs(tile, 1, 0, getAdjacentTile).includes("N")) cell.classList.add("connects-n");
+      if (getRoadLineDirs(tile, 1, 2, getAdjacentTile).includes("S")) cell.classList.add("connects-s");
+
       const occupantMap = new Map();
       const ensureCell = (lx, ly) => {
         const k = key(lx, ly);
@@ -613,12 +620,13 @@ function renderBoard() {
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
           const parts = [];
           const subType = getSubTileType(tile, lx, ly);
-          const lineDirs = getRoadLineDirs(tile, lx, ly, (dir) => {
-            const d = DIRS[dir];
-            return state.board.get(key(x + d.x, y + d.y));
-          });
+          const lineDirs = getRoadLineDirs(tile, lx, ly, getAdjacentTile);
           const lanes = lineDirs
-            .map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`)
+            .map((dir) => {
+              const isOuter = (dir === "N" && ly === 0) || (dir === "S" && ly === 2) ||
+                              (dir === "E" && lx === 2) || (dir === "W" && lx === 0);
+              return `<span class="lane lane-${dir.toLowerCase()}${isOuter ? " lane-connector" : ""}"></span>`;
+            })
             .join("");
           const wallDirs = getSubTileWallDirs(tile, lx, ly);
           const walls = wallDirs

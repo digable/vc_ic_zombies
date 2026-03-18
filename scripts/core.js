@@ -528,11 +528,6 @@ function spawnZombiesOnRoadExits(tx, ty, connectors) {
     if (!door) {
       return;
     }
-    // Only spawn at open exits — skip connectors facing an already-placed tile
-    const d = DIRS[dir];
-    if (state.board.has(key(tx + d.x, ty + d.y))) {
-      return;
-    }
     const sx = tx * 3 + door.x;
     const sy = ty * 3 + door.y;
     const sk = key(sx, sy);

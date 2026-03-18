@@ -7,7 +7,7 @@
   background: #f0ead8;
   padding: 0;
   font-size: 0.67rem;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -69,6 +69,7 @@
 .tile-helipad .micro-grid {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
 }
 
 .tile-helipad .micro-grid::after {
@@ -134,8 +135,8 @@
   border-right: 0;
   border-bottom: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.35);
-  border-radius: 0;
-  overflow: hidden;
+  border-radius: 0 0 7px 7px;
+  overflow: visible;
   width: 100%;
   flex: 1;
 }
@@ -233,6 +234,25 @@
 .micro-cell.road-subtile .lane-e {
   left: 50%;
   width: 50%;
+}
+
+/* Extend outer-edge road lanes to bridge the gap between adjacent road tiles */
+.micro-cell.road-subtile .lane-s.lane-connector { height: calc(50% + 4px); }
+.micro-cell.road-subtile .lane-e.lane-connector { width: calc(50% + 4px); }
+.micro-cell.road-subtile .lane-w.lane-connector { left: -4px; width: calc(50% + 4px); }
+
+/* N connector: cell-level bridge — micro-grid sits below the header so we
+   can't extend the lane through it; instead draw from the cell top edge */
+.cell.connects-n::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: calc(50% - 1px);
+  width: 2px;
+  height: 4px;
+  background: repeating-linear-gradient(to bottom, rgba(246, 212, 75, 0.95) 0 4px, transparent 4px 8px);
+  z-index: 10;
+  pointer-events: none;
 }
 
 .micro-cell .wall {
