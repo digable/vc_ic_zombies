@@ -1,7 +1,14 @@
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     const count = Number(refs.playerCount.value) || 2;
-    setupGame(Math.max(1, Math.min(4, count)));
+    const filters = {};
+    document.querySelectorAll("[data-deck-coll]").forEach((el) => {
+      const col = el.getAttribute("data-deck-coll");
+      const st = el.getAttribute("data-deck-state");
+      if (!filters[col]) filters[col] = { enabled: false, disabled: false };
+      if (el.checked) filters[col][st] = true;
+    });
+    setupGame(Math.max(1, Math.min(4, count)), filters);
   });
 
   refs.drawTileBtn.addEventListener("click", drawAndPlaceTile);
@@ -74,4 +81,4 @@ function attachListeners() {
 }
 
 attachListeners();
-setupGame(2);
+setupGame(2, { [TILE_COLLECTIONS.ORIGINAL]: { enabled: true, disabled: false } });

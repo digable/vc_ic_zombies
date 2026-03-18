@@ -1,4 +1,4 @@
-function buildMapDeck(includeDisabled = false) {
+function buildMapDeck(filters = null) {
   const roadTiles = [
     // Straight (N-S or E-W)
     {
@@ -945,7 +945,13 @@ function buildMapDeck(includeDisabled = false) {
   ];
 
   const expanded = [...roadTiles, ...namedTiles]
-    .filter((t) => includeDisabled || t.enabled !== false)
+    .filter((t) => {
+      const col = t.collection || TILE_COLLECTIONS.ORIGINAL;
+      if (!filters) return true;
+      const rule = filters[col];
+      if (!rule) return false;
+      return t.enabled !== false ? (rule.enabled ?? false) : (rule.disabled ?? false);
+    })
     .flatMap((t) => Array.from({ length: t.count || 1 }, () => ({ ...t })));
 
   const cards = expanded;
@@ -976,7 +982,7 @@ function buildMapDeck(includeDisabled = false) {
   };
 
   shuffle(cards);
-  if (includeDisabled || helipad.enabled !== false) {
+  if (!filters || (() => { const r = filters[helipad.collection || TILE_COLLECTIONS.ORIGINAL]; return r && (helipad.enabled !== false ? r.enabled : r.disabled); })()) {
     const start = Math.floor(cards.length / 2);
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
     cards.splice(pos, 0, helipad);

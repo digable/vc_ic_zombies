@@ -1,4 +1,4 @@
-function setupGame(playerCount) {
+function setupGame(playerCount, deckFilters = null) {
   state.players = [];
   for (let i = 0; i < playerCount; i += 1) {
     state.players.push({
@@ -24,7 +24,7 @@ function setupGame(playerCount) {
 
   state.currentPlayerIndex = 0;
   state.board = new Map();
-  state.mapDeck = buildMapDeck();
+  state.mapDeck = buildMapDeck(deckFilters);
   state.eventDeck = buildEventDeck();
   state.discardPile = [];
   state.zombies = new Set();

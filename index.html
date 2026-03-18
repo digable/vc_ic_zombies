@@ -20,6 +20,20 @@
         <div class="row">
           <label for="playerCount">Players</label>
           <input id="playerCount" type="number" min="1" max="4" value="2" />
+        </div>
+        <div class="setup-collection-grid">
+          <span></span><span class="setup-col-header">Enabled</span><span class="setup-col-header">Disabled</span>
+          <span class="setup-coll-name">Original</span>
+          <input type="checkbox" data-deck-coll="original" data-deck-state="enabled" checked />
+          <input type="checkbox" data-deck-coll="original" data-deck-state="disabled" />
+          <span class="setup-coll-name">Iowa City</span>
+          <input type="checkbox" data-deck-coll="iowa_city" data-deck-state="enabled" />
+          <input type="checkbox" data-deck-coll="iowa_city" data-deck-state="disabled" />
+          <span class="setup-coll-name">Not Used</span>
+          <input type="checkbox" data-deck-coll="not_used" data-deck-state="enabled" />
+          <input type="checkbox" data-deck-coll="not_used" data-deck-state="disabled" />
+        </div>
+        <div class="row">
           <button id="newGameBtn">New Game</button>
         </div>
         <div class="row">

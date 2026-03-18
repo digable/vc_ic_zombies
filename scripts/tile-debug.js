@@ -335,7 +335,7 @@ function attachTileDebugListeners() {
 refs.mapDeckDebug = document.getElementById("mapDeckDebug");
 refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
-state.mapDeck = buildMapDeck(true);
+state.mapDeck = buildMapDeck({ showEnabled: true, showDisabled: true });
 state.mapDeck.push(buildTownSquareTile());
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();
