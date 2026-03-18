@@ -286,7 +286,7 @@ function editableCellsToTemplate(editedCells) {
 
 function buildSubTilesTemplateCode(editedCells) {
   const template = editableCellsToTemplate(editedCells);
-  const lines = ["subTilesTemplate: {"];
+  const entries = [];
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
       const coord = key(lx, ly);
@@ -297,20 +297,19 @@ function buildSubTilesTemplateCode(editedCells) {
       } else {
         parts.push("walkable: true");
         if (row.type) {
-          parts.push(`type: \"${row.type}\"`);
+          parts.push(`type: "${row.type}"`);
         }
         if (row.walls?.length) {
-          parts.push(`walls: [${row.walls.map((dir) => `\"${dir}\"`).join(", ")}]`);
+          parts.push(`walls: [${row.walls.map((dir) => `"${dir}"`).join(", ")}]`);
         }
         if (row.doors?.length) {
-          parts.push(`doors: [${row.doors.map((dir) => `\"${dir}\"`).join(", ")}]`);
+          parts.push(`doors: [${row.doors.map((dir) => `"${dir}"`).join(", ")}]`);
         }
       }
-      lines.push(`  \"${coord}\": { ${parts.join(", ")} },`);
+      entries.push(`  "${coord}": { ${parts.join(", ")} }`);
     }
   }
-  lines.push("}");
-  return lines.join("\n");
+  return `subTilesTemplate: {\n${entries.join(",\n")}\n}`;
 }
 
 // Builds micro-grid HTML from an already-resolved tileForRender (subTiles already set).
