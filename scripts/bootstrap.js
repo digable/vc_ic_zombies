@@ -76,6 +76,9 @@ function attachListeners() {
     }
   });
 
+  // Board click — routes to whichever pending interaction is active.
+  // Priority order matters: zombie movement consumes micro-cell clicks before
+  // building select or zombie place, and tile placement (cell-level) is last.
   refs.board.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;

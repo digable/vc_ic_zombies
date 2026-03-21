@@ -41,6 +41,9 @@
 // ---------------------------------------------------------------------------
 
 function buildMapDeck(filters = null) {
+  // --- Road Tiles -------------------------------------------------------
+  // Pure intersections — no loot, no building subtiles.
+  // zombieSpawnMode "by_exits" means one zombie per connector direction.
   const roadTiles = [
     // Straight (N-S or E-W)
     {
@@ -128,6 +131,9 @@ function buildMapDeck(filters = null) {
     }
   ];
 
+  // --- Named Tiles ------------------------------------------------------
+  // Buildings with loot (hearts/bullets) and a fixed zombie count on placement.
+  // Each named tile is referenced by name in event card requiresTile fields.
   const namedTiles = [
     {
       name: "Army Surplus",
@@ -731,6 +737,9 @@ function buildMapDeck(filters = null) {
     }
   ];
 
+  // --- Special Tiles ----------------------------------------------------
+  // One-of tiles with unique game rules (isWinTile, isStartTile).
+  // Win tiles are shuffled into the back half of the deck automatically.
   const specialTiles = [
     {
       name: "Helipad",

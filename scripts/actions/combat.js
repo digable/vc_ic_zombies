@@ -46,6 +46,12 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   }
 }
 
+// Action codes passed to resolvePendingCombatDecision:
+//   "B"          — spend a bullet for +1 to the current roll
+//   "H"          — spend a heart to reroll from scratch
+//   "FAK"        — use First Aid Kit (free reroll, item discarded)
+//   "W:<name>"   — use a combat weapon item by name (e.g. "W:Chainsaw")
+//   "L"          — accept the loss (knockout or take the hit)
 function resolvePendingCombatDecision(actionCode) {
   const pending = state.pendingCombatDecision;
   if (!pending) {

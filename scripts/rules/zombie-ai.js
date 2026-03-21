@@ -1,3 +1,7 @@
+// Zombie AI — target selection and one-step movement.
+// These are pure helpers with no side effects; callers mutate state.zombies.
+// Entry point for the movement phase is moveZombieOneStep(zKey, options).
+
 function nearestEntityDistance(x, y, positions) {
   let best = Infinity;
   positions.forEach((p) => {

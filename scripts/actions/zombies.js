@@ -1,3 +1,14 @@
+// ---------------------------------------------------------------------------
+// Zombie movement phase
+// ---------------------------------------------------------------------------
+// pendingZombieMovement = { remaining, movedKeys: Set, stuckKeys: Set }
+//   remaining  — moves left this phase
+//   movedKeys  — zombies that have already moved (won't move again this phase)
+//   stuckKeys  — zombies with no valid moves THIS pass; cleared after any zombie
+//                successfully moves so previously stuck zombies are re-evaluated
+//                (e.g. a zombie blocking a path moves away, un-sticking a neighbour)
+// ---------------------------------------------------------------------------
+
 function chooseZombieCombatTarget(playersOnSpace, options = {}) {
   const { specifiedPlayerId = null } = options;
   if (!playersOnSpace || playersOnSpace.length === 0) {

@@ -16,6 +16,9 @@ function anyBuildingMatches(conditionFn) {
   return false;
 }
 
+// Returns the `helpers` object passed as the second argument to every card's
+// apply(player, helpers) and activateItem(player, helpers) functions.
+// Add shared board/player utilities here rather than duplicating them in card files.
 function buildEventDeckHelpers() {
   const getNextOpponent = (player) => {
     if (state.players.length < 2) return null;

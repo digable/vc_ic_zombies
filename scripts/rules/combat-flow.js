@@ -1,3 +1,8 @@
+// Phase auto-advancement helpers — called after each state change to skip steps
+// that have nothing to do (no zombie in space = skip combat, no zombies = skip zombie move).
+// These are also called after combat resolves mid-movement or mid-zombie-phase to
+// resume the correct step rather than always advancing forward.
+
 function currentPlayer() {
   return state.players[state.currentPlayerIndex];
 }
