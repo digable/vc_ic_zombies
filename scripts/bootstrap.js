@@ -68,6 +68,14 @@ function attachListeners() {
       return;
     }
 
+    if (state.pendingBuildingSelect) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleBuildingSelectClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
     if (state.pendingZombiePlace) {
       const mc = target.closest(".micro-cell");
       if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {

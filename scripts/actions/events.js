@@ -207,6 +207,32 @@ function finishZombiePlace() {
   render();
 }
 
+function handleBuildingSelectClick(sx, sy) {
+  if (!state.pendingBuildingSelect) return;
+  const tile = getTileAtSpace(sx, sy);
+  if (!tile) return;
+  const lx = getLocalCoord(sx, spaceToTileCoord(sx));
+  const ly = getLocalCoord(sy, spaceToTileCoord(sy));
+  if (getSubTileType(tile, lx, ly) !== "building") return;
+
+  const tx = spaceToTileCoord(sx);
+  const ty = spaceToTileCoord(sy);
+  let placed = 0;
+  for (let dlx = 0; dlx < 3; dlx++) {
+    for (let dly = 0; dly < 3; dly++) {
+      if (getSubTileType(tile, dlx, dly) !== "building") continue;
+      if (!isLocalWalkable(tile, dlx, dly)) continue;
+      const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
+      if (state.zombies.has(spaceKey)) continue;
+      state.zombies.add(spaceKey);
+      placed++;
+    }
+  }
+  state.pendingBuildingSelect = null;
+  logLine(`Just When You Thought It Couldn't Get Any Worse — ${placed} zombie(s) placed in ${tile.name}.`);
+  render();
+}
+
 function finishZombieReplace() {
   if (!state.pendingZombieReplace) return;
   state.pendingZombieReplace = null;

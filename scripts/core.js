@@ -57,6 +57,7 @@ const state = {
   pendingZombieMovement: null,
   pendingZombieDiceChallenge: null,
   pendingForcedMove: null,
+  pendingBuildingSelect: null,
   pendingTile: null,
   pendingRotation: 0,
   pendingTileOptions: [],

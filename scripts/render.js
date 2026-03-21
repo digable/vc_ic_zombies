@@ -753,6 +753,8 @@ function renderBoard() {
           const pzm2 = state.pendingZombieMovement;
           if (pzm2 && data.zombie && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
             zombieClass = " zombie-selectable";
+          } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
+            zombieClass = " zombie-target";
           } else if (state.pendingZombiePlace && isWalkable && !data.zombie) {
             zombieClass = " zombie-target";
           } else if (pzr) {
@@ -959,13 +961,24 @@ function renderZombieReplacePanel() {
   const panel = refs.zombieReplacePanel;
   if (!panel) return;
 
+  const pbs = state.pendingBuildingSelect;
+  if (pbs) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">${pbs.cardName}</div>
+      <div class="small">Click any space inside a building to fill it with zombies.</div>
+    `;
+    return;
+  }
+
   const pfm = state.pendingForcedMove;
   if (pfm) {
     const target = state.players.find((p) => p.id === pfm.targetPlayerId);
     const targetName = target ? target.name : "opponent";
     panel.classList.remove("hidden");
+    const pfmTitle = pfm.cardName || "Forced Movement";
     panel.innerHTML = `
-      <div class="combat-decision-title">Where Did Everybody Go! — Move ${targetName} ${pfm.remaining} space(s)</div>
+      <div class="combat-decision-title">${pfmTitle} — Move ${targetName} ${pfm.remaining} space(s)</div>
       <div class="small">Use the movement buttons to move ${targetName}. All zombies must be fought.</div>
       <div class="combat-decision-actions">
         <button data-forced-move-action="end">End movement</button>
@@ -1055,7 +1068,7 @@ function renderLog() {
 }
 
 function updateButtons() {
-  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove) {
+  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect) {
     refs.drawTileBtn.disabled = true;
     refs.rotateLeftBtn.disabled = true;
     refs.rotateRightBtn.disabled = true;
@@ -1081,7 +1094,8 @@ function updateButtons() {
   refs.combatBtn.disabled = state.step !== STEP.COMBAT || state.gameOver || !combatRequired;
   refs.drawEventsBtn.disabled = state.step !== STEP.DRAW_EVENTS || state.gameOver;
   refs.rollMoveBtn.disabled = state.step !== STEP.ROLL_MOVE || state.gameOver;
-  refs.endMoveBtn.disabled = state.step !== STEP.MOVE || state.gameOver;
+  const mustExitBuilding = p.claustrophobiaActive && isSpaceBuilding(p.x, p.y);
+  refs.endMoveBtn.disabled = state.step !== STEP.MOVE || state.gameOver || mustExitBuilding;
   refs.moveZombiesBtn.disabled = state.step !== STEP.MOVE_ZOMBIES || state.gameOver || state.zombies.size === 0;
   refs.discardBtn.disabled = state.step !== STEP.DISCARD || state.gameOver;
   refs.endTurnBtn.disabled = state.step !== STEP.END || state.gameOver;

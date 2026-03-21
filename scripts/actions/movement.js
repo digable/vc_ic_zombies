@@ -1,3 +1,11 @@
+function isSpaceBuilding(sx, sy) {
+  const tile = getTileAtSpace(sx, sy);
+  if (!tile) return false;
+  const lx = getLocalCoord(sx, spaceToTileCoord(sx));
+  const ly = getLocalCoord(sy, spaceToTileCoord(sy));
+  return getSubTileType(tile, lx, ly) === "building";
+}
+
 function rollMovement() {
   if (state.step !== STEP.ROLL_MOVE || state.gameOver) {
     return;
@@ -15,6 +23,34 @@ function rollMovement() {
     return;
   }
 
+  if (player.claustrophobiaNextTurn) {
+    player.claustrophobiaNextTurn = false;
+    player.claustrophobiaActive = true;
+    if (isSpaceBuilding(player.x, player.y)) {
+      logLine(`${player.name} has Claustrophobia and is in a building — must exit this turn.`);
+    } else {
+      logLine(`${player.name} has Claustrophobia — cannot enter any buildings this turn.`);
+    }
+  }
+
+  if (player.brainCramp) {
+    const { controllerPlayerId } = player.brainCramp;
+    player.brainCramp = null;
+    const controller = state.players.find((p) => p.id === controllerPlayerId);
+    const controllerName = controller ? controller.name : "opponent";
+    const roll = rollD6();
+    state.currentMoveRoll = roll;
+    const move = roll + state.movementBonus + (player.movementBonus || 0);
+    state.movesRemaining = move;
+    state.movementBonus = 0;
+    state.moveFloorThisTurn = 0;
+    state.step = STEP.MOVE;
+    state.pendingForcedMove = { targetPlayerId: player.id, remaining: move, priorStep: STEP.MOVE_ZOMBIES, cardName: "Brain Cramp" };
+    logLine(`Brain Cramp! ${player.name} rolled ${roll} (${move} space(s)) — ${controllerName} decides where ${player.name} moves.`);
+    render();
+    return;
+  }
+
   const roll = rollD6();
   state.currentMoveRoll = roll;
   let move = roll + state.movementBonus + (player.movementBonus || 0);
@@ -24,6 +60,11 @@ function rollMovement() {
   if (player.maxMoveNextTurn !== null && player.maxMoveNextTurn !== undefined) {
     move = Math.min(move, player.maxMoveNextTurn);
     player.maxMoveNextTurn = null;
+  }
+  if (player.halfMovementNextTurn) {
+    move = Math.floor(move / 2);
+    player.halfMovementNextTurn = false;
+    logLine(`${player.name}'s movement is halved (Your Shoe's Untied) — ${move} space(s).`);
   }
   if (state.doubleMovementThisTurn) {
     move *= 2;
@@ -63,6 +104,20 @@ function movePlayer(dir) {
   }
 
   const d = DIRS[dir];
+
+  if (player.claustrophobiaActive) {
+    if (!isSpaceBuilding(player.x, player.y)) {
+      if (isSpaceBuilding(player.x + d.x, player.y + d.y)) {
+        const destTile = getTileAtSpace(player.x + d.x, player.y + d.y);
+        logLine(`${player.name} cannot enter ${getTileDisplayName(destTile)} (Claustrophobia).`);
+        render();
+        return;
+      }
+    }
+  }
+
+  const wasInBuilding = player.claustrophobiaActive && isSpaceBuilding(player.x, player.y);
+
   player.x += d.x;
   player.y += d.y;
   state.movesRemaining -= 1;
@@ -70,6 +125,12 @@ function movePlayer(dir) {
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
   logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}].`);
+
+  if (wasInBuilding && !isSpaceBuilding(player.x, player.y)) {
+    player.claustrophobiaActive = false;
+    state.movesRemaining = 0;
+    logLine(`${player.name} exited the building (Claustrophobia — movement ends).`);
+  }
 
   if (checkWin(player)) {
     render();
@@ -199,8 +260,14 @@ function endMovementEarly() {
   if (state.step !== STEP.MOVE || state.gameOver) {
     return;
   }
+  const player = currentPlayer();
+  if (player.claustrophobiaActive && isSpaceBuilding(player.x, player.y)) {
+    logLine(`${player.name} cannot end movement while inside a building (Claustrophobia).`);
+    render();
+    return;
+  }
   state.movesRemaining = 0;
   moveToZombiePhase();
-  logLine(`${currentPlayer().name} ended movement early.`);
+  logLine(`${player.name} ended movement early.`);
   render();
 }

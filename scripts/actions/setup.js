@@ -21,6 +21,10 @@ function setupGame(playerCount, deckFilters = null) {
       noCombatThisTurn: false,
       maxMoveNextTurn: null,
       forcedDirection: null,
+      brainCramp: null,
+      claustrophobiaNextTurn: false,
+      claustrophobiaActive: false,
+      halfMovementNextTurn: false,
       x: 1,
       y: 1,
       knockedOut: false
