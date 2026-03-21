@@ -41,7 +41,7 @@ function buildEventDeckHelpers() {
   const removeZombiesOnTile = (tileX, tileY, player) => {
     let removed = 0;
     state.zombies.forEach((zKey) => {
-      const [zx, zy] = zKey.split(",").map(Number);
+      const { x: zx, y: zy } = parseKey(zKey);
       if (spaceToTileCoord(zx) === tileX && spaceToTileCoord(zy) === tileY) {
         state.zombies.delete(zKey);
         removed += 1;
@@ -97,7 +97,7 @@ function buildEventDeckHelpers() {
     let chosen = null;
     state.board.forEach((tile, posKey) => {
       if (chosen || tile.name !== "Parking Lot") return;
-      const [tx, ty] = posKey.split(",").map(Number);
+      const { x: tx, y: ty } = parseKey(posKey);
       chosen = { x: tx * 3 + 1, y: ty * 3 + 1 };
     });
 

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/data/event-cards/*.js /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/*.js)",
+      "Bash(grep -n \"render\\(\\)\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)"
+    ]
+  }
+}

@@ -27,10 +27,18 @@ function closestPlayersTo(x, y) {
   return chosen;
 }
 
-function moveZombieOneStep(zKey) {
+// options.targetPlayerId — move toward a specific player instead of the nearest one
+// options.resolveTiesDeterministically — pick the first tied option instead of a random one
+function moveZombieOneStep(zKey, options = {}) {
+  const { targetPlayerId = null, resolveTiesDeterministically = false } = options;
   const { x, y } = parseKey(zKey);
 
-  const target = closestPlayersTo(x, y)[0];
+  let target;
+  if (targetPlayerId !== null) {
+    target = state.players.find((p) => p.id === targetPlayerId) ?? closestPlayersTo(x, y)[0];
+  } else {
+    target = closestPlayersTo(x, y)[0];
+  }
   if (!target) return zKey;
 
   const moveOptions = [];
@@ -47,5 +55,7 @@ function moveZombieOneStep(zKey) {
 
   moveOptions.sort((a, b) => a.dist - b.dist);
   const best = moveOptions.filter((o) => o.dist === moveOptions[0].dist);
-  return best[Math.floor(Math.random() * best.length)].toKey;
+  return resolveTiesDeterministically
+    ? best[0].toKey
+    : best[Math.floor(Math.random() * best.length)].toKey;
 }

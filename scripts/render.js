@@ -206,7 +206,7 @@ function getSubTileType(tileLike, lx, ly) {
   if (!sub) {
     return null;
   }
-  const raw = sub.type ?? sub.subTileType ?? sub.subtype ?? null;
+  const raw = sub.type ?? null;
   if (typeof raw !== "string") {
     return null;
   }

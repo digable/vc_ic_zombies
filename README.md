@@ -154,6 +154,24 @@ Supported per-subtile properties:
 }
 ```
 
+### Collections
+
+Tiles and event cards belong to a collection, selected at game setup. Collections are defined in `TILE_COLLECTIONS` in `core.js`:
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `DIRECTORS_CUT` | `"directors_cut"` | Base game — can be played standalone |
+| `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
+| `NOT_USED` | `"not_used"` | Excluded from all play |
+
+Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` and in `event-deck.js` via `buildEventDeck`. Each collection definition includes:
+
+| Property | Description |
+|----------|-------------|
+| `requiresBase` | `null` for standalone base games; `TILE_COLLECTIONS.X` for expansions that need a base |
+
+If an expansion is selected without its required base game, the engine falls back to Director's Cut's Town Square (start tile) and Helipad (win tile), and uses Director's Cut events if the expansion has none of its own.
+
 ### Tile Properties
 
 | Property | Description |
@@ -162,19 +180,21 @@ Supported per-subtile properties:
 | `type` | `"road"`, `"named"`, `"helipad"`, `"special"` |
 | `count` | Number of copies in the deck |
 | `enabled` | `false` to exclude from play |
-| `collection` | `TILE_COLLECTIONS.ORIGINAL`, `IOWA_CITY`, or `NOT_USED` — used to filter tiles at game setup |
+| `collection` | `TILE_COLLECTIONS.DIRECTORS_CUT`, `IOWA_CITY`, or `NOT_USED` — controls which game setup filter includes this tile |
 | `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
 | `zombieSpawnMode` | `"by_card"` uses `zombieCount`; `"by_exits"` spawns one per connector |
 | `zombieCount` | Zombies to spawn when placed (by_card mode) |
 | `hearts` | Heart tokens placed on the tile when drawn |
 | `bullets` | Bullet tokens placed on the tile when drawn |
+| `isStartTile` | `true` — tile placed at (0,0) to start the game; one per standalone collection |
+| `isWinTile` | `true` — tile shuffled into the back half of the deck; reaching its center wins the game |
 
 ---
 
 ## 📋 Rule Summary
 
 - Players start at Town Square with 3 hearts and 3 bullets
-- Before starting, choose which tile collections (Original, Iowa City, Not Used) and which enabled/disabled tiles to include — Helipad and Town Square are always included
+- Before starting, choose which tile collections (Director's Cut, Iowa City, Not Used) to include — if only an expansion is selected without its base game, Town Square and Helipad are used as fallbacks for the start and win tiles
 - Tile placement requires connector alignment — roads must connect to roads
 - Helipad is shuffled into the second half of the deck
 - Zombies spawn on tiles when placed based on `zombieSpawnMode`

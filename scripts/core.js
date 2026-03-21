@@ -299,7 +299,7 @@ function getTileSubTileMap(tile) {
   if (!tile) {
     return null;
   }
-  return tile.subTiles || tile.subTilesTemplate || tile.subtiles || tile.subtitles || null;
+  return tile.subTiles || tile.subTilesTemplate || null;
 }
 
 function isLocalWalkable(tile, lx, ly) {
@@ -332,7 +332,7 @@ function buildSubTilesForTile(tile) {
     if (!cell) {
       return null;
     }
-    const raw = cell.type ?? cell.subTileType ?? cell.subtype ?? null;
+    const raw = cell.type ?? null;
     if (typeof raw !== "string") {
       return null;
     }
