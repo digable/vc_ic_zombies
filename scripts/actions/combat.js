@@ -23,7 +23,9 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   if (resumeStepAfterPending && !state.zombies.has(playerSpaceKey)) {
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
       state.step = STEP.MOVE_ZOMBIES;
-      autoSkipZombieMoveIfClear();
+      if (!state.pendingZombieMovement) {
+        autoSkipZombieMoveIfClear();
+      }
       return;
     }
 
@@ -111,14 +113,72 @@ function resolvePendingCombatDecision(actionCode) {
     return;
   }
 
+  if (actionCode === "FAK") {
+    const fakIndex = player.items ? player.items.findIndex((c) => c.name === "First Aid Kit") : -1;
+    if (fakIndex < 0) {
+      logLine(`${player.name} has no First Aid Kit to use.`);
+      render();
+      return;
+    }
+    const [fak] = player.items.splice(fakIndex, 1);
+    state.eventDiscardPile.push(fak);
+    logLine(`${player.name} used the First Aid Kit (free reroll, no heart spent).`);
+    const options = pending.options;
+    state.pendingCombatDecision = null;
+    resolveCombatForPlayer(player, options);
+    render();
+    return;
+  }
+
+  if (actionCode.startsWith("W:")) {
+    const weaponName = actionCode.slice(2);
+    const weaponIndex = player.items ? player.items.findIndex((c) => c.name === weaponName) : -1;
+    if (weaponIndex < 0) {
+      logLine(`${player.name} does not have ${weaponName} in play.`);
+      render();
+      return;
+    }
+    if (pending.weaponUsed) {
+      logLine(`${player.name} already used a weapon in this fight.`);
+      render();
+      return;
+    }
+    const [weapon] = player.items.splice(weaponIndex, 1);
+    state.eventDiscardPile.push(weapon);
+    pending.weaponUsed = true;
+
+    if (weapon.combatBoost) {
+      pending.modifiedRoll += weapon.combatBoost;
+      logLine(`${player.name} used the ${weapon.name} (+${weapon.combatBoost}). Combat roll is now ${pending.modifiedRoll}.`);
+    }
+    if (weapon.permanentAttackBoost) {
+      player.attack += weapon.permanentAttackBoost;
+      pending.modifiedRoll += weapon.permanentAttackBoost;
+      logLine(`${player.name} used the ${weapon.name} (+${weapon.permanentAttackBoost} permanent attack). Combat roll is now ${pending.modifiedRoll}.`);
+    }
+
+    if (pending.modifiedRoll >= 4) {
+      state.zombies.delete(pending.pKey);
+      player.kills += 1;
+      state.lastCombatResult = `Success (${pending.modifiedRoll})`;
+      logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the zombie.`);
+      const options = pending.options;
+      state.pendingCombatDecision = null;
+      checkWin(player);
+      applyCombatPostStep(player, pending.pKey, options);
+    }
+    render();
+    return;
+  }
+
   if (actionCode === "L") {
     state.lastCombatResult = `Knocked Out (${pending.modifiedRoll})`;
     logLine(`${player.name} lost the fight and was knocked out.`);
     const options = pending.options;
     state.pendingCombatDecision = null;
     handleKnockout(player, { endStep: options.endStepOnKnockout });
-    if (!options.endStepOnKnockout && options.resumeStepAfterPending === STEP.DISCARD && state.step !== STEP.END) {
-      state.step = STEP.DISCARD;
+    if (!options.endStepOnKnockout && options.resumeStepAfterPending && state.step !== STEP.END) {
+      state.step = options.resumeStepAfterPending;
     }
     render();
   }
@@ -155,10 +215,16 @@ function resolveCombatForPlayer(player, options = {}) {
 
   const permanentBonus = player.attack || 0;
   const tempBonus = player.tempCombatBonus || 0;
+  const shotgunBonus = player.shotgunCharges > 0 ? 1 : 0;
+  if (shotgunBonus) {
+    player.shotgunCharges -= 1;
+  }
+  const playerTileKey = key(spaceToTileCoord(player.x), spaceToTileCoord(player.y));
+  const tileBonus = (player.tileCombatBonusTile === playerTileKey) ? (player.tileCombatBonus || 0) : 0;
 
   const roll = rollD6();
-  const baseCombatRoll = roll + permanentBonus + tempBonus;
-  const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus})`;
+  const baseCombatRoll = roll + permanentBonus + tempBonus + shotgunBonus + tileBonus;
+  const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
 
   if (baseCombatRoll >= 4) {
     state.zombies.delete(playerSpaceKey);
@@ -185,6 +251,7 @@ function resolveCombatForPlayer(player, options = {}) {
     modifiedRoll: baseCombatRoll,
     permanentBonus,
     tempBonus,
+    weaponUsed: false,
     options: {
       advanceStepWhenClear,
       endStepOnKnockout,

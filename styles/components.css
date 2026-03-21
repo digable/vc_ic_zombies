@@ -342,6 +342,76 @@
   box-shadow: 0 0 0 1px var(--accent) inset;
 }
 
+.hand-card.playable {
+  border-color: #4a7c59;
+  background: #eef7f1;
+}
+
+.hand-card.blocked {
+  border-color: #a33;
+  background: #fff5f5;
+  opacity: 0.75;
+}
+
+.hand-item {
+  border-color: #4a7c59;
+  background: #eef7f1;
+}
+
+.dim {
+  opacity: 0.55;
+}
+
+.hand-items-divider {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4a7c59;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.zombie-replace {
+  margin: 0.35rem 0;
+  border: 1px solid #7c4a4a;
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: #fff0f0;
+}
+
+.zombie-replace.hidden {
+  display: none;
+}
+
+.micro-cell.zombie-selectable {
+  outline: 2px solid #c0392b;
+  cursor: pointer;
+  background: rgba(192, 57, 43, 0.15);
+}
+
+.micro-cell.zombie-selected {
+  outline: 2px solid #e74c3c;
+  background: rgba(231, 76, 60, 0.3);
+}
+
+.micro-cell.zombie-target {
+  outline: 2px dashed #27ae60;
+  cursor: pointer;
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.event-choice {
+  margin: 0.35rem 0;
+  border: 1px solid #4a7c59;
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: #eef7f1;
+}
+
+.event-choice.hidden {
+  display: none;
+}
+
 .combat-decision {
   margin: 0.35rem 0;
   border: 1px solid #b76a48;

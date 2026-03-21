@@ -17,13 +17,17 @@ function rollMovement() {
 
   const roll = rollD6();
   state.currentMoveRoll = roll;
-  let move = roll + state.movementBonus;
+  let move = roll + state.movementBonus + (player.movementBonus || 0);
   if (state.moveFloorThisTurn > 0) {
     move = Math.max(move, state.moveFloorThisTurn);
   }
   if (player.maxMoveNextTurn !== null && player.maxMoveNextTurn !== undefined) {
     move = Math.min(move, player.maxMoveNextTurn);
     player.maxMoveNextTurn = null;
+  }
+  if (state.doubleMovementThisTurn) {
+    move *= 2;
+    state.doubleMovementThisTurn = false;
   }
   state.movesRemaining = move;
   state.movementBonus = 0;
@@ -122,6 +126,72 @@ function movePlayer(dir) {
     moveToZombiePhase();
   }
 
+  render();
+}
+
+function forcedMoveTarget(dir) {
+  const pfm = state.pendingForcedMove;
+  if (!pfm || pfm.remaining <= 0) return;
+
+  const player = state.players.find((p) => p.id === pfm.targetPlayerId);
+  if (!player) {
+    state.pendingForcedMove = null;
+    render();
+    return;
+  }
+
+  if (!canMove(player, dir)) {
+    const d = DIRS[dir];
+    logLine(`${player.name} cannot move ${directionToArrow(dir)} from [space ${player.x}, ${player.y}] to [space ${player.x + d.x}, ${player.y + d.y}].`);
+    render();
+    return;
+  }
+
+  const d = DIRS[dir];
+  player.x += d.x;
+  player.y += d.y;
+  pfm.remaining -= 1;
+
+  const tile = getTileAtSpace(player.x, player.y);
+  collectTokensAtPlayerSpace(player);
+  logLine(`${player.name} was moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}] (${pfm.remaining} move(s) remaining).`);
+
+  if (checkWin(player)) {
+    state.pendingForcedMove = null;
+    render();
+    return;
+  }
+
+  const playerSpaceKey = key(player.x, player.y);
+  if (state.zombies.has(playerSpaceKey)) {
+    logLine(`${player.name} encountered a zombie and must fight immediately.`);
+    const result = resolveCombatForPlayer(player, {
+      advanceStepWhenClear: false,
+      endStepOnKnockout: false,
+      resumeStepAfterPending: pfm.priorStep
+    });
+    if (result.knockedOut || pfm.remaining <= 0) {
+      state.pendingForcedMove = null;
+    }
+    render();
+    return;
+  }
+
+  if (pfm.remaining <= 0) {
+    state.pendingForcedMove = null;
+    logLine(`${player.name} finished their forced movement.`);
+  }
+  render();
+}
+
+function endForcedMovement() {
+  const pfm = state.pendingForcedMove;
+  if (!pfm) return;
+  const player = state.players.find((p) => p.id === pfm.targetPlayerId);
+  state.pendingForcedMove = null;
+  if (player) {
+    logLine(`Forced movement of ${player.name} ended early.`);
+  }
   render();
 }
 

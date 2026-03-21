@@ -1,82 +1,89 @@
 const zombieEventCards = [
   {
     name: "Grenade",
-    description: "Remove all zombies on your tile",
+    description: "Play in the Army Surplus to place in front of you. Discard to kill all zombies on your current tile — but lose 1 health.",
     count: 2,
     collection: TILE_COLLECTIONS.ORIGINAL,
-    apply(player, helpers) {
+    isItem: true,
+    requiresTile: "Army Surplus",
+    apply(player) {
+      logLine(`${player.name} placed Grenade in front of them.`);
+    },
+    activateItem(player, helpers) {
       const tileX = spaceToTileCoord(player.x);
       const tileY = spaceToTileCoord(player.y);
       const removed = helpers.removeZombiesOnTile(tileX, tileY, player);
-      logLine(`${player.name} played Grenade and removed ${removed} zombie(s) on this tile.`);
+      player.hearts = Math.max(0, player.hearts - 1);
+      logLine(`${player.name} threw the Grenade — ${removed} zombie(s) eliminated, but lost 1 health (${player.hearts} remaining).`);
     }
   },
   {
     name: "I Don't Think They're Dead",
-    description: "Spawn 1 zombie near you",
+    description: "Target opponent rolls 2 dice. If either die is 3 or lower, they lose 2 kills. Bullets (+1) and hearts (reroll) can modify the dice.",
     count: 2,
     collection: TILE_COLLECTIONS.ORIGINAL,
     apply(player, helpers) {
-      const spawnedKey = helpers.spawnZombieAtOrNear(player.x, player.y);
-      logLine(spawnedKey
-        ? `${player.name} played I Don't Think They're Dead and a zombie appeared at ${spawnedKey}.`
-        : `${player.name} played I Don't Think They're Dead but no open space was available.`);
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played I Don't Think They're Dead, but there is no opponent.`);
+        return;
+      }
+      const dice = [rollD6(), rollD6()];
+      logLine(`${player.name} played I Don't Think They're Dead on ${target.name} — rolled [${dice.join("] [")}].`);
+      state.pendingZombieDiceChallenge = { targetPlayerId: target.id, dice };
     }
   },
   {
-    name: "Molotov",
-    description: "Remove all zombies on your tile",
+    name: "Molotov Cocktail",
+    description: "Play in the Gas Station to place in front of you. Discard to gain +2 to all combat rolls against zombies on your current tile.",
     count: 2,
     collection: TILE_COLLECTIONS.ORIGINAL,
-    apply(player, helpers) {
+    isItem: true,
+    requiresTile: "Gas Station",
+    apply(player) {
+      logLine(`${player.name} placed Molotov Cocktail in front of them.`);
+    },
+    activateItem(player) {
       const tileX = spaceToTileCoord(player.x);
       const tileY = spaceToTileCoord(player.y);
-      const removed = helpers.removeZombiesOnTile(tileX, tileY, player);
-      logLine(`${player.name} played Molotov and burned ${removed} zombie(s) on this tile.`);
+      player.tileCombatBonus = 2;
+      player.tileCombatBonusTile = key(tileX, tileY);
+      logLine(`${player.name} lit the Molotov Cocktail (+2 to all combat rolls on this tile).`);
     }
   },
   {
     name: "We're Screwed",
-    description: "All zombies move 1 space toward nearest players",
-    count: 2,
+    description: "Place zombies on any 10 legal empty spaces on the board.",
+    count: 1,
     collection: TILE_COLLECTIONS.ORIGINAL,
-    apply(player, helpers) {
-      const zombieKeys = [...state.zombies];
-      zombieKeys.forEach((zKey) => {
-        if (state.zombies.has(zKey)) {
-          helpers.moveOneZombieTowardPlayer(zKey);
-        }
-      });
-      logLine(`${player.name} played We're Screwed. All zombies shambled forward.`);
+    apply(player) {
+      state.pendingZombiePlace = { remaining: 10, cardName: "We're Screwed" };
+      logLine(`${player.name} played We're Screwed — place 10 zombies on the board.`);
     }
   },
   {
     name: "Where Did Everybody Go?",
-    description: "Remove all zombies on your tile",
+    description: "Move target opponent 5 spaces. All zombies encountered must be fought as normal.",
     count: 2,
     collection: TILE_COLLECTIONS.ORIGINAL,
     apply(player, helpers) {
-      const tileX = spaceToTileCoord(player.x);
-      const tileY = spaceToTileCoord(player.y);
-      const removed = helpers.removeZombiesOnTile(tileX, tileY, player);
-      logLine(`${player.name} played Where Did Everybody Go? (${removed} zombie(s) removed).`);
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played Where Did Everybody Go?, but there is no opponent.`);
+        return;
+      }
+      state.pendingForcedMove = { targetPlayerId: target.id, remaining: 5, priorStep: state.step };
+      logLine(`${player.name} played Where Did Everybody Go! — ${target.name} must move 5 spaces.`);
     }
   },
   {
     name: "Zombie Master",
-    description: "Move up to 6 zombies one space",
+    description: "Place 5 zombies on any legal space not occupied by a player.",
     count: 2,
     collection: TILE_COLLECTIONS.ORIGINAL,
-    apply(player, helpers) {
-      const zombieKeys = [...state.zombies];
-      const limit = Math.min(6, zombieKeys.length);
-      for (let i = 0; i < limit; i += 1) {
-        const zKey = zombieKeys[i];
-        if (state.zombies.has(zKey)) {
-          helpers.moveOneZombieTowardPlayer(zKey, { targetPlayerId: player.id });
-        }
-      }
-      logLine(`${player.name} played Zombie Master and moved up to ${Math.min(6, zombieKeys.length)} zombie(s).`);
+    apply(player) {
+      state.pendingZombiePlace = { remaining: 5, cardName: "Zombie Master" };
+      logLine(`${player.name} played Zombie Master — place 5 zombies on the board.`);
     }
   }
 ];

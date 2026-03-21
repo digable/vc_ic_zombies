@@ -18,13 +18,17 @@ function attachListeners() {
   refs.drawEventsBtn.addEventListener("click", drawEventsToThree);
   refs.rollMoveBtn.addEventListener("click", rollMovement);
   refs.endMoveBtn.addEventListener("click", endMovementEarly);
-  refs.moveZombiesBtn.addEventListener("click", moveZombies);
+  refs.moveZombiesBtn.addEventListener("click", startZombieMovement);
   refs.discardBtn.addEventListener("click", discardSelected);
   refs.endTurnBtn.addEventListener("click", endTurn);
 
   refs.moveDirBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-      movePlayer(btn.dataset.dir);
+      if (state.pendingForcedMove) {
+        forcedMoveTarget(btn.dataset.dir);
+      } else {
+        movePlayer(btn.dataset.dir);
+      }
     });
   });
 
@@ -43,19 +47,45 @@ function attachListeners() {
     const selectIndex = target.getAttribute("data-select-index");
     if (selectIndex !== null) {
       toggleHandSelection(Number(selectIndex));
+      return;
+    }
+
+    const activateIndex = target.getAttribute("data-activate-item-index");
+    if (activateIndex !== null) {
+      activateItem(Number(activateIndex));
     }
   });
 
   refs.board.addEventListener("click", (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLElement)) {
+    if (!(target instanceof HTMLElement)) return;
+
+    if (state.pendingZombieMovement) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        manualMoveZombie(key(Number(mc.dataset.sx), Number(mc.dataset.sy)));
+      }
+      return;
+    }
+
+    if (state.pendingZombiePlace) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleZombiePlaceClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
+    if (state.pendingZombieReplace) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleZombieReplaceClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
       return;
     }
 
     const cell = target.closest(".cell");
-    if (!(cell instanceof HTMLElement)) {
-      return;
-    }
+    if (!(cell instanceof HTMLElement)) return;
 
     const x = cell.dataset.placeX;
     const y = cell.dataset.placeY;
@@ -63,6 +93,39 @@ function attachListeners() {
       placePendingTileAt(Number(x), Number(y));
     }
   });
+
+  if (refs.zombieDiceChallengePanel) {
+    refs.zombieDiceChallengePanel.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const action = target.getAttribute("data-zdice-action");
+      if (action) resolveZombieDiceChallenge(action);
+    });
+  }
+
+  if (refs.zombieReplacePanel) {
+    refs.zombieReplacePanel.addEventListener("click", (event) => {
+      if (!(event.target instanceof HTMLElement)) return;
+      const forcedAction = event.target.getAttribute("data-forced-move-action");
+      if (forcedAction === "end") { endForcedMovement(); return; }
+      const zmAction = event.target.getAttribute("data-zombie-move-action");
+      if (zmAction === "auto") { autoFinishZombieMovement(); return; }
+      if (zmAction === "done") { autoFinishZombieMovement(); return; }
+      if (event.target.id === "zombieReplaceDoneBtn") {
+        if (state.pendingZombiePlace) finishZombiePlace();
+        else finishZombieReplace();
+      }
+    });
+  }
+
+  if (refs.eventChoicePanel) {
+    refs.eventChoicePanel.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const choice = target.getAttribute("data-event-choice");
+      if (choice) resolveEventChoice(choice);
+    });
+  }
 
   if (refs.combatDecisionPanel) {
     refs.combatDecisionPanel.addEventListener("click", (event) => {

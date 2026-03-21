@@ -733,14 +733,6 @@ function renderBoard() {
             parts.push('<span class="mark blocked">X</span>');
           }
 
-          const isExit = (tile.connectors || []).some((dir) => {
-            const door = DOOR_LOCAL[dir];
-            return door && door.x === lx && door.y === ly;
-          });
-          if (isExit) {
-            parts.push('<span class="mark exit">E</span>');
-          }
-
           if (data.players.length) {
             parts.push(`<span class="mark player">${data.players.join(",")}</span>`);
           }
@@ -753,7 +745,26 @@ function renderBoard() {
           if (data.bullets > 0) {
             parts.push(`<span class="mark token">B${data.bullets}</span>`);
           }
-          micro.push(`<span class="micro-cell${subType ? ` ${subType}-subtile` : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${parts.join("")}</span>`);
+          const sx = x * 3 + lx;
+          const sy = y * 3 + ly;
+          const pzr = state.pendingZombieReplace;
+          const spaceKey = key(sx, sy);
+          let zombieClass = "";
+          const pzm2 = state.pendingZombieMovement;
+          if (pzm2 && data.zombie && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
+            zombieClass = " zombie-selectable";
+          } else if (state.pendingZombiePlace && isWalkable && !data.zombie) {
+            zombieClass = " zombie-target";
+          } else if (pzr) {
+            if (pzr.selectedZombieKey === spaceKey) {
+              zombieClass = " zombie-selected";
+            } else if (!pzr.selectedZombieKey && data.zombie) {
+              zombieClass = " zombie-selectable";
+            } else if (pzr.selectedZombieKey && isWalkable && !data.zombie) {
+              zombieClass = " zombie-target";
+            }
+          }
+          micro.push(`<span class="micro-cell${subType ? ` ${subType}-subtile` : ""}${!isWalkable ? " blocked-subtile" : ""}${zombieClass}" data-sx="${sx}" data-sy="${sy}">${lanes}${walls}${parts.join("")}</span>`);
         }
       }
 
@@ -782,7 +793,7 @@ function renderPlayers() {
   refs.currentPlayerCard.innerHTML = `
     <div class="player-card">
       <strong>${cp.name}</strong><br />
-      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}<br />
+      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}<br />
       Position: Tile (${cptx}, ${cpty}) / Space (${cplx}, ${cply})
     </div>
   `;
@@ -797,7 +808,7 @@ function renderPlayers() {
     el.className = "player-card";
     el.innerHTML = `
       <strong>${p.name}</strong><br />
-      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}<br />
+      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}<br />
       Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
     `;
     refs.playersList.appendChild(el);
@@ -813,6 +824,22 @@ function renderHand() {
     return;
   }
 
+  const globallyBlocked = state.gameOver || player.eventUsedThisRound || player.cannotPlayCardTurns > 0 ||
+    Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice) ||
+    Boolean(state.pendingZombieReplace) || Boolean(state.pendingZombieDiceChallenge) ||
+    Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove);
+
+  const isCardPlayable = (card) => {
+    if (globallyBlocked) return false;
+    if (card.isWeapon && card.isItem && player.items && player.items.some((c) => c.name === card.name)) return false;
+    if (card.isItem && card.requiresTile) {
+      const tile = getTileAtSpace(player.x, player.y);
+      const allowed = Array.isArray(card.requiresTile) ? card.requiresTile : [card.requiresTile];
+      if (!tile || !allowed.includes(tile.name)) return false;
+    }
+    return true;
+  };
+
   player.hand.forEach((card, index) => {
     const el = document.createElement("div");
     el.className = "hand-card";
@@ -820,7 +847,10 @@ function renderHand() {
       el.classList.add("selected");
     }
 
-    const playDisabled = state.gameOver || player.eventUsedThisRound || player.cannotPlayCardTurns > 0 || Boolean(state.pendingCombatDecision);
+    const canPlay = isCardPlayable(card);
+    el.classList.add(canPlay ? "playable" : "blocked");
+
+    const playDisabled = !canPlay || globallyBlocked;
     const showSelect = state.step === STEP.DISCARD && !state.pendingCombatDecision;
     el.innerHTML = `
       <strong>${card.name}</strong><br />
@@ -831,6 +861,25 @@ function renderHand() {
 
     refs.handList.appendChild(el);
   });
+
+  if (player.items && player.items.length > 0) {
+    const divider = document.createElement("div");
+    divider.className = "hand-items-divider";
+    divider.textContent = "Items in play:";
+    refs.handList.appendChild(divider);
+
+    player.items.forEach((card, index) => {
+      const el = document.createElement("div");
+      el.className = "hand-card hand-item";
+      const activateDisabled = state.gameOver || Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice);
+      el.innerHTML = `
+        <strong>${card.name}</strong><br />
+        <span class="small">${card.description}</span><br />
+        ${card.combatWeapon ? `<span class="small dim">Use in combat</span>` : `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">Activate &amp; Discard</button>`}
+      `;
+      refs.handList.appendChild(el);
+    });
+  }
 }
 
 function renderCombatDecision() {
@@ -863,8 +912,141 @@ function renderCombatDecision() {
     <div class="combat-decision-actions">
       <button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1)</button>
       <button data-combat-action="H" ${player.hearts > 0 ? "" : "disabled"}>Spend 1 Life Token (Reroll)</button>
+      ${player.items && player.items.some((c) => c.name === "First Aid Kit") ? `<button data-combat-action="FAK">Use First Aid Kit (free reroll)</button>` : ""}
+      ${player.items ? player.items.filter((c) => c.combatWeapon).map((c) => `<button data-combat-action="W:${c.name}" ${pending.weaponUsed ? "disabled" : ""}>${c.name} (+${c.combatBoost || c.permanentAttackBoost})</button>`).join("") : ""}
       <button data-combat-action="L">Lose Combat</button>
     </div>
+  `;
+}
+
+function renderZombieDiceChallenge() {
+  const panel = refs.zombieDiceChallengePanel;
+  if (!panel) return;
+
+  const pzdc = state.pendingZombieDiceChallenge;
+  if (!pzdc) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  const target = state.players.find((p) => p.id === pzdc.targetPlayerId);
+  if (!target) { panel.classList.add("hidden"); return; }
+
+  const failing = pzdc.dice.filter((d) => d <= 3);
+  const outcome = failing.length > 0
+    ? `<span style="color:#c0392b">Fail — ${failing.length} die(dice) ≤ 3. ${target.name} loses 2 kills.</span>`
+    : `<span style="color:#27ae60">Pass — all dice above 3. No kills lost.</span>`;
+
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <div class="combat-decision-title">Zombie Dice Challenge — ${target.name}</div>
+    <div class="small">
+      Dice: [${pzdc.dice.join("] [")}] — ${outcome}<br/>
+      ${target.name} may spend bullets or hearts to modify the dice.
+    </div>
+    <div class="combat-decision-actions">
+      <button data-zdice-action="B0" ${target.bullets > 0 ? "" : "disabled"}>Spend Bullet (+1 to die 1: ${pzdc.dice[0]})</button>
+      <button data-zdice-action="B1" ${target.bullets > 0 ? "" : "disabled"}>Spend Bullet (+1 to die 2: ${pzdc.dice[1]})</button>
+      <button data-zdice-action="H0" ${target.hearts > 0 ? "" : "disabled"}>Spend Heart (reroll die 1: ${pzdc.dice[0]})</button>
+      <button data-zdice-action="H1" ${target.hearts > 0 ? "" : "disabled"}>Spend Heart (reroll die 2: ${pzdc.dice[1]})</button>
+      <button data-zdice-action="ACCEPT">Accept Result</button>
+    </div>
+  `;
+}
+
+function renderZombieReplacePanel() {
+  const panel = refs.zombieReplacePanel;
+  if (!panel) return;
+
+  const pfm = state.pendingForcedMove;
+  if (pfm) {
+    const target = state.players.find((p) => p.id === pfm.targetPlayerId);
+    const targetName = target ? target.name : "opponent";
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">Where Did Everybody Go! — Move ${targetName} ${pfm.remaining} space(s)</div>
+      <div class="small">Use the movement buttons to move ${targetName}. All zombies must be fought.</div>
+      <div class="combat-decision-actions">
+        <button data-forced-move-action="end">End movement</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pzm = state.pendingZombieMovement;
+  if (pzm) {
+    const available = [...state.zombies].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">Zombie Movement — ${pzm.remaining} move(s) remaining</div>
+      <div class="small">Click a zombie on the board to move it, or auto-move the rest.</div>
+      <div class="combat-decision-actions">
+        <button data-zombie-move-action="auto" ${available.length === 0 ? "disabled" : ""}>Auto-move remaining</button>
+        <button data-zombie-move-action="done">Skip remaining</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pzp = state.pendingZombiePlace;
+  if (pzp) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">We're Screwed — Place ${pzp.remaining} zombie(s)</div>
+      <div class="small">Click any empty walkable space on the board to place a zombie.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Done (skip remaining)</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pzr = state.pendingZombieReplace;
+  if (!pzr) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  const instruction = pzr.selectedZombieKey
+    ? `Zombie at ${pzr.selectedZombieKey} selected — click a destination space. Click the same zombie to deselect.`
+    : `Click a zombie on the board to select it.`;
+  panel.innerHTML = `
+    <div class="combat-decision-title">This Isn't So Bad — Move ${pzr.remaining} zombie(s)</div>
+    <div class="small">${instruction}</div>
+    <div class="combat-decision-actions">
+      <button id="zombieReplaceDoneBtn">Done (skip remaining)</button>
+    </div>
+  `;
+}
+
+function renderEventChoice() {
+  const panel = refs.eventChoicePanel;
+  if (!panel) return;
+
+  const pending = state.pendingEventChoice;
+  if (!pending) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  const player = state.players.find((p) => p.id === pending.playerId);
+  if (!player) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  const buttons = pending.options
+    .map((o) => `<button data-event-choice="${o.key}">${o.label}</button>`)
+    .join("");
+  panel.innerHTML = `
+    <div class="combat-decision-title">Card Choice: ${pending.cardName} — ${player.name}</div>
+    <div class="combat-decision-actions">${buttons}</div>
   `;
 }
 
@@ -873,7 +1055,7 @@ function renderLog() {
 }
 
 function updateButtons() {
-  if (state.pendingCombatDecision) {
+  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove) {
     refs.drawTileBtn.disabled = true;
     refs.rotateLeftBtn.disabled = true;
     refs.rotateRightBtn.disabled = true;
@@ -929,6 +1111,9 @@ function render() {
   renderDeckInfo();
   renderEventDeckInfo();
   renderCombatDecision();
+  renderEventChoice();
+  renderZombieReplacePanel();
+  renderZombieDiceChallenge();
   renderLog();
   updateButtons();
 }

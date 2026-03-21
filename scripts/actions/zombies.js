@@ -90,18 +90,19 @@ function handleZombieEnteringPlayerSpace(spaceKey) {
   const combat = resolveCombatForPlayer(target, {
     advanceStepWhenClear: false,
     endStepOnKnockout: false,
-    resumeStepAfterPending: STEP.DISCARD
+    resumeStepAfterPending: STEP.MOVE_ZOMBIES
   });
   return Boolean(combat.pending);
 }
 
-function moveZombies() {
-  if (state.gameOver) {
-    return;
-  }
+function startZombieMovement() {
+  if (state.gameOver || state.step !== STEP.MOVE_ZOMBIES) return;
 
-  if (state.step !== STEP.MOVE_ZOMBIES) {
-    logLine(`Cannot move zombies during ${state.step}.`);
+  if (state.zombieMoveFreezeCount > 0) {
+    state.zombieMoveFreezeCount -= 1;
+    logLine(`Zombie movement frozen (${state.zombieMoveFreezeCount} phase(s) remaining). Zombies do not move.`);
+    state.currentZombieRoll = null;
+    state.step = STEP.DISCARD;
     render();
     return;
   }
@@ -112,55 +113,95 @@ function moveZombies() {
     return;
   }
 
-  try {
-    const roll = rollD6();
-    state.currentZombieRoll = roll;
+  const roll = rollD6();
+  state.currentZombieRoll = roll;
+  const moveLimit = Math.min(roll, state.zombies.size);
 
-    const moveLimit = Math.min(roll, state.zombies.size);
-    const movedThisPhase = new Set();
-    const stuckThisPhase = new Set();
-    let movedCount = 0;
-    let combatDecisionPending = false;
+  logLine(`${currentPlayer().name} rolled ${roll} for zombie movement — ${moveLimit} zombie(s) to move. Select zombies manually or auto-move.`);
+  state.pendingZombieMovement = { remaining: moveLimit, movedKeys: new Set(), stuckKeys: new Set() };
+  render();
+}
 
-    for (let i = 0; i < moveLimit; i += 1) {
-      const available = [...state.zombies].filter((zk) => !movedThisPhase.has(zk) && !stuckThisPhase.has(zk));
-      if (available.length === 0) {
-        break;
-      }
+function autoFinishZombieMovement() {
+  const pzm = state.pendingZombieMovement;
+  if (!pzm) return;
 
-      const chosenZombie = pickNearestZombieToMove(available);
-      const next = moveZombieOneStep(chosenZombie);
+  let movedCount = 0;
+  let combatDecisionPending = false;
 
-      if (next === chosenZombie) {
-        stuckThisPhase.add(chosenZombie);
-        i -= 1;
-        continue;
-      }
+  while (pzm.remaining > 0) {
+    const available = [...state.zombies].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    if (available.length === 0) break;
 
-      movedThisPhase.add(chosenZombie);
-      state.zombies.delete(chosenZombie);
-      state.zombies.add(next);
-      movedThisPhase.add(next);
-      movedCount += 1;
-      combatDecisionPending = handleZombieEnteringPlayerSpace(next);
+    const chosen = pickNearestZombieToMove(available);
+    const next = moveZombieOneStep(chosen);
 
-      if (combatDecisionPending) {
-        break;
-      }
+    if (next === chosen) {
+      pzm.stuckKeys.add(chosen);
+      continue;
     }
 
-    if (combatDecisionPending) {
-      logLine(`${currentPlayer().name} must resolve combat before zombie movement can continue.`);
-      state.step = STEP.COMBAT;
-      render();
-      return;
-    }
+    pzm.movedKeys.add(chosen);
+    state.zombies.delete(chosen);
+    state.zombies.add(next);
+    pzm.movedKeys.add(next);
+    pzm.remaining -= 1;
+    movedCount += 1;
 
-    logLine(`${currentPlayer().name} rolled ${roll} for zombie movement. ${movedCount} zombie(s) moved.`);
-  } catch (err) {
-    logLine(`Zombie movement error: ${err?.message || err}`);
+    combatDecisionPending = handleZombieEnteringPlayerSpace(next);
+    if (combatDecisionPending) break;
   }
 
-  state.step = STEP.DISCARD;
+  if (combatDecisionPending) {
+    logLine(`${currentPlayer().name} must resolve combat. ${movedCount} zombie(s) moved.`);
+    state.step = STEP.COMBAT;
+  } else {
+    state.pendingZombieMovement = null;
+    logLine(`Zombie auto-movement complete. ${movedCount} zombie(s) moved.`);
+    state.step = STEP.DISCARD;
+  }
+  render();
+}
+
+function manualMoveZombie(zKey) {
+  const pzm = state.pendingZombieMovement;
+  if (!pzm || pzm.remaining <= 0) return;
+  if (!state.zombies.has(zKey) || pzm.movedKeys.has(zKey) || pzm.stuckKeys.has(zKey)) return;
+
+  const next = moveZombieOneStep(zKey);
+
+  if (next === zKey) {
+    pzm.stuckKeys.add(zKey);
+    logLine(`Zombie at ${zKey} is stuck and cannot move.`);
+    const available = [...state.zombies].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    if (available.length === 0) {
+      state.pendingZombieMovement = null;
+      state.step = STEP.DISCARD;
+      logLine(`No more zombies can move.`);
+    }
+    render();
+    return;
+  }
+
+  pzm.movedKeys.add(zKey);
+  state.zombies.delete(zKey);
+  state.zombies.add(next);
+  pzm.movedKeys.add(next);
+  pzm.remaining -= 1;
+  logLine(`Zombie moved from ${zKey} to ${next}. (${pzm.remaining} move(s) remaining)`);
+
+  const combatDecisionPending = handleZombieEnteringPlayerSpace(next);
+  if (combatDecisionPending) {
+    state.step = STEP.COMBAT;
+    logLine(`${currentPlayer().name} must resolve combat.`);
+    render();
+    return;
+  }
+
+  if (pzm.remaining <= 0) {
+    state.pendingZombieMovement = null;
+    state.step = STEP.DISCARD;
+    logLine(`Zombie movement complete.`);
+  }
   render();
 }
