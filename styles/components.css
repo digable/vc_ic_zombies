@@ -429,6 +429,12 @@
   margin-bottom: 0.25rem;
 }
 
+.coll-counts {
+  font-size: 0.7rem;
+  color: #888;
+  font-weight: 400;
+}
+
 .coll-tag {
   display: inline-block;
   font-size: 0.65rem;

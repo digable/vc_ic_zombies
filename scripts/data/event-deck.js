@@ -23,3 +23,14 @@ function buildEventDeck(filters = null) {
 
   return shuffle(expanded);
 }
+
+// Returns { collectionKey: cardCount } using all event cards, ignoring enabled flags.
+function getEventCardCountsByCollection() {
+  const all = [...playerEventCards, ...opponentEventCards, ...zombieEventCards];
+  const counts = {};
+  all.forEach((c) => {
+    const col = c.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
+    counts[col] = (counts[col] || 0) + (c.count || 1);
+  });
+  return counts;
+}

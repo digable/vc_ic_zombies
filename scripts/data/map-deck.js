@@ -789,6 +789,16 @@ function buildStartTile(filters = null) {
   return { ...START_TILES[0] };
 }
 
+// Returns { collectionKey: tileCount } using the full unfiltered deck.
+function getMapTileCountsByCollection() {
+  const counts = {};
+  buildMapDeck(null).forEach((t) => {
+    const col = t.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
+    counts[col] = (counts[col] || 0) + 1;
+  });
+  return counts;
+}
+
 // Legacy alias — callers that don't need filter-aware selection (e.g. tile-debug)
 function buildTownSquareTile() {
   return buildStartTile(null);

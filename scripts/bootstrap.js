@@ -171,5 +171,21 @@ function attachListeners() {
 
 }
 
+function populateCollectionCounts() {
+  const tileCounts = getMapTileCountsByCollection();
+  const eventCounts = getEventCardCountsByCollection();
+  document.querySelectorAll("[data-coll-counts]").forEach((el) => {
+    const col = el.getAttribute("data-coll-counts");
+    const tiles = tileCounts[col] || 0;
+    const events = eventCounts[col] || 0;
+    if (tiles === 0 && events === 0) {
+      el.textContent = "";
+    } else {
+      el.textContent = `(${tiles} map tiles, ${events} event cards)`;
+    }
+  });
+}
+
 attachListeners();
+populateCollectionCounts();
 setupGame(2, { [TILE_COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } });
