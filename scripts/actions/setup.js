@@ -78,8 +78,8 @@ function drawAndPlaceTile() {
   }
 
   if (state.mapDeck.length === 0) {
-    logLine("Map deck is empty. No tile was drawn.");
-    state.step = STEP.COMBAT;
+    logLine("Map deck is empty — skipping tile draw, continuing turn.");
+    state.step = STEP.DRAW_EVENTS;
     render();
     return;
   }
@@ -88,9 +88,9 @@ function drawAndPlaceTile() {
   const drawnName = getTileDisplayName(tile);
   const options = getPlacementOptions(tile);
   if (options.length === 0) {
-    logLine(`No valid placement for ${drawnName}; tile discarded.`);
+    logLine(`No valid placement for ${drawnName}; tile discarded, continuing turn.`);
     state.discardPile.push(tile);
-    state.step = STEP.COMBAT;
+    state.step = STEP.DRAW_EVENTS;
     render();
     return;
   }
