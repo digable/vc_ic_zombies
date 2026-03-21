@@ -689,7 +689,36 @@ function buildMapDeck(filters = null) {
     }
   ];
 
-  const expanded = [...roadTiles, ...namedTiles]
+  const specialTiles = [
+    {
+      name: "Helipad",
+      type: "helipad",
+      count: 1,
+      enabled: true,
+      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      connectors: ["N", "E", "S", "W"],
+      zombieSpawnMode: "by_card",
+      zombieCount: 9,
+      hearts: 0,
+      bullets: 0,
+      isWinTile: true,
+      subTilesTemplate: {
+        "0,0": { walkable: true },
+        "1,0": { walkable: true },
+        "2,0": { walkable: true },
+        "0,1": { walkable: true },
+        "1,1": { walkable: true },
+        "2,1": { walkable: true },
+        "0,2": { walkable: true },
+        "1,2": { walkable: true },
+        "2,2": { walkable: true }
+      }
+    }
+  ];
+
+  const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
+
+  const filtered = allTiles
     .filter((t) => {
       const col = t.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
       if (!filters) return true;
@@ -699,65 +728,68 @@ function buildMapDeck(filters = null) {
     })
     .flatMap((t) => Array.from({ length: t.count || 1 }, () => ({ ...t })));
 
-  const cards = expanded;
+  const winTiles = filtered.filter((t) => t.isWinTile);
+  const cards = filtered.filter((t) => !t.isWinTile);
 
-  const helipad = {
-    name: "Helipad",
-    type: "helipad",
-    count: 1,
-    enabled: true,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
-    connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_card",
-    zombieCount: 9,
-    hearts: 0,
-    bullets: 0,
-    isHelipad: true,
-    subTilesTemplate: {
-      "0,0": { walkable: true },
-      "1,0": { walkable: true },
-      "2,0": { walkable: true },
-      "0,1": { walkable: true },
-      "1,1": { walkable: true },
-      "2,1": { walkable: true },
-      "0,2": { walkable: true },
-      "1,2": { walkable: true },
-      "2,2": { walkable: true }
-    }
-  };
+  // If no win tile made it through the filter (e.g. expansion selected without base),
+  // fall back to the first default win tile from the base specialTiles list.
+  if (winTiles.length === 0) {
+    const defaultWin = specialTiles.find((t) => t.isWinTile);
+    if (defaultWin) winTiles.push({ ...defaultWin });
+  }
 
   shuffle(cards);
-  if (helipad.enabled !== false) {
+  winTiles.forEach((wt) => {
     const start = Math.floor(cards.length / 2);
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
-    cards.splice(pos, 0, helipad);
-  }
+    cards.splice(pos, 0, wt);
+  });
   return cards;
 }
 
-function buildTownSquareTile() {
-  return {
-  name: "Town Square",
-  type: "town",
-  count: 1,
-  enabled: true,
-  collection: TILE_COLLECTIONS.DIRECTORS_CUT,
-  isTownSquare: true,
-  connectors: ["N", "E", "S", "W"],
-  zombieSpawnMode: "by_card",
-  zombieCount: 0,
-  hearts: 0,
-  bullets: 0,
-  subTilesTemplate: {
-    "0,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
-    "1,0": { walkable: true, type: "road", walls: ["E", "W"] },
-    "2,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
-    "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
-    "1,1": { walkable: true, type: "road" },
-    "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
-    "0,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
-    "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
-    "2,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] }
+// All standalone start tile definitions (isStartTile: true, not in the deck).
+// Each collection that can be played without a base game must have exactly one.
+const START_TILES = [
+  {
+    name: "Town Square",
+    type: "town",
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    isStartTile: true,
+    connectors: ["N", "E", "S", "W"],
+    zombieSpawnMode: "by_card",
+    zombieCount: 0,
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+      "1,0": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] }
+    }
   }
-};
+];
+
+// Returns the start tile for the active collection set.
+// Prefers a standalone base collection's start tile; falls back to Town Square.
+function buildStartTile(filters = null) {
+  if (filters) {
+    const activeBase = START_TILES.find((st) => {
+      const meta = TILE_COLLECTION_META[st.collection];
+      if (!meta || meta.requiresBase !== null) return false;
+      const rule = filters[st.collection];
+      return rule && rule.enabled;
+    });
+    if (activeBase) return { ...activeBase };
+  }
+  return { ...START_TILES[0] };
+}
+
+// Legacy alias — callers that don't need filter-aware selection (e.g. tile-debug)
+function buildTownSquareTile() {
+  return buildStartTile(null);
 }

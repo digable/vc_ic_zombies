@@ -1,6 +1,6 @@
 function checkWin(player) {
   const tile = getTileAtSpace(player.x, player.y);
-  if (tile && tile.isHelipad) {
+  if (tile && tile.isWinTile) {
     const tx = spaceToTileCoord(player.x);
     const ty = spaceToTileCoord(player.y);
     const lx = getLocalCoord(player.x, tx);

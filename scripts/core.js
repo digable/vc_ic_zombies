@@ -18,6 +18,14 @@ const TILE_COLLECTIONS = {
   IOWA_CITY: "iowa_city"
 };
 
+// requiresBase: null  → standalone base game
+// requiresBase: string → expansion, must be used with that collection
+const TILE_COLLECTION_META = {
+  [TILE_COLLECTIONS.DIRECTORS_CUT]: { label: "Director's Cut", requiresBase: null },
+  [TILE_COLLECTIONS.IOWA_CITY]:     { label: "Iowa City",       requiresBase: TILE_COLLECTIONS.DIRECTORS_CUT },
+  [TILE_COLLECTIONS.NOT_USED]:      { label: "Not Used",        requiresBase: null }
+};
+
 const STEP = {
   DRAW_TILE: "DRAW_TILE",
   COMBAT: "COMBAT",

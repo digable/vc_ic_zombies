@@ -11,6 +11,19 @@ function attachListeners() {
     setupGame(Math.max(1, Math.min(4, count)), filters);
   });
 
+  document.querySelectorAll("[data-requires-base][data-deck-state='enabled']").forEach((el) => {
+    el.addEventListener("change", () => {
+      if (!el.checked) return;
+      const baseCol = el.getAttribute("data-requires-base");
+      const baseEnabled = document.querySelector(
+        `[data-deck-coll="${baseCol}"][data-deck-state="enabled"]`
+      );
+      if (baseEnabled && !baseEnabled.checked) {
+        baseEnabled.checked = true;
+      }
+    });
+  });
+
   if (refs.gameOverNewGameBtn) {
     refs.gameOverNewGameBtn.addEventListener("click", () => {
       refs.gameOverOverlay.classList.add("hidden");

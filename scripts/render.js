@@ -414,7 +414,7 @@ function renderMapDeckDebug() {
   const getDebugGroup = (tile) => {
     if (tile?.type === "building" || tile?.type === "named") return "Buildings";
     if (tile?.type === "road") return "Road";
-    if (tile?.type === "helipad" || tile?.type === "special" || tile?.isHelipad || tile?.isTownSquare) return "Special Cards";
+    if (tile?.type === "helipad" || tile?.type === "special" || tile?.isWinTile || tile?.isStartTile) return "Special Cards";
     return "Special Cards";
   };
 

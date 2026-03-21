@@ -429,6 +429,27 @@
   margin-bottom: 0.25rem;
 }
 
+.coll-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coll-tag-base {
+  background: #4a7c59;
+  color: #fff;
+}
+
+.coll-tag-expansion {
+  background: #7a5c1a;
+  color: #fff;
+}
+
 .game-over-overlay {
   position: fixed;
   inset: 0;

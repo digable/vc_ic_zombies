@@ -53,16 +53,16 @@ function setupGame(playerCount, deckFilters = null) {
     t._copyNum = deckMeta[t.name].count;
   });
 
-  const townSquare = buildTownSquareTile();
-  townSquare._copyNum = 1;
-  deckMeta[townSquare.name] = { count: 1, type: townSquare.type, prePlaced: true };
-  state.discardPile.push(townSquare);
+  const startTile = buildStartTile(deckFilters);
+  startTile._copyNum = 1;
+  deckMeta[startTile.name] = { count: 1, type: startTile.type, prePlaced: true };
+  state.discardPile.push(startTile);
 
   state.deckStartCounts = deckMeta;
   state.deckStartTotal = state.mapDeck.length;
   state.eventDeckStartTotal = state.eventDeck.length;
 
-  addTile(0, 0, buildTownSquareTile());
+  addTile(0, 0, buildStartTile(deckFilters));
 
   const summaryParts = Object.entries(deckMeta).map(([name, m]) => `${name} ×${m.count}`).join(", ");
   logLine(`Tile deck: ${state.deckStartTotal} card(s) — ${summaryParts}`);
