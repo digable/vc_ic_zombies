@@ -92,7 +92,10 @@ const refs = {
   moveZombiesBtn: document.getElementById("moveZombiesBtn"),
   discardBtn: document.getElementById("discardBtn"),
   endTurnBtn: document.getElementById("endTurnBtn"),
-  playerCount: document.getElementById("playerCount")
+  playerCount: document.getElementById("playerCount"),
+  gameOverOverlay: document.getElementById("gameOverOverlay"),
+  gameOverMessage: document.getElementById("gameOverMessage"),
+  gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn")
 };
 
 function resetStepProgress(nextStep = STEP.DRAW_TILE) {

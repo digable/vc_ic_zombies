@@ -1117,6 +1117,17 @@ function renderMeta() {
     : "Pending Tile: -";
 }
 
+function renderGameOver() {
+  if (!refs.gameOverOverlay) return;
+  if (!state.gameOver) {
+    refs.gameOverOverlay.classList.add("hidden");
+    return;
+  }
+  const lastLog = state.logs[state.logs.length - 1] || "";
+  refs.gameOverMessage.textContent = lastLog;
+  refs.gameOverOverlay.classList.remove("hidden");
+}
+
 function render() {
   renderMeta();
   renderBoard();
@@ -1130,4 +1141,5 @@ function render() {
   renderZombieDiceChallenge();
   renderLog();
   updateButtons();
+  renderGameOver();
 }

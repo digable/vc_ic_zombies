@@ -11,6 +11,13 @@ function attachListeners() {
     setupGame(Math.max(1, Math.min(4, count)), filters);
   });
 
+  if (refs.gameOverNewGameBtn) {
+    refs.gameOverNewGameBtn.addEventListener("click", () => {
+      refs.gameOverOverlay.classList.add("hidden");
+      refs.newGameBtn.click();
+    });
+  }
+
   refs.drawTileBtn.addEventListener("click", drawAndPlaceTile);
   refs.rotateLeftBtn.addEventListener("click", () => rotatePendingTile(-1));
   refs.rotateRightBtn.addEventListener("click", () => rotatePendingTile(1));
