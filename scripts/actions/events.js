@@ -217,19 +217,36 @@ function handleBuildingSelectClick(sx, sy) {
 
   const tx = spaceToTileCoord(sx);
   const ty = spaceToTileCoord(sy);
-  let placed = 0;
+  const { cardName, mode } = state.pendingBuildingSelect;
+
+  // Collect all legal building spaces and which are empty
+  const emptySpaces = [];
+  let existingZombies = 0;
   for (let dlx = 0; dlx < 3; dlx++) {
     for (let dly = 0; dly < 3; dly++) {
       if (getSubTileType(tile, dlx, dly) !== "building") continue;
       if (!isLocalWalkable(tile, dlx, dly)) continue;
       const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
-      if (state.zombies.has(spaceKey)) continue;
-      state.zombies.add(spaceKey);
-      placed++;
+      if (state.zombies.has(spaceKey)) {
+        existingZombies++;
+      } else {
+        emptySpaces.push(spaceKey);
+      }
     }
   }
+
+  let placed = 0;
+  if (mode === "double") {
+    // Fill up to existingZombies empty spaces
+    const toFill = emptySpaces.slice(0, existingZombies);
+    toFill.forEach((spaceKey) => { state.zombies.add(spaceKey); placed++; });
+  } else {
+    // "fill_all" — fill every empty legal space
+    emptySpaces.forEach((spaceKey) => { state.zombies.add(spaceKey); placed++; });
+  }
+
   state.pendingBuildingSelect = null;
-  logLine(`Just When You Thought It Couldn't Get Any Worse — ${placed} zombie(s) placed in ${tile.name}.`);
+  logLine(`${cardName} — ${placed} zombie(s) placed in ${tile.name}.`);
   render();
 }
 

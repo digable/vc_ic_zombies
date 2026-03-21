@@ -126,8 +126,58 @@ const opponentEventCards = [
     count: 2,
     collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
-      state.pendingBuildingSelect = { cardName: "Just When You Thought It Couldn't Get Any Worse" };
+      // Check if any building on the board has at least one empty fillable space
+      let hasTarget = false;
+      state.board.forEach((tile, tKey) => {
+        if (hasTarget) return;
+        const { x: tx, y: ty } = parseKey(tKey);
+        for (let dlx = 0; dlx < 3 && !hasTarget; dlx++) {
+          for (let dly = 0; dly < 3 && !hasTarget; dly++) {
+            if (getSubTileType(tile, dlx, dly) !== "building") continue;
+            if (!isLocalWalkable(tile, dlx, dly)) continue;
+            const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
+            if (!state.zombies.has(spaceKey)) hasTarget = true;
+          }
+        }
+      });
+      if (!hasTarget) {
+        logLine(`${player.name} played Just When You Thought It Couldn't Get Any Worse — but no buildings have empty spaces. Card fizzles.`);
+        return;
+      }
+      state.pendingBuildingSelect = { cardName: "Just When You Thought It Couldn't Get Any Worse", mode: "fill_all" };
       logLine(`${player.name} played Just When You Thought It Couldn't Get Any Worse — click any space in a building to fill it with zombies.`);
+    }
+  },
+  {
+    name: "Slight Miscalculation",
+    description: "Select a building — the number of zombies present is doubled, up to filling all legal spaces.",
+    count: 2,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    apply(player) {
+      // Need a building with at least 1 zombie and at least 1 empty legal space
+      let hasTarget = false;
+      state.board.forEach((tile, tKey) => {
+        if (hasTarget) return;
+        const { x: tx, y: ty } = parseKey(tKey);
+        let zombiesInBuilding = 0;
+        let emptyInBuilding = 0;
+        for (let dlx = 0; dlx < 3; dlx++) {
+          for (let dly = 0; dly < 3; dly++) {
+            if (getSubTileType(tile, dlx, dly) !== "building") continue;
+            if (!isLocalWalkable(tile, dlx, dly)) continue;
+            const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
+            if (state.zombies.has(spaceKey)) zombiesInBuilding++;
+            else emptyInBuilding++;
+          }
+        }
+        if (zombiesInBuilding > 0 && emptyInBuilding > 0) hasTarget = true;
+      });
+      if (!hasTarget) {
+        logLine(`${player.name} played Slight Miscalculation — no buildings have both zombies and empty spaces. Card fizzles.`);
+        return;
+      }
+      state.pendingBuildingSelect = { cardName: "Slight Miscalculation", mode: "double" };
+      logLine(`${player.name} played Slight Miscalculation — click a building to double its zombies.`);
     }
   },
   {
