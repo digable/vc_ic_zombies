@@ -1,3 +1,23 @@
+// ---------------------------------------------------------------------------
+// Player event cards — buffs and recovery for yourself
+// ---------------------------------------------------------------------------
+// Card properties:
+//   name        {string}         Display name (must match deck/hand references)
+//   description {string}         Shown on the card face in hand
+//   count       {number}         Copies shuffled into the deck
+//   collection  {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   apply(player, helpers)       Called when the card is played from hand
+//
+// Item card extras (isItem: true cards sit in front of you until activated):
+//   isItem      {true}           Card stays in play; discarded on activation
+//   isWeapon    {true}           Can be targeted by "Butter Fingers"
+//   combatWeapon {true}          Selectable during combat (discarded after use)
+//   combatBoost {number}         One-time combat roll bonus when used as combatWeapon
+//   permanentAttackBoost {number} Permanently adds to player.attackBonus on use
+//   requiresTile {string|string[]} Tile name(s) the player must be on to play
+//   activateItem(player, helpers) Called when the player discards the item
+// ---------------------------------------------------------------------------
+
 const playerEventCards = [
   {
     name: "Adrenaline Rush",
@@ -166,7 +186,7 @@ const playerEventCards = [
     count: 2,
     collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
-    isWeapon: true,
+    isWeapon: true, // allows Butter Fingers to target it even though it's a movement item
     requiresTile: "Skate Shop",
     apply(player) {
       logLine(`${player.name} placed Skateboard in front of them.`);

@@ -1,3 +1,21 @@
+// Returns true if any building on the board satisfies conditionFn(zombieCount, emptyCount).
+// Used by building-targeting cards to check playability before entering pendingBuildingSelect.
+function anyBuildingMatches(conditionFn) {
+  for (const [tKey, tile] of state.board) {
+    const { x: tx, y: ty } = parseKey(tKey);
+    let zombies = 0, empty = 0;
+    for (let dlx = 0; dlx < 3; dlx++) {
+      for (let dly = 0; dly < 3; dly++) {
+        if (getSubTileType(tile, dlx, dly) !== "building") continue;
+        if (!isLocalWalkable(tile, dlx, dly)) continue;
+        state.zombies.has(key(tx * 3 + dlx, ty * 3 + dly)) ? zombies++ : empty++;
+      }
+    }
+    if (conditionFn(zombies, empty)) return true;
+  }
+  return false;
+}
+
 function buildEventDeckHelpers() {
   const getNextOpponent = (player) => {
     if (state.players.length < 2) return null;

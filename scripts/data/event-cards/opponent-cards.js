@@ -1,3 +1,26 @@
+// ---------------------------------------------------------------------------
+// Opponent event cards — disruption and debuffs against other players
+// ---------------------------------------------------------------------------
+// Card properties:
+//   name        {string}         Display name
+//   description {string}         Shown on the card face in hand
+//   count       {number}         Copies shuffled into the deck
+//   collection  {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   apply(player, helpers)       Called when the card is played from hand
+//
+// Common target flags set on the target player object:
+//   cannotMoveTurns {number}     Remaining turns the player cannot move
+//   halfMovementNextTurn {bool}  Movement roll halved next turn
+//   claustrophobiaNextTurn {bool} Cannot enter buildings next turn
+//   brainCramp {object}          { controllerPlayerId } — another player controls movement
+//
+// Building-targeting cards:
+//   Use state.pendingBuildingSelect = { cardName, mode }
+//   mode "fill_all" — fills every empty legal space in the chosen building
+//   mode "double"   — adds zombies equal to those already present (up to capacity)
+//   Use anyBuildingMatches(fn) to check fizzle conditions before setting pending state
+// ---------------------------------------------------------------------------
+
 const opponentEventCards = [
   {
     name: "Bad Sense of Direction",
@@ -109,6 +132,7 @@ const opponentEventCards = [
     }
   },
   {
+    // NOTE: functionally identical to Fear — same cannotMoveTurns effect, different name/count/flavour
     name: "Hysterical Paralysis",
     description: "Next opponent cannot move next turn",
     count: 1,
@@ -126,21 +150,7 @@ const opponentEventCards = [
     count: 2,
     collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
-      // Check if any building on the board has at least one empty fillable space
-      let hasTarget = false;
-      state.board.forEach((tile, tKey) => {
-        if (hasTarget) return;
-        const { x: tx, y: ty } = parseKey(tKey);
-        for (let dlx = 0; dlx < 3 && !hasTarget; dlx++) {
-          for (let dly = 0; dly < 3 && !hasTarget; dly++) {
-            if (getSubTileType(tile, dlx, dly) !== "building") continue;
-            if (!isLocalWalkable(tile, dlx, dly)) continue;
-            const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
-            if (!state.zombies.has(spaceKey)) hasTarget = true;
-          }
-        }
-      });
-      if (!hasTarget) {
+      if (!anyBuildingMatches((zombies, empty) => empty > 0)) {
         logLine(`${player.name} played Just When You Thought It Couldn't Get Any Worse — but no buildings have empty spaces. Card fizzles.`);
         return;
       }
@@ -154,25 +164,7 @@ const opponentEventCards = [
     count: 2,
     collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
-      // Need a building with at least 1 zombie and at least 1 empty legal space
-      let hasTarget = false;
-      state.board.forEach((tile, tKey) => {
-        if (hasTarget) return;
-        const { x: tx, y: ty } = parseKey(tKey);
-        let zombiesInBuilding = 0;
-        let emptyInBuilding = 0;
-        for (let dlx = 0; dlx < 3; dlx++) {
-          for (let dly = 0; dly < 3; dly++) {
-            if (getSubTileType(tile, dlx, dly) !== "building") continue;
-            if (!isLocalWalkable(tile, dlx, dly)) continue;
-            const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
-            if (state.zombies.has(spaceKey)) zombiesInBuilding++;
-            else emptyInBuilding++;
-          }
-        }
-        if (zombiesInBuilding > 0 && emptyInBuilding > 0) hasTarget = true;
-      });
-      if (!hasTarget) {
+      if (!anyBuildingMatches((zombies, empty) => zombies > 0 && empty > 0)) {
         logLine(`${player.name} played Slight Miscalculation — no buildings have both zombies and empty spaces. Card fizzles.`);
         return;
       }

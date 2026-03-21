@@ -1,3 +1,45 @@
+// ---------------------------------------------------------------------------
+// Map tile definitions
+// ---------------------------------------------------------------------------
+// Tiles are split into three arrays inside buildMapDeck:
+//   roadTiles   — pure road/intersection tiles, no loot or named buildings
+//   namedTiles  — named buildings with loot; these are the main event targets
+//   specialTiles — one-of tiles (Helipad, etc.) with special game rules
+//
+// Tile properties:
+//   name           {string}              Display name (referenced by event cards via requiresTile)
+//   type           {string}              "road" | "named" | "helipad" | "special"
+//   count          {number}              Copies shuffled into the deck
+//   enabled        {false}               Omit to include; set false to exclude without deleting
+//   collection     {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   connectors     {string[]}            Road exits: "N" | "E" | "S" | "W"
+//                                        Placement requires adjacent connector alignment
+//   zombieSpawnMode {string}             "by_card"  — spawns zombieCount zombies when placed
+//                                        "by_exits" — spawns one zombie per connector
+//   zombieCount    {number}              Zombies spawned on placement (by_card mode only)
+//   hearts         {number}              Heart tokens placed on tile when drawn
+//   bullets        {number}              Bullet tokens placed on tile when drawn
+//   isStartTile    {true}                Placed at (0,0) to start the game; one per standalone collection
+//   isWinTile      {true}                Shuffled into back half of deck; reaching its center wins the game
+//
+// subTilesTemplate — 3×3 movement grid, keyed by "lx,ly" (0–2 each axis):
+//   walkable  {bool}      true = players/zombies can enter; false = solid (walls, grass)
+//   type      {string}    "road" | "building" | "parking" | "grass" | ...
+//                         Drives CSS class (.road-subtile etc.) and building-targeting logic
+//   walls     {string[]}  Directions that are ALWAYS closed ("N"|"E"|"S"|"W")
+//                         Use for interior building walls and road kerbs
+//   doors     {string[]}  Directions that are ALWAYS open (overrides connector checks)
+//                         Use for building entrances and road exits at tile edges
+//
+// Subtile grid layout (lx = column left→right, ly = row top→bottom):
+//   (0,0) (1,0) (2,0)
+//   (0,1) (1,1) (2,1)   ← (1,1) is the tile centre
+//   (0,2) (1,2) (2,2)
+//
+// Road tiles only need to define walkable subtiles — non-walkable ones can be omitted
+// (they default to { walkable: false }).
+// ---------------------------------------------------------------------------
+
 function buildMapDeck(filters = null) {
   const roadTiles = [
     // Straight (N-S or E-W)

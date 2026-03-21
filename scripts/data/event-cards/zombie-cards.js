@@ -1,3 +1,20 @@
+// ---------------------------------------------------------------------------
+// Zombie event cards — spawning, removing, and moving zombies
+// ---------------------------------------------------------------------------
+// Card properties:
+//   name        {string}         Display name
+//   description {string}         Shown on the card face in hand
+//   count       {number}         Copies shuffled into the deck
+//   collection  {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   apply(player, helpers)       Called when the card is played from hand
+//
+// Common patterns:
+//   Zombie placement  — state.pendingZombiePlace = { remaining, cardName }
+//   Forced movement   — state.pendingForcedMove = { targetPlayerId, remaining, priorStep, cardName }
+//   Dice challenge    — state.pendingZombieDiceChallenge = { targetPlayerId, dice }
+//   Item card usage   — see player-cards.js header for isItem / activateItem pattern
+// ---------------------------------------------------------------------------
+
 const zombieEventCards = [
   {
     name: "Grenade",
