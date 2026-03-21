@@ -142,7 +142,7 @@ function extractTileInputValues() {
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
   const enabled = Boolean(document.getElementById("newTileEnabled")?.checked);
-  const collection = (document.getElementById("newTileCollection")?.value || TILE_COLLECTIONS.ORIGINAL);
+  const collection = (document.getElementById("newTileCollection")?.value || TILE_COLLECTIONS.DIRECTORS_CUT);
   const connectors = ["N", "E", "S", "W"].filter((dir) => {
     const el = document.getElementById(`newTileConnector${dir}`);
     return Boolean(el?.checked);

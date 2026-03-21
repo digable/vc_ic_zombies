@@ -147,6 +147,7 @@ function autoFinishZombieMovement() {
     pzm.movedKeys.add(next);
     pzm.remaining -= 1;
     movedCount += 1;
+    pzm.stuckKeys.clear();
 
     combatDecisionPending = handleZombieEnteringPlayerSpace(next);
     if (combatDecisionPending) break;
@@ -188,6 +189,7 @@ function manualMoveZombie(zKey) {
   state.zombies.add(next);
   pzm.movedKeys.add(next);
   pzm.remaining -= 1;
+  pzm.stuckKeys.clear();
   logLine(`Zombie moved from ${zKey} to ${next}. (${pzm.remaining} move(s) remaining)`);
 
   const combatDecisionPending = handleZombieEnteringPlayerSpace(next);

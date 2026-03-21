@@ -152,4 +152,4 @@ function attachListeners() {
 }
 
 attachListeners();
-setupGame(2, { [TILE_COLLECTIONS.ORIGINAL]: { enabled: true, disabled: false } });
+setupGame(2, { [TILE_COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } });

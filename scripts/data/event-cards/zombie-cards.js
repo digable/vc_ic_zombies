@@ -3,7 +3,7 @@ const zombieEventCards = [
     name: "Grenade",
     description: "Play in the Army Surplus to place in front of you. Discard to kill all zombies on your current tile — but lose 1 health.",
     count: 2,
-    collection: TILE_COLLECTIONS.ORIGINAL,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     requiresTile: "Army Surplus",
     apply(player) {
@@ -21,7 +21,7 @@ const zombieEventCards = [
     name: "I Don't Think They're Dead",
     description: "Target opponent rolls 2 dice. If either die is 3 or lower, they lose 2 kills. Bullets (+1) and hearts (reroll) can modify the dice.",
     count: 2,
-    collection: TILE_COLLECTIONS.ORIGINAL,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) {
@@ -37,7 +37,7 @@ const zombieEventCards = [
     name: "Molotov Cocktail",
     description: "Play in the Gas Station to place in front of you. Discard to gain +2 to all combat rolls against zombies on your current tile.",
     count: 2,
-    collection: TILE_COLLECTIONS.ORIGINAL,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     requiresTile: "Gas Station",
     apply(player) {
@@ -55,7 +55,7 @@ const zombieEventCards = [
     name: "We're Screwed",
     description: "Place zombies on any 10 legal empty spaces on the board.",
     count: 1,
-    collection: TILE_COLLECTIONS.ORIGINAL,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       state.pendingZombiePlace = { remaining: 10, cardName: "We're Screwed" };
       logLine(`${player.name} played We're Screwed — place 10 zombies on the board.`);
@@ -65,7 +65,7 @@ const zombieEventCards = [
     name: "Where Did Everybody Go?",
     description: "Move target opponent 5 spaces. All zombies encountered must be fought as normal.",
     count: 2,
-    collection: TILE_COLLECTIONS.ORIGINAL,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) {
@@ -80,7 +80,7 @@ const zombieEventCards = [
     name: "Zombie Master",
     description: "Place 5 zombies on any legal space not occupied by a player.",
     count: 2,
-    collection: TILE_COLLECTIONS.ORIGINAL,
+    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       state.pendingZombiePlace = { remaining: 5, cardName: "Zombie Master" };
       logLine(`${player.name} played Zombie Master — place 5 zombies on the board.`);

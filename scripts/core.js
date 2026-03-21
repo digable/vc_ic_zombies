@@ -14,7 +14,7 @@ const DOOR_LOCAL = {
 
 const TILE_COLLECTIONS = {
   NOT_USED: "not_used",
-  ORIGINAL: "original",
+  DIRECTORS_CUT: "directors_cut",
   IOWA_CITY: "iowa_city"
 };
 
