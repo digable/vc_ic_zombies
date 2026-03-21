@@ -90,6 +90,8 @@ const zombieEventCards = [
         return;
       }
       state.pendingForcedMove = { targetPlayerId: target.id, remaining: 5, priorStep: state.step, cardName: "Where Did Everybody Go!" };
+      state.movesRemaining = 5;
+      state.step = STEP.MOVE;
       logLine(`${player.name} played Where Did Everybody Go! — ${target.name} must move 5 spaces.`);
     }
   },

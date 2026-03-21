@@ -312,6 +312,15 @@
   background: #2d6a9f;
 }
 
+@keyframes player-pulse {
+  0%, 100% { background: #2d6a9f; }
+  50%       { background: #74b8f0; }
+}
+
+.mark.player.active {
+  animation: player-pulse 1.2s ease-in-out infinite;
+}
+
 .mark.zombie {
   background: #395b2f;
 }

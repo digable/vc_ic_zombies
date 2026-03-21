@@ -101,6 +101,7 @@ const refs = {
   discardBtn: document.getElementById("discardBtn"),
   endTurnBtn: document.getElementById("endTurnBtn"),
   playerCount: document.getElementById("playerCount"),
+  moveStatusMsg: document.getElementById("moveStatusMsg"),
   gameOverOverlay: document.getElementById("gameOverOverlay"),
   gameOverMessage: document.getElementById("gameOverMessage"),
   gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn")

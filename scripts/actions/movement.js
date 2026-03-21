@@ -212,6 +212,7 @@ function forcedMoveTarget(dir) {
   player.x += d.x;
   player.y += d.y;
   pfm.remaining -= 1;
+  state.movesRemaining = pfm.remaining;
 
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
@@ -233,6 +234,7 @@ function forcedMoveTarget(dir) {
     });
     if (result.knockedOut || pfm.remaining <= 0) {
       state.pendingForcedMove = null;
+      state.step = pfm.priorStep;
     }
     render();
     return;
@@ -240,6 +242,7 @@ function forcedMoveTarget(dir) {
 
   if (pfm.remaining <= 0) {
     state.pendingForcedMove = null;
+    state.step = pfm.priorStep;
     logLine(`${player.name} finished their forced movement.`);
   }
   render();
@@ -250,6 +253,7 @@ function endForcedMovement() {
   if (!pfm) return;
   const player = state.players.find((p) => p.id === pfm.targetPlayerId);
   state.pendingForcedMove = null;
+  state.step = pfm.priorStep;
   if (player) {
     logLine(`Forced movement of ${player.name} ended early.`);
   }

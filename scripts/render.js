@@ -734,7 +734,11 @@ function renderBoard() {
           }
 
           if (data.players.length) {
-            parts.push(`<span class="mark player">${data.players.join(",")}</span>`);
+            const activeId = `P${currentPlayer().id}`;
+            data.players.forEach((pid) => {
+              const cls = pid === activeId ? "mark player active" : "mark player";
+              parts.push(`<span class="${cls}">${pid}</span>`);
+            });
           }
           if (data.zombie) {
             parts.push('<span class="mark zombie">Z</span>');
@@ -1079,8 +1083,10 @@ function updateButtons() {
     refs.moveZombiesBtn.disabled = true;
     refs.discardBtn.disabled = true;
     refs.endTurnBtn.disabled = true;
+    // Direction buttons stay enabled during forced movement so the controller
+    // can move the target player (Brain Cramp / Where Did Everybody Go?).
     refs.moveDirBtns.forEach((btn) => {
-      btn.disabled = true;
+      btn.disabled = !state.pendingForcedMove;
     });
     return;
   }
@@ -1102,9 +1108,31 @@ function updateButtons() {
 
   refs.moveDirBtns.forEach((btn) => {
     const dir = btn.dataset.dir;
-    const disabled = state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0 || !canMove(p, dir);
+    const mover = state.pendingForcedMove
+      ? state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId) ?? p
+      : p;
+    const disabled = state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0 || !canMove(mover, dir);
     btn.disabled = disabled;
   });
+}
+
+function renderMoveStatus() {
+  if (!refs.moveStatusMsg) return;
+  const p = state.players[state.currentPlayerIndex];
+  if (!p || state.gameOver) { refs.moveStatusMsg.classList.add("hidden"); return; }
+
+  const msgs = [];
+  if (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) {
+    if (p.cannotMoveTurns > 0)         msgs.push("Fear: you cannot move this turn.");
+    if (p.claustrophobiaActive)         msgs.push("Claustrophobia: cannot enter buildings. If in a building, exit by shortest route.");
+    if (p.halfMovementNextTurn)         msgs.push("Your Shoe's Untied: movement roll will be halved.");
+    if (p.brainCramp)                   msgs.push("Brain Cramp: an opponent will control your movement.");
+    if (state.pendingForcedMove)        msgs.push(`Forced movement: ${state.pendingForcedMove.remaining} space(s) remaining.`);
+  }
+
+  if (msgs.length === 0) { refs.moveStatusMsg.classList.add("hidden"); return; }
+  refs.moveStatusMsg.classList.remove("hidden");
+  refs.moveStatusMsg.innerHTML = msgs.map((m) => `<div>${m}</div>`).join("");
 }
 
 function renderMeta() {
@@ -1141,5 +1169,6 @@ function render() {
   renderZombieDiceChallenge();
   renderLog();
   updateButtons();
+  renderMoveStatus();
   renderGameOver();
 }
