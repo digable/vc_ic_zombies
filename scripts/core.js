@@ -69,6 +69,7 @@ const state = {
   pendingTile: null,
   pendingRotation: 0,
   pendingTileOptions: [],
+  playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
   logs: []
 };
 

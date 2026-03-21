@@ -321,6 +321,27 @@
   animation: player-pulse 1.2s ease-in-out infinite;
 }
 
+@keyframes trail-pulse-stroke {
+  0%, 100% { stroke: #c0392b; }
+  50%       { stroke: #e67e22; }
+}
+
+@keyframes trail-pulse-fill {
+  0%, 100% { fill: #c0392b; }
+  50%       { fill: #e67e22; }
+}
+
+.player-trail-line {
+  fill: none;
+  animation: trail-pulse-stroke 1.2s ease-in-out infinite;
+}
+
+.player-trail-mark {
+  stroke: none;
+  animation: trail-pulse-fill 1.2s ease-in-out infinite;
+}
+
+
 .mark.zombie {
   background: #395b2f;
 }

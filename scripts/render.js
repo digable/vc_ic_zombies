@@ -753,6 +753,7 @@ function renderBoard() {
           const sy = y * 3 + ly;
           const pzr = state.pendingZombieReplace;
           const spaceKey = key(sx, sy);
+
           let zombieClass = "";
           const pzm2 = state.pendingZombieMovement;
           if (pzm2 && data.zombie && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
@@ -1116,6 +1117,52 @@ function updateButtons() {
   });
 }
 
+function renderPlayerTrailSvg() {
+  // Board clears its innerHTML every render — SVG must be re-appended each time.
+  // Measuring happens after DOM insertion so getBoundingClientRect is valid.
+  if (!state.playerTrail || state.playerTrail.length < 2) return;
+
+  const NS = "http://www.w3.org/2000/svg";
+  const boardRect = refs.board.getBoundingClientRect();
+
+  const points = [];
+  for (const spaceKey of state.playerTrail) {
+    const { x: sx, y: sy } = parseKey(spaceKey);
+    const cell = refs.board.querySelector(`[data-sx="${sx}"][data-sy="${sy}"]`);
+    if (!cell) continue;
+    const r = cell.getBoundingClientRect();
+    points.push({ x: r.left - boardRect.left + r.width / 2, y: r.top - boardRect.top + r.height / 2 });
+  }
+  if (points.length < 2) return;
+
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("style", "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;");
+
+  // Dashed path connecting all points
+  const ptStr = points.map((p) => `${p.x},${p.y}`).join(" ");
+  const polyline = document.createElementNS(NS, "polyline");
+  polyline.setAttribute("points", ptStr);
+  polyline.setAttribute("fill", "none");
+  polyline.setAttribute("stroke-width", "2");
+  polyline.setAttribute("class", "player-trail-line");
+  svg.appendChild(polyline);
+
+  // Directional arrow triangle at the midpoint of each segment
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i], p2 = points[i + 1];
+    const mx = (p1.x + p2.x) / 2;
+    const my = (p1.y + p2.y) / 2;
+    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+    const arrow = document.createElementNS(NS, "polygon");
+    arrow.setAttribute("points", "-4,-3 4,0 -4,3");
+    arrow.setAttribute("class", "player-trail-mark");
+    arrow.setAttribute("transform", `translate(${mx},${my}) rotate(${angle})`);
+    svg.appendChild(arrow);
+  }
+
+  refs.board.appendChild(svg);
+}
+
 function renderMoveStatus() {
   if (!refs.moveStatusMsg) return;
   const p = state.players[state.currentPlayerIndex];
@@ -1159,6 +1206,7 @@ function renderGameOver() {
 function render() {
   renderMeta();
   renderBoard();
+  renderPlayerTrailSvg();
   renderPlayers();
   renderHand();
   renderDeckInfo();

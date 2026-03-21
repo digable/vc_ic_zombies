@@ -73,6 +73,7 @@ function rollMovement() {
   state.movesRemaining = move;
   state.movementBonus = 0;
   state.moveFloorThisTurn = 0;
+  state.playerTrail = [key(player.x, player.y)];
   state.step = STEP.MOVE;
   logLine(`${player.name} rolled movement ${roll} and can move ${state.movesRemaining} space(s).`);
   render();
@@ -121,6 +122,7 @@ function movePlayer(dir) {
   player.x += d.x;
   player.y += d.y;
   state.movesRemaining -= 1;
+  state.playerTrail.push(key(player.x, player.y));
 
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
@@ -213,6 +215,7 @@ function forcedMoveTarget(dir) {
   player.y += d.y;
   pfm.remaining -= 1;
   state.movesRemaining = pfm.remaining;
+  state.playerTrail.push(key(player.x, player.y));
 
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
