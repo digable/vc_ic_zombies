@@ -159,7 +159,7 @@ Supported per-subtile properties:
 
 ### Collections
 
-Tiles and event cards belong to a collection, selected at game setup. Collections are defined in `TILE_COLLECTIONS` in `core.js`:
+Tiles and event cards belong to a collection, selected at game setup. Collections are defined in `COLLECTIONS` in `core.js`:
 
 | Key | Value | Description |
 |-----|-------|-------------|
@@ -171,7 +171,7 @@ Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` 
 
 | Property | Description |
 |----------|-------------|
-| `requiresBase` | `null` for standalone base games; `TILE_COLLECTIONS.X` for expansions that need a base |
+| `requiresBase` | `null` for standalone base games; `COLLECTIONS.X` for expansions that need a base |
 
 If an expansion is selected without its required base game, the engine falls back to Director's Cut's Town Square (start tile) and Helipad (win tile), and uses Director's Cut events if the expansion has none of its own.
 
@@ -183,7 +183,7 @@ If an expansion is selected without its required base game, the engine falls bac
 | `type` | `"road"`, `"named"`, `"helipad"`, `"special"` |
 | `count` | Number of copies in the deck |
 | `enabled` | `false` to exclude from play |
-| `collection` | `TILE_COLLECTIONS.DIRECTORS_CUT`, `IOWA_CITY`, or `NOT_USED` — controls which game setup filter includes this tile |
+| `collection` | `COLLECTIONS.DIRECTORS_CUT`, `IOWA_CITY`, or `NOT_USED` — controls which game setup filter includes this tile |
 | `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
 | `zombieSpawnMode` | `"by_card"` uses `zombieCount`; `"by_exits"` spawns one per connector |
 | `zombieCount` | Zombies to spawn when placed (by_card mode) |

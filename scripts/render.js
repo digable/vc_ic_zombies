@@ -424,7 +424,7 @@ function renderMapDeckDebug() {
     ["Special Cards", []]
   ]);
 
-  const collectionOptions = [["all", "All Collections"], ...Object.entries(TILE_COLLECTIONS).map(([k, v]) => [v, k])];
+  const collectionOptions = [["all", "All Collections"], ...Object.entries(COLLECTIONS).map(([k, v]) => [v, k])];
   const enabledOptions = [["all", "All"], ["true", "Enabled"], ["false", "Disabled"]];
   const filterBar = `
     <div class="deck-debug-filters">
@@ -445,7 +445,7 @@ function renderMapDeckDebug() {
   state.mapDeck.forEach((tile, index) => {
     if (seenNames.has(tile.name)) return;
     seenNames.add(tile.name);
-    if (mapDeckDebugFilters.collection !== "all" && (tile.collection || TILE_COLLECTIONS.DIRECTORS_CUT) !== mapDeckDebugFilters.collection) return;
+    if (mapDeckDebugFilters.collection !== "all" && (tile.collection || COLLECTIONS.DIRECTORS_CUT) !== mapDeckDebugFilters.collection) return;
     if (mapDeckDebugFilters.enabled !== "all" && String(tile.enabled !== false) !== mapDeckDebugFilters.enabled) return;
     const group = getDebugGroup(tile);
     grouped.get(group)?.push({ tile, deckIndex: index });
@@ -518,8 +518,8 @@ function renderMapDeckDebug() {
         <div class="deck-tile-edit-line">
           <strong>${getTileDisplayName(tileForRender)}</strong>
           <select data-debug-tile-id="${tileId}" data-debug-field="collection">
-            ${Object.entries(TILE_COLLECTIONS).map(([key, val]) =>
-              `<option value="${val}" ${(tileForRender.collection || TILE_COLLECTIONS.DIRECTORS_CUT) === val ? "selected" : ""}>${key}</option>`
+            ${Object.entries(COLLECTIONS).map(([key, val]) =>
+              `<option value="${val}" ${(tileForRender.collection || COLLECTIONS.DIRECTORS_CUT) === val ? "selected" : ""}>${key}</option>`
             ).join("")}
           </select>
         </div>

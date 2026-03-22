@@ -195,7 +195,22 @@ function populateCollectionCounts() {
   });
 }
 
+function applyCollectionTooltips() {
+  document.querySelectorAll(".setup-coll-name[data-coll]").forEach((el) => {
+    const meta = COLLECTION_META[el.getAttribute("data-coll")];
+    if (!meta) return;
+    const lines = [];
+    if (meta.type)    lines.push(`Type: ${meta.type}`);
+    if (meta.version) lines.push(`Version: ${meta.version}`);
+    if (meta.year)    lines.push(`Year: ${meta.year}`);
+    if (meta.creator) lines.push(`Creator: ${meta.creator}`);
+    if (meta.description) lines.push((lines.length ? "\n" : "") + meta.description);
+    if (lines.length) el.setAttribute("data-tooltip", lines.join("\n"));
+  });
+}
+
 attachListeners();
 populateCollectionCounts();
-setupGame(2, { [TILE_COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } });
+applyCollectionTooltips();
+setupGame(2, { [COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } });
 document.getElementById("setupSection").classList.add("hidden");

@@ -4,7 +4,7 @@ function buildEventDeck(filters = null) {
   const applyFilter = (filterSet) =>
     all
       .filter((c) => {
-        const col = c.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
+        const col = c.collection || COLLECTIONS.DIRECTORS_CUT;
         if (!filterSet) return true;
         const rule = filterSet[col];
         if (!rule) return false;
@@ -17,7 +17,7 @@ function buildEventDeck(filters = null) {
   // If the filter yielded no cards (e.g. an expansion selected without its base),
   // fall back to the base game's events.
   if (expanded.length === 0 && filters) {
-    const baseFilter = { [TILE_COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } };
+    const baseFilter = { [COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } };
     expanded = applyFilter(baseFilter);
   }
 
@@ -29,7 +29,7 @@ function getEventCardCountsByCollection() {
   const all = [...playerEventCards, ...opponentEventCards, ...zombieEventCards];
   const counts = {};
   all.forEach((c) => {
-    const col = c.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
+    const col = c.collection || COLLECTIONS.DIRECTORS_CUT;
     counts[col] = (counts[col] || 0) + (c.count || 1);
   });
   return counts;

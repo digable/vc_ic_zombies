@@ -12,7 +12,7 @@ const DOOR_LOCAL = {
   W: { x: 0, y: 1 }
 };
 
-const TILE_COLLECTIONS = {
+const COLLECTIONS = {
   NOT_USED: "not_used",
   DIRECTORS_CUT: "directors_cut",
   IOWA_CITY: "iowa_city"
@@ -20,10 +20,34 @@ const TILE_COLLECTIONS = {
 
 // requiresBase: null  → standalone base game
 // requiresBase: string → expansion, must be used with that collection
-const TILE_COLLECTION_META = {
-  [TILE_COLLECTIONS.DIRECTORS_CUT]: { label: "Director's Cut", requiresBase: null },
-  [TILE_COLLECTIONS.IOWA_CITY]:     { label: "Iowa City",       requiresBase: TILE_COLLECTIONS.DIRECTORS_CUT },
-  [TILE_COLLECTIONS.NOT_USED]:      { label: "Not Used",        requiresBase: null }
+const COLLECTION_META = {
+  [COLLECTIONS.DIRECTORS_CUT]: {
+    label: "Director's Cut",
+    requiresBase: null,
+    year: 2004,
+    type: "Base Game",
+    version: "2nd Edition",
+    description: "The core tile set. Standalone — no other collection required.",
+    creator: "Based on the Twilight Creations Zombies!!!"
+  },
+  [COLLECTIONS.IOWA_CITY]: {
+    label: "Iowa City",
+    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    year: 2026,
+    type: "Expansion",
+    version: "0.1.0",
+    description: "Iowa City themed locations. Requires Director's Cut to play.",
+    creator: "digable"
+  },
+  [COLLECTIONS.NOT_USED]: {
+    label: "Not Used",
+    requiresBase: null,
+    year: null,
+    type: null,
+    version: null,
+    description: "A placeholder for test stuff.",
+    creator: null
+  }
 };
 
 const STEP = {

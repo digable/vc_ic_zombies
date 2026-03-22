@@ -5,7 +5,7 @@
 //   name        {string}         Display name
 //   description {string}         Shown on the card face in hand
 //   count       {number}         Copies shuffled into the deck
-//   collection  {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   collection  {COLLECTIONS.*}  Which game set this belongs to
 //   apply(player, helpers)       Called when the card is played from hand
 //
 // Common target flags set on the target player object:
@@ -26,7 +26,7 @@ const opponentEventCards = [
     name: "Bad Sense of Direction",
     description: "Discard 1 life to move target opponent back to Town Square. Your turn continues as normal.",
     count: 1,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       if (player.hearts <= 0) {
         logLine(`${player.name} cannot play Bad Sense of Direction — no life tokens remaining.`);
@@ -47,7 +47,7 @@ const opponentEventCards = [
     name: "Brain Cramp",
     description: "Play when target opponent begins to move. You decide if and where they move.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
@@ -59,7 +59,7 @@ const opponentEventCards = [
     name: "Butter Fingers",
     description: "Choose a target player: they discard a weapon or item in play, or you remove up to 2 of their bullets.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
@@ -111,7 +111,7 @@ const opponentEventCards = [
     name: "Claustrophobia",
     description: "Target player cannot enter any building next turn. If already in a building, they must use all movement to exit by the shortest route.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
@@ -123,7 +123,7 @@ const opponentEventCards = [
     name: "Fear",
     description: "Target player may not move by any means on their next turn.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
@@ -136,7 +136,7 @@ const opponentEventCards = [
     name: "Hysterical Paralysis",
     description: "Next opponent cannot move next turn",
     count: 1,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
@@ -148,7 +148,7 @@ const opponentEventCards = [
     name: "Just When You Thought It Couldn't Get Any Worse",
     description: "Select a building on the board — every empty legal space in that building gets a zombie.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       if (!anyBuildingMatches((zombies, empty) => empty > 0)) {
         logLine(`${player.name} played Just When You Thought It Couldn't Get Any Worse — but no buildings have empty spaces. Card fizzles.`);
@@ -162,7 +162,7 @@ const opponentEventCards = [
     name: "Slight Miscalculation",
     description: "Select a building — the number of zombies present is doubled, up to filling all legal spaces.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       if (!anyBuildingMatches((zombies, empty) => zombies > 0 && empty > 0)) {
         logLine(`${player.name} played Slight Miscalculation — no buildings have both zombies and empty spaces. Card fizzles.`);
@@ -176,7 +176,7 @@ const opponentEventCards = [
     name: "Your Shoe's Untied",
     description: "Target player's movement roll is divided in half (rounded down) next turn.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;

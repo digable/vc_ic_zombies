@@ -11,7 +11,7 @@
 //   type           {string}              "road" | "named" | "helipad" | "special"
 //   count          {number}              Copies shuffled into the deck
 //   enabled        {false}               Omit to include; set false to exclude without deleting
-//   collection     {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   collection     {COLLECTIONS.*}  Which game set this belongs to
 //   connectors     {string[]}            Road exits: "N" | "E" | "S" | "W"
 //                                        Placement requires adjacent connector alignment
 //   zombieSpawnMode {string}             "by_card"  — spawns zombieCount zombies when placed
@@ -51,7 +51,7 @@ function buildMapDeck(filters = null) {
       type: "road",
       count: 4,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -72,7 +72,7 @@ function buildMapDeck(filters = null) {
       type: "road",
       count: 4,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -93,7 +93,7 @@ function buildMapDeck(filters = null) {
       type: "road",
       count: 4,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["N", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -114,7 +114,7 @@ function buildMapDeck(filters = null) {
       type: "road",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["N", "S", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -140,7 +140,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -163,7 +163,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -186,7 +186,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -209,7 +209,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 8,
@@ -232,7 +232,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -255,7 +255,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -278,7 +278,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -301,7 +301,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -324,7 +324,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -347,7 +347,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -370,7 +370,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -393,7 +393,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -418,7 +418,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -441,7 +441,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -464,7 +464,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 5,
@@ -487,7 +487,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -510,7 +510,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 10,
@@ -533,7 +533,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -556,7 +556,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 8,
@@ -579,7 +579,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -602,7 +602,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["S", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -625,7 +625,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -648,7 +648,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -671,7 +671,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 9,
@@ -694,7 +694,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -717,7 +717,7 @@ function buildMapDeck(filters = null) {
       type: "named",
       count: 1,
       enabled: false,
-      collection: TILE_COLLECTIONS.IOWA_CITY,
+      collection: COLLECTIONS.IOWA_CITY,
       connectors: ["N", "E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 5,
@@ -746,7 +746,7 @@ function buildMapDeck(filters = null) {
       type: "helipad",
       count: 1,
       enabled: true,
-      collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+      collection: COLLECTIONS.DIRECTORS_CUT,
       connectors: ["N", "E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 9,
@@ -771,7 +771,7 @@ function buildMapDeck(filters = null) {
 
   const filtered = allTiles
     .filter((t) => {
-      const col = t.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
+      const col = t.collection || COLLECTIONS.DIRECTORS_CUT;
       if (!filters) return true;
       const rule = filters[col];
       if (!rule) return false;
@@ -804,7 +804,7 @@ const START_TILES = [
   {
     name: "Town Square",
     type: "town",
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isStartTile: true,
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -830,7 +830,7 @@ const START_TILES = [
 function buildStartTile(filters = null) {
   if (filters) {
     const activeBase = START_TILES.find((st) => {
-      const meta = TILE_COLLECTION_META[st.collection];
+      const meta = COLLECTION_META[st.collection];
       if (!meta || meta.requiresBase !== null) return false;
       const rule = filters[st.collection];
       return rule && rule.enabled;
@@ -844,7 +844,7 @@ function buildStartTile(filters = null) {
 function getMapTileCountsByCollection() {
   const counts = {};
   buildMapDeck(null).forEach((t) => {
-    const col = t.collection || TILE_COLLECTIONS.DIRECTORS_CUT;
+    const col = t.collection || COLLECTIONS.DIRECTORS_CUT;
     counts[col] = (counts[col] || 0) + 1;
   });
   return counts;

@@ -5,7 +5,7 @@
 //   name        {string}         Display name (must match deck/hand references)
 //   description {string}         Shown on the card face in hand
 //   count       {number}         Copies shuffled into the deck
-//   collection  {TILE_COLLECTIONS.*}  Which game set this belongs to
+//   collection  {COLLECTIONS.*}  Which game set this belongs to
 //   apply(player, helpers)       Called when the card is played from hand
 //
 // Item card extras (isItem: true cards sit in front of you until activated):
@@ -23,7 +23,7 @@ const playerEventCards = [
     name: "Adrenaline Rush",
     description: "Choose: double movement this turn OR +2 to a combat roll",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       logLine(`${player.name} played Adrenaline Rush — choose an effect.`);
       state.pendingEventChoice = {
@@ -53,7 +53,7 @@ const playerEventCards = [
     name: "All The Marbles",
     description: "Play in the Toy Store to place in front of you. Discard to freeze all zombie movement until after your next turn.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     requiresTile: "Toy Store",
     apply(player) {
@@ -68,7 +68,7 @@ const playerEventCards = [
     name: "Alternate Food Source",
     description: "No combat this turn",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       player.noCombatThisTurn = true;
       logLine(`${player.name} played Alternate Food Source. Combat is disabled this turn.`);
@@ -78,7 +78,7 @@ const playerEventCards = [
     name: "Chainsaw",
     description: "Play in the Lawn & Garden Store to place in front of you. Select in combat to gain +2 to that combat roll (discarded after use).",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     isWeapon: true,
     combatWeapon: true,
@@ -92,7 +92,7 @@ const playerEventCards = [
     name: "Fire Axe",
     description: "Play in the Fire Station to place in front of you. Select in combat for +1 permanent combat bonus (discarded after use).",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     isWeapon: true,
     combatWeapon: true,
@@ -106,7 +106,7 @@ const playerEventCards = [
     name: "First Aid Kit",
     description: "Play in the Hospital or Pharmacy to place in front of you. Discard instead of losing a health token during combat (free reroll).",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     requiresTile: ["Hospital", "Pharmacy"],
     apply(player) {
@@ -120,7 +120,7 @@ const playerEventCards = [
     name: "Hey, Look! A Shotgun!",
     description: "+1 to your next 3 combat rolls.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isWeapon: true,
     apply(player) {
       player.shotgunCharges = 3;
@@ -131,7 +131,7 @@ const playerEventCards = [
     name: "Keys Are Still In It",
     description: "Move up to 10 spaces in place of making a movement roll. Zombies must be fought as normal.",
     count: 1,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       if (state.step === STEP.ROLL_MOVE) {
         state.currentMoveRoll = null;
@@ -153,7 +153,7 @@ const playerEventCards = [
     name: "Lots Of Ammo",
     description: "Play in the Sporting Goods Store to place in front of you. Discard to gain 3 bullets.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     requiresTile: "Sporting Goods Store",
     apply(player) {
@@ -168,7 +168,7 @@ const playerEventCards = [
     name: "Much Needed Rest",
     description: "Play instead of making a movement roll. Gain 2 health.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       player.hearts = Math.min(5, player.hearts + 2);
       if (state.step === STEP.ROLL_MOVE) {
@@ -184,7 +184,7 @@ const playerEventCards = [
     name: "Skateboard",
     description: "Play in the Skate Shop to place in front of you. Discard to gain +2 to all movement rolls permanently.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     isItem: true,
     isWeapon: true, // allows Butter Fingers to target it even though it's a movement item
     requiresTile: "Skate Shop",
@@ -200,7 +200,7 @@ const playerEventCards = [
     name: "This Isn't So Bad",
     description: "Move any 2 zombies to any legal space.",
     count: 2,
-    collection: TILE_COLLECTIONS.DIRECTORS_CUT,
+    collection: COLLECTIONS.DIRECTORS_CUT,
     apply(player) {
       if (state.zombies.size === 0) {
         logLine(`${player.name} played This Isn't So Bad, but there are no zombies to move.`);
