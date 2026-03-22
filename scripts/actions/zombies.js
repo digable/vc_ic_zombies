@@ -165,6 +165,7 @@ function autoFinishZombieMovement() {
   }
 
   if (combatDecisionPending) {
+    if (pzm.remaining <= 0) state.pendingZombieMovement = null;
     logLine(`${currentPlayer().name} must resolve combat. ${movedCount} zombie(s) moved.`);
     state.step = STEP.COMBAT;
   } else {
@@ -205,6 +206,7 @@ function manualMoveZombie(zKey) {
 
   const combatDecisionPending = handleZombieEnteringPlayerSpace(next);
   if (combatDecisionPending) {
+    if (pzm.remaining <= 0) state.pendingZombieMovement = null;
     state.step = STEP.COMBAT;
     logLine(`${currentPlayer().name} must resolve combat.`);
     render();

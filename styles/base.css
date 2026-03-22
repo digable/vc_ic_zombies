@@ -15,6 +15,34 @@
   --subtile-blocked: #ffd6d6;
   --subtile-grass: linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%);
   --subtile-grass-border: #4caf50;
+
+  /* Font scale */
+  --font-xs:  0.65rem;   /* tiny labels, tags */
+  --font-sm:  0.72rem;   /* secondary text, tooltips */
+  --font-ui:  0.8rem;    /* standard UI text */
+  --font-body: 0.85rem;  /* body / card text */
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Warm UI tone (brown family) */
+  --tone-warm:  #5a4020;   /* headings, accents */
+  --tone-muted: #9a8060;   /* secondary labels */
+
+  /* Tooltip */
+  --tooltip-bg:     #2a1f0f;
+  --tooltip-fg:     #f5ead0;
+  --tooltip-border: #5a4020;
+
+  /* Action panel theme colors */
+  --panel-zombie-border: #7c4a4a;
+  --panel-zombie-bg:     #fff0f0;
+  --panel-event-border:  #4a7c59;
+  --panel-event-bg:      #eef7f1;
+  --panel-combat-border: #b76a48;
+  --panel-combat-bg:     #fff5eb;
 }
 
 * {

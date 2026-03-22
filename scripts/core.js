@@ -94,6 +94,7 @@ const state = {
   pendingRotation: 0,
   pendingTileOptions: [],
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
+  knockoutBanner: null, // { playerName, lostKills } — shown briefly after knockout
   recentKillKey: null,
   logs: []
 };
@@ -130,7 +131,8 @@ const refs = {
   moveStatusMsg: document.getElementById("moveStatusMsg"),
   gameOverOverlay: document.getElementById("gameOverOverlay"),
   gameOverMessage: document.getElementById("gameOverMessage"),
-  gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn")
+  gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn"),
+  knockoutBanner: document.getElementById("knockoutBanner")
 };
 
 function resetStepProgress(nextStep = STEP.DRAW_TILE) {
@@ -160,11 +162,11 @@ function parseKey(k) {
 }
 
 function spaceToTileCoord(v) {
-  return Math.floor(v / 3);
+  return Math.floor(v / TILE_DIM);
 }
 
 function getLocalCoord(v, tileCoord) {
-  return v - tileCoord * 3;
+  return v - tileCoord * TILE_DIM;
 }
 
 function getTileAtSpace(x, y) {
@@ -532,9 +534,9 @@ function findSpawnSpaceOnTile(tx, ty) {
   const others = allOffsets.filter(([lx, ly]) => isLocalWalkable(tile, lx, ly) && !isBuildingSubtileOpen(tile, lx, ly));
 
   for (const [lx, ly] of [...building, ...others]) {
-    const sk = key(tx * 3 + lx, ty * 3 + ly);
+    const sk = key(tx * TILE_DIM + lx, ty * TILE_DIM + ly);
     if (!state.zombies.has(sk)) {
-      return { x: tx * 3 + lx, y: ty * 3 + ly };
+      return { x: tx * TILE_DIM + lx, y: ty * TILE_DIM + ly };
     }
   }
   return null;
@@ -573,8 +575,8 @@ function spawnZombiesOnRoadExits(tx, ty, connectors) {
     if (!door) {
       return;
     }
-    const sx = tx * 3 + door.x;
-    const sy = ty * 3 + door.y;
+    const sx = tx * TILE_DIM + door.x;
+    const sy = ty * TILE_DIM + door.y;
     const sk = key(sx, sy);
     if (!state.zombies.has(sk)) {
       state.zombies.add(sk);
@@ -645,8 +647,8 @@ function placeBuildingTokens(tx, ty, hearts, bullets) {
 
   while ((h > 0 || b > 0) && attempts < maxAttempts && offsets.length > 0) {
     const [lx, ly] = offsets[i % offsets.length];
-    const sx = tx * 3 + lx;
-    const sy = ty * 3 + ly;
+    const sx = tx * TILE_DIM + lx;
+    const sy = ty * TILE_DIM + ly;
     if (h > 0 && addTokensToSpace(sx, sy, 1, 0)) {
       h -= 1;
     } else if (b > 0 && addTokensToSpace(sx, sy, 0, 1)) {
@@ -665,8 +667,8 @@ function collectTokensAtPlayerSpace(player) {
   }
 
   let gainedHearts = 0;
-  if (tokens.hearts > 0 && player.hearts < 5) {
-    gainedHearts = Math.min(tokens.hearts, 5 - player.hearts);
+  if (tokens.hearts > 0 && player.hearts < MAX_HEARTS) {
+    gainedHearts = Math.min(tokens.hearts, MAX_HEARTS - player.hearts);
     player.hearts += gainedHearts;
     tokens.hearts -= gainedHearts;
   }
@@ -698,12 +700,12 @@ function shuffle(arr) {
 }
 
 function rollD6() {
-  return Math.floor(Math.random() * 6) + 1;
+  return Math.floor(Math.random() * D6_SIDES) + 1;
 }
 
 function logLine(text, type) {
   state.logs.unshift({ text: `[T${state.turnNumber}] ${text}`, type: type || null });
-  if (state.logs.length > 120) {
+  if (state.logs.length > MAX_LOG_ENTRIES) {
     state.logs.pop();
   }
 }

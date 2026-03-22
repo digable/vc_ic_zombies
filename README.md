@@ -25,13 +25,15 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Named buildings spawn zombies and loot when placed
 - Helipad shuffled into the second half of the deck — escape is possible but never guaranteed
 - Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles
+- Collection metadata (type, version, year, description, creator) shown as tooltip on setup checkboxes
 
 ### ⚔️ Combat System
 - Combat triggers when entering or sharing a space with a zombie
 - Roll d6 + attack bonus + temporary bonus; 4+ wins
-- On failure: spend a bullet for +1, spend a heart to reroll, or take the loss
+- On failure: spend a bullet for +1, spend a heart to reroll, use a weapon item, or take the loss
+- Combat panel shows current hearts and bullets, with smart hints (e.g. warns if spending bullets won't be enough to win)
 - All decisions resolved in-page — no browser prompts
-- Knockout: lose half your kills (rounded down), respawn at Town Square, reset to 3 hearts / 3 bullets
+- Knockout: lose half your kills (rounded down), respawn at Town Square, reset to 3 hearts / 3 bullets — a toast banner confirms the event and auto-dismisses after 5 seconds
 
 ### 🧟 Zombie AI
 - Zombies move toward the nearest player each phase
@@ -74,8 +76,13 @@ vc_ic_zombies/
 ├── tile-editor.html                  # Tile debug / editor panel
 ├── README.md                         # This file
 ├── scripts/
-│   ├── core.js                       # State, constants, shared helpers
-│   ├── render.js                     # Board/UI rendering, formatTileCode
+│   ├── constants.js                  # Shared numeric constants (TILE_DIM, WIN_KILLS, etc.)
+│   ├── core.js                       # State, collections, shared helpers
+│   ├── render-helpers.js             # Rendering utilities (formatTileCode, micro-grid, etc.)
+│   ├── render-board.js               # Board grid, player trail SVG, move status
+│   ├── render-panels.js              # Sidebar panels, combat UI, log, knockout banner
+│   ├── render-debug.js               # Tile editor / map deck debug rendering
+│   ├── render.js                     # Render orchestrator (updateButtons + render())
 │   ├── bootstrap.js                  # Event listener wiring, game boot
 │   ├── tile-debug.js                 # Tile editor page logic
 │   ├── subtile-editor-row.js         # Subtile editor row renderer
@@ -103,7 +110,7 @@ vc_ic_zombies/
 │           ├── opponent-cards.js     # Opponent disruption cards
 │           └── zombie-cards.js       # Zombie spawn/remove/move cards
 └── styles/
-    ├── base.css                      # Design tokens, global element defaults
+    ├── base.css                      # Design tokens, CSS variables, global element defaults
     ├── layout.css                    # Page layout, panels, responsive rules
     ├── components.css                # Tiles, micro-grid, badges, markers
     └── tile-debug.css                # Tile editor specific styles
@@ -167,10 +174,16 @@ Tiles and event cards belong to a collection, selected at game setup. Collection
 | `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
 | `NOT_USED` | `"not_used"` | Excluded from all play |
 
-Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` and in `event-deck.js` via `buildEventDeck`. Each collection definition includes:
+Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` and in `event-deck.js` via `buildEventDeck`. Metadata for each collection is defined in `COLLECTION_META` in `core.js`:
 
 | Property | Description |
 |----------|-------------|
+| `label` | Display name |
+| `type` | `"base"` or `"expansion"` |
+| `version` | Version string — integers and dot-notation (e.g. `2`, `0.1.0`) are prefixed with `v`; text values like `"2nd Edition"` are shown as-is |
+| `year` | Release year |
+| `description` | Short description shown in the setup tooltip |
+| `creator` | Author or creator name |
 | `requiresBase` | `null` for standalone base games; `COLLECTIONS.X` for expansions that need a base |
 
 If an expansion is selected without its required base game, the engine falls back to Director's Cut's Town Square (start tile) and Helipad (win tile), and uses Director's Cut events if the expansion has none of its own.

@@ -8,7 +8,7 @@ function anyBuildingMatches(conditionFn) {
       for (let dly = 0; dly < 3; dly++) {
         if (getSubTileType(tile, dlx, dly) !== "building") continue;
         if (!isLocalWalkable(tile, dlx, dly)) continue;
-        state.zombies.has(key(tx * 3 + dlx, ty * 3 + dly)) ? zombies++ : empty++;
+        state.zombies.has(key(tx * TILE_DIM + dlx, ty * TILE_DIM + dly)) ? zombies++ : empty++;
       }
     }
     if (conditionFn(zombies, empty)) return true;
@@ -119,7 +119,7 @@ function buildEventDeckHelpers() {
     state.board.forEach((tile, posKey) => {
       if (chosen || tile.name !== "Parking Lot") return;
       const { x: tx, y: ty } = parseKey(posKey);
-      chosen = { x: tx * 3 + 1, y: ty * 3 + 1 };
+      chosen = { x: tx * TILE_DIM + 1, y: ty * TILE_DIM + 1 };
     });
 
     if (!chosen) {

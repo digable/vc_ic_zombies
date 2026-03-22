@@ -10,7 +10,12 @@ function handleKnockout(player, options = {}) {
   if (endStep) {
     state.step = STEP.END;
   }
-  logLine(`${player.name} was knocked out, lost ${lostKills} kills, and respawned at Town Square.`);
+  logLine(`${player.name} was knocked out, lost ${lostKills} kills, and respawned at Town Square.`, "knockout");
+  state.knockoutBanner = { playerName: player.name, lostKills };
+  setTimeout(() => {
+    state.knockoutBanner = null;
+    render();
+  }, 5000);
 }
 
 function applyCombatPostStep(player, playerSpaceKey, options = {}) {
@@ -84,7 +89,7 @@ function resolvePendingCombatDecision(actionCode) {
     pending.modifiedRoll += 1;
     logLine(`${player.name} spent 1 bullet. Combat roll is now ${pending.modifiedRoll}.`);
 
-    if (pending.modifiedRoll >= 4) {
+    if (pending.modifiedRoll >= MIN_COMBAT_ROLL) {
       state.zombies.delete(playerSpaceKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
@@ -164,7 +169,7 @@ function resolvePendingCombatDecision(actionCode) {
       logLine(`${player.name} used the ${weapon.name} (+${weapon.permanentAttackBoost} permanent attack). Combat roll is now ${pending.modifiedRoll}.`);
     }
 
-    if (pending.modifiedRoll >= 4) {
+    if (pending.modifiedRoll >= MIN_COMBAT_ROLL) {
       state.zombies.delete(pending.pKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
@@ -234,7 +239,7 @@ function resolveCombatForPlayer(player, options = {}) {
   const baseCombatRoll = roll + permanentBonus + tempBonus + shotgunBonus + tileBonus;
   const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
 
-  if (baseCombatRoll >= 4) {
+  if (baseCombatRoll >= MIN_COMBAT_ROLL) {
     state.zombies.delete(playerSpaceKey);
     player.kills += 1;
     state.lastCombatResult = `Success (${baseCombatRoll})`;

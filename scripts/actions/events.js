@@ -226,7 +226,7 @@ function handleBuildingSelectClick(sx, sy) {
     for (let dly = 0; dly < 3; dly++) {
       if (getSubTileType(tile, dlx, dly) !== "building") continue;
       if (!isLocalWalkable(tile, dlx, dly)) continue;
-      const spaceKey = key(tx * 3 + dlx, ty * 3 + dly);
+      const spaceKey = key(tx * TILE_DIM + dlx, ty * TILE_DIM + dly);
       if (state.zombies.has(spaceKey)) {
         existingZombies++;
       } else {

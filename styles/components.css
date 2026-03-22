@@ -2,7 +2,7 @@
   width: 84px;
   height: 106px;
   border: 1px solid #9e8a66;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   position: relative;
   background: #f0ead8;
   padding: 0;
@@ -401,16 +401,24 @@
   margin: 0.5rem 0 0.25rem;
 }
 
-.zombie-replace {
+/* Shared base for all action panels */
+.zombie-replace,
+.event-choice,
+.combat-decision {
   margin: 0.35rem 0;
-  border: 1px solid #7c4a4a;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   padding: 0.45rem;
-  background: #fff0f0;
 }
 
-.zombie-replace.hidden {
+.zombie-replace.hidden,
+.event-choice.hidden,
+.combat-decision.hidden {
   display: none;
+}
+
+.zombie-replace {
+  border: 1px solid var(--panel-zombie-border);
+  background: var(--panel-zombie-bg);
 }
 
 .micro-cell.zombie-selectable {
@@ -441,27 +449,13 @@
 }
 
 .event-choice {
-  margin: 0.35rem 0;
-  border: 1px solid #4a7c59;
-  border-radius: 8px;
-  padding: 0.45rem;
-  background: #eef7f1;
-}
-
-.event-choice.hidden {
-  display: none;
+  border: 1px solid var(--panel-event-border);
+  background: var(--panel-event-bg);
 }
 
 .combat-decision {
-  margin: 0.35rem 0;
-  border: 1px solid #b76a48;
-  border-radius: 8px;
-  padding: 0.45rem;
-  background: #fff5eb;
-}
-
-.combat-decision.hidden {
-  display: none;
+  border: 1px solid var(--panel-combat-border);
+  background: var(--panel-combat-bg);
 }
 
 .combat-decision-title {
@@ -555,8 +549,8 @@
 }
 
 .combat-resources {
-  font-size: 0.8rem;
-  color: #5a4020;
+  font-size: var(--font-ui);
+  color: var(--tone-warm);
   margin: 0.3rem 0 0.1rem;
 }
 
@@ -588,15 +582,15 @@
 
 .combat-hint.good  { color: #2e7d32; font-weight: 600; }
 .combat-hint.warn  { color: #e65100; font-weight: 600; }
-.combat-hint.muted { color: #8a7050; }
+.combat-hint.muted { color: var(--tone-muted); }
 
 .combat-roll-total {
   font-size: 1.2em;
   font-weight: 700;
-  color: #b76a48;
+  color: var(--panel-combat-border);
   background: #fdf3e7;
   border: 1px solid #e0b888;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0 0.35em;
   margin-left: 0.1em;
 }

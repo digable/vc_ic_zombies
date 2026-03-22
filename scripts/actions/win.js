@@ -12,9 +12,9 @@ function checkWin(player) {
     }
   }
 
-  if (player.kills >= 25) {
+  if (player.kills >= WIN_KILLS) {
     state.gameOver = true;
-    logLine(`${player.name} reached 25 kills and wins.`);
+    logLine(`${player.name} reached ${WIN_KILLS} kills and wins.`);
     return true;
   }
 

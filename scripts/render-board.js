@@ -1,0 +1,273 @@
+// render-board.js — Board rendering functions.
+// Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
+
+function renderBoard() {
+  const { minX, maxX, minY, maxY } = boardBounds();
+  const cols = maxX - minX + 1;
+  refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(74px, 84px))`;
+  refs.board.innerHTML = "";
+
+  const pendingCoords = new Set(
+    state.pendingTileOptions
+      .filter((o) => o.rotation === state.pendingRotation)
+      .map((o) => key(o.x, o.y))
+  );
+
+  for (let y = minY; y <= maxY; y += 1) {
+    for (let x = minX; x <= maxX; x += 1) {
+      const tile = state.board.get(key(x, y));
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      if (!tile) {
+        cell.classList.add("empty");
+        const k = key(x, y);
+        if (state.pendingTile && pendingCoords.has(k)) {
+          cell.classList.add("place-option");
+          cell.dataset.placeX = String(x);
+          cell.dataset.placeY = String(y);
+
+          const option = state.pendingTileOptions.find(
+            (o) => o.x === x && o.y === y && o.rotation === state.pendingRotation
+          );
+          const previewTile = state.pendingTile;
+
+          cell.classList.add(getTileClassName(previewTile));
+
+          const sourceSubTiles = getTileSubTileMap(previewTile);
+          const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, state.pendingRotation);
+          const previewTileForWalk = {
+            type: previewTile.type,
+            connectors: option?.connectors || [],
+            ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
+          };
+
+          cell.innerHTML = `
+            <div><strong>${getTileDisplayName(previewTile)}</strong></div>
+            <div class="small">
+              Z${getZombieSpawnCountForPlacedTile(previewTile, option?.connectors || [])},
+              L${previewTile.hearts || 0},
+              B${previewTile.bullets || 0}
+            </div>
+            <div class="micro-grid">${buildMicroGridHtml(previewTileForWalk)}</div>
+            <div class="small">Click to place</div>
+          `;
+        }
+        refs.board.appendChild(cell);
+        continue;
+      }
+
+      cell.classList.add(getTileClassName(tile));
+
+      const getAdjacentTile = (dir) => {
+        const d = DIRS[dir];
+        return state.board.get(key(x + d.x, y + d.y));
+      };
+      if (getRoadLineDirs(tile, 1, 0, getAdjacentTile).includes("N")) cell.classList.add("connects-n");
+      if (getRoadLineDirs(tile, 1, 2, getAdjacentTile).includes("S")) cell.classList.add("connects-s");
+
+      const occupantMap = new Map();
+      const ensureCell = (lx, ly) => {
+        const k = key(lx, ly);
+        if (!occupantMap.has(k)) {
+          occupantMap.set(k, { players: [], zombie: false, hearts: 0, bullets: 0 });
+        }
+        return occupantMap.get(k);
+      };
+
+      state.players.forEach((p) => {
+        const ptx = spaceToTileCoord(p.x);
+        const pty = spaceToTileCoord(p.y);
+        if (ptx === x && pty === y) {
+          const lx = getLocalCoord(p.x, ptx);
+          const ly = getLocalCoord(p.y, pty);
+          ensureCell(lx, ly).players.push(`P${p.id}`);
+        }
+      });
+
+      state.zombies.forEach((zk) => {
+        const z = parseKey(zk);
+        const ztx = spaceToTileCoord(z.x);
+        const zty = spaceToTileCoord(z.y);
+        if (ztx === x && zty === y) {
+          const lx = getLocalCoord(z.x, ztx);
+          const ly = getLocalCoord(z.y, zty);
+          ensureCell(lx, ly).zombie = true;
+        }
+      });
+
+      state.spaceTokens.forEach((tokens, tk) => {
+        const t = parseKey(tk);
+        const ttx = spaceToTileCoord(t.x);
+        const tty = spaceToTileCoord(t.y);
+        if (ttx === x && tty === y) {
+          const lx = getLocalCoord(t.x, ttx);
+          const ly = getLocalCoord(t.y, tty);
+          const cellData = ensureCell(lx, ly);
+          cellData.hearts += tokens.hearts || 0;
+          cellData.bullets += tokens.bullets || 0;
+        }
+      });
+
+      const micro = [];
+      for (let ly = 0; ly < 3; ly += 1) {
+        for (let lx = 0; lx < 3; lx += 1) {
+          const isWalkable = isLocalWalkable(tile, lx, ly);
+          const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
+          const parts = [];
+          const subType = getSubTileType(tile, lx, ly);
+          const lineDirs = getRoadLineDirs(tile, lx, ly, getAdjacentTile);
+          const lanes = lineDirs
+            .map((dir) => {
+              const isOuter = (dir === "N" && ly === 0) || (dir === "S" && ly === 2) ||
+                              (dir === "E" && lx === 2) || (dir === "W" && lx === 0);
+              return `<span class="lane lane-${dir.toLowerCase()}${isOuter ? " lane-connector" : ""}"></span>`;
+            })
+            .join("");
+          const wallDirs = getSubTileWallDirs(tile, lx, ly);
+          const walls = wallDirs
+            .map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`)
+            .join("");
+
+          if (!isWalkable) {
+            parts.push('<span class="mark blocked">X</span>');
+          }
+
+          if (data.players.length) {
+            const activeId = `P${currentPlayer().id}`;
+            data.players.forEach((pid) => {
+              const cls = pid === activeId ? "mark player active" : "mark player";
+              parts.push(`<span class="${cls}">${pid}</span>`);
+            });
+          }
+          if (data.zombie) {
+            parts.push('<span class="mark zombie">Z</span>');
+          }
+          if (data.hearts > 0) {
+            parts.push(`<span class="mark token">H${data.hearts}</span>`);
+          }
+          if (data.bullets > 0) {
+            parts.push(`<span class="mark token">B${data.bullets}</span>`);
+          }
+          const sx = x * TILE_DIM + lx;
+          const sy = y * TILE_DIM + ly;
+          const pzr = state.pendingZombieReplace;
+          const spaceKey = key(sx, sy);
+
+          let zombieClass = "";
+          if (state.recentKillKey === spaceKey) {
+            zombieClass = " zombie-kill-flash";
+          }
+          const pzm2 = state.pendingZombieMovement;
+          if (pzm2 && data.zombie && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
+            zombieClass = " zombie-selectable";
+          } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
+            zombieClass = " zombie-target";
+          } else if (state.pendingZombiePlace && isWalkable && !data.zombie) {
+            zombieClass = " zombie-target";
+          } else if (pzr) {
+            if (pzr.selectedZombieKey === spaceKey) {
+              zombieClass = " zombie-selected";
+            } else if (!pzr.selectedZombieKey && data.zombie) {
+              zombieClass = " zombie-selectable";
+            } else if (pzr.selectedZombieKey && isWalkable && !data.zombie) {
+              zombieClass = " zombie-target";
+            }
+          }
+          micro.push(`<span class="micro-cell${subType ? ` ${subType}-subtile` : ""}${!isWalkable ? " blocked-subtile" : ""}${zombieClass}" data-sx="${sx}" data-sy="${sy}">${lanes}${walls}${parts.join("")}</span>`);
+        }
+      }
+
+      cell.innerHTML = `
+        <div><strong>${getTileDisplayName(tile)}</strong></div>
+        <div class="small">
+          Z${getZombieSpawnCountForPlacedTile(tile, tile.connectors || [])},
+          L${tile.hearts || 0},
+          B${tile.bullets || 0}
+        </div>
+        <div class="micro-grid">${micro.join("")}</div>
+      `;
+
+      refs.board.appendChild(cell);
+    }
+  }
+
+  if (state.recentKillKey) {
+    const killKey = state.recentKillKey;
+    setTimeout(() => {
+      if (state.recentKillKey === killKey) {
+        state.recentKillKey = null;
+      }
+      const { x, y } = parseKey(killKey);
+      const el = refs.board.querySelector(`[data-sx="${x}"][data-sy="${y}"]`);
+      if (el) {
+        el.classList.remove("zombie-kill-flash");
+      }
+    }, 700);
+  }
+}
+
+function renderPlayerTrailSvg() {
+  // Board clears its innerHTML every render — SVG must be re-appended each time.
+  // Measuring happens after DOM insertion so getBoundingClientRect is valid.
+  if (!state.playerTrail || state.playerTrail.length < 2) return;
+
+  const NS = "http://www.w3.org/2000/svg";
+  const boardRect = refs.board.getBoundingClientRect();
+
+  const points = [];
+  for (const spaceKey of state.playerTrail) {
+    const { x: sx, y: sy } = parseKey(spaceKey);
+    const cell = refs.board.querySelector(`[data-sx="${sx}"][data-sy="${sy}"]`);
+    if (!cell) continue;
+    const r = cell.getBoundingClientRect();
+    points.push({ x: r.left - boardRect.left + r.width / 2, y: r.top - boardRect.top + r.height / 2 });
+  }
+  if (points.length < 2) return;
+
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("style", "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;");
+
+  // Dashed path connecting all points
+  const ptStr = points.map((p) => `${p.x},${p.y}`).join(" ");
+  const polyline = document.createElementNS(NS, "polyline");
+  polyline.setAttribute("points", ptStr);
+  polyline.setAttribute("fill", "none");
+  polyline.setAttribute("stroke-width", "2");
+  polyline.setAttribute("class", "player-trail-line");
+  svg.appendChild(polyline);
+
+  // Directional arrow triangle at the midpoint of each segment
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i], p2 = points[i + 1];
+    const mx = (p1.x + p2.x) / 2;
+    const my = (p1.y + p2.y) / 2;
+    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+    const arrow = document.createElementNS(NS, "polygon");
+    arrow.setAttribute("points", "-4,-3 4,0 -4,3");
+    arrow.setAttribute("class", "player-trail-mark");
+    arrow.setAttribute("transform", `translate(${mx},${my}) rotate(${angle})`);
+    svg.appendChild(arrow);
+  }
+
+  refs.board.appendChild(svg);
+}
+
+function renderMoveStatus() {
+  if (!refs.moveStatusMsg) return;
+  const p = state.players[state.currentPlayerIndex];
+  if (!p || state.gameOver) { refs.moveStatusMsg.classList.add("hidden"); return; }
+
+  const msgs = [];
+  if (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) {
+    if (p.cannotMoveTurns > 0)         msgs.push("Fear: you cannot move this turn.");
+    if (p.claustrophobiaActive)         msgs.push("Claustrophobia: cannot enter buildings. If in a building, exit by shortest route.");
+    if (p.halfMovementNextTurn)         msgs.push("Your Shoe's Untied: movement roll will be halved.");
+    if (p.brainCramp)                   msgs.push("Brain Cramp: an opponent will control your movement.");
+    if (state.pendingForcedMove)        msgs.push(`Forced movement: ${state.pendingForcedMove.remaining} space(s) remaining.`);
+  }
+
+  if (msgs.length === 0) { refs.moveStatusMsg.classList.add("hidden"); return; }
+  refs.moveStatusMsg.classList.remove("hidden");
+  refs.moveStatusMsg.innerHTML = msgs.map((m) => `<div>${m}</div>`).join("");
+}
