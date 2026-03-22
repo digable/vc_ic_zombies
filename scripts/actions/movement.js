@@ -13,7 +13,6 @@ function rollMovement() {
 
   const player = currentPlayer();
   if (player.cannotMoveTurns > 0) {
-    player.cannotMoveTurns -= 1;
     state.currentMoveRoll = 0;
     state.movesRemaining = 0;
     state.step = STEP.MOVE_ZOMBIES;

@@ -12,6 +12,9 @@ function endTurn() {
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
   outgoing.noCombatThisTurn = false;
+  if (outgoing.cannotMoveTurns > 0) {
+    outgoing.cannotMoveTurns -= 1;
+  }
   state.playerTrail = [];
 
   state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;

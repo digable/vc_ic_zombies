@@ -576,26 +576,20 @@ function getZombieSpawnCountForPlacedTile(tile, connectors) {
 }
 
 function addTokensToSpace(x, y, hearts = 0, bullets = 0) {
-  if (hearts > 0 && bullets > 0) {
-    return false;
-  }
-
   const sk = key(x, y);
-  const existing = state.spaceTokens.get(sk);
-  if (existing && (existing.hearts > 0 || existing.bullets > 0)) {
+  const existing = state.spaceTokens.get(sk) || { hearts: 0, bullets: 0 };
+
+  const addHearts = hearts > 0 && existing.hearts === 0 ? 1 : 0;
+  const addBullets = bullets > 0 && existing.bullets === 0 ? 1 : 0;
+
+  if (addHearts === 0 && addBullets === 0) {
     return false;
   }
 
-  const next = {
-    hearts: hearts > 0 ? 1 : 0,
-    bullets: bullets > 0 ? 1 : 0
-  };
-
-  if (next.hearts === 0 && next.bullets === 0) {
-    return false;
-  }
-
-  state.spaceTokens.set(sk, next);
+  state.spaceTokens.set(sk, {
+    hearts: existing.hearts + addHearts,
+    bullets: existing.bullets + addBullets
+  });
   return true;
 }
 

@@ -1,7 +1,8 @@
-# 🧟 Iowa City Zombies
+# 🧟 VC IC Zombies
 
 A browser-based board game adaptation of zombie survival set in Iowa City. Draw tiles to build the city, fight zombies, grab loot, and reach the Helipad before the horde overwhelms you.
 
+[![Play Now](https://img.shields.io/badge/Play%20Now-digable.github.io-orange)](https://digable.github.io/vc_ic_zombies/)
 ![Game Type](https://img.shields.io/badge/Type-Board%20Game-red)
 ![Platform](https://img.shields.io/badge/Platform-Web-green)
 ![Build](https://img.shields.io/badge/Build-None%20Required-brightgreen)
@@ -12,7 +13,9 @@ The dead have risen in Iowa City. Streets are overrun, buildings are locked down
 
 ## 🕹️ Play Now
 
-Open `index.html` in your browser. No server or build step required.
+**[▶ Play in your browser →](https://digable.github.io/vc_ic_zombies/)**
+
+Or clone the repo and open `index.html` locally — no server or build step required.
 
 ## ✨ Features
 
