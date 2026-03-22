@@ -199,6 +199,7 @@ function forcedMoveTarget(dir) {
   const player = state.players.find((p) => p.id === pfm.targetPlayerId);
   if (!player) {
     state.pendingForcedMove = null;
+    state.step = pfm.priorStep;
     render();
     return;
   }
@@ -223,6 +224,7 @@ function forcedMoveTarget(dir) {
 
   if (checkWin(player)) {
     state.pendingForcedMove = null;
+    state.step = pfm.priorStep;
     render();
     return;
   }
@@ -233,7 +235,7 @@ function forcedMoveTarget(dir) {
     const result = resolveCombatForPlayer(player, {
       advanceStepWhenClear: false,
       endStepOnKnockout: false,
-      resumeStepAfterPending: pfm.priorStep
+      resumeStepAfterPending: pfm.remaining > 0 ? STEP.MOVE : pfm.priorStep
     });
     if (result.knockedOut || pfm.remaining <= 0) {
       state.pendingForcedMove = null;
@@ -256,6 +258,7 @@ function endForcedMovement() {
   if (!pfm) return;
   const player = state.players.find((p) => p.id === pfm.targetPlayerId);
   state.pendingForcedMove = null;
+  state.movesRemaining = 0;
   state.step = pfm.priorStep;
   if (player) {
     logLine(`Forced movement of ${player.name} ended early.`);

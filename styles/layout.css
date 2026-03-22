@@ -417,6 +417,11 @@
   margin-bottom: 0.3rem;
 }
 
+.log-line--kill {
+  font-weight: 700;
+  color: #c24a00;
+}
+
 @media (max-width: 1080px) {
   .layout {
     grid-template-columns: 1fr;

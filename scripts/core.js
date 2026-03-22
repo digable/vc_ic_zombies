@@ -70,6 +70,7 @@ const state = {
   pendingRotation: 0,
   pendingTileOptions: [],
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
+  recentKillKey: null,
   logs: []
 };
 
@@ -682,8 +683,8 @@ function rollD6() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-function logLine(text) {
-  state.logs.unshift(`[T${state.turnNumber}] ${text}`);
+function logLine(text, type) {
+  state.logs.unshift({ text: `[T${state.turnNumber}] ${text}`, type: type || null });
   if (state.logs.length > 120) {
     state.logs.pop();
   }

@@ -88,8 +88,9 @@ function resolvePendingCombatDecision(actionCode) {
       state.zombies.delete(playerSpaceKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
+      state.recentKillKey = playerSpaceKey;
       const bonusText = ` (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus})`;
-      logLine(`${player.name} raised the roll to ${pending.modifiedRoll}${bonusText} and killed the zombie.`);
+      logLine(`${player.name} raised the roll to ${pending.modifiedRoll}${bonusText} and killed the zombie.`, "kill");
 
       const options = pending.options;
       state.pendingCombatDecision = null;
@@ -167,7 +168,8 @@ function resolvePendingCombatDecision(actionCode) {
       state.zombies.delete(pending.pKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
-      logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the zombie.`);
+      state.recentKillKey = pending.pKey;
+      logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the zombie.`, "kill");
       const options = pending.options;
       state.pendingCombatDecision = null;
       checkWin(player);
@@ -236,7 +238,8 @@ function resolveCombatForPlayer(player, options = {}) {
     state.zombies.delete(playerSpaceKey);
     player.kills += 1;
     state.lastCombatResult = `Success (${baseCombatRoll})`;
-    logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and claimed a zombie kill.`);
+    state.recentKillKey = playerSpaceKey;
+    logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and claimed a zombie kill.`, "kill");
     checkWin(player);
     applyCombatPostStep(player, playerSpaceKey, { resumeStepAfterPending });
     return { fought: true, knockedOut: false, pending: false };
@@ -283,7 +286,7 @@ function resolveCombatOnCurrentTile() {
   const player = currentPlayer();
   resolveCombatForPlayer(player, {
     advanceStepWhenClear: true,
-    endStepOnKnockout: state.step === STEP.MOVE,
+    endStepOnKnockout: true,
     resumeStepAfterPending: state.step === STEP.MOVE ? (state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES) : null
   });
   render();

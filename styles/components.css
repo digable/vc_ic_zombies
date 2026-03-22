@@ -430,6 +430,16 @@
   background: rgba(39, 174, 96, 0.15);
 }
 
+@keyframes zombie-kill-burst {
+  0%   { background: rgba(255, 120, 20, 0.75); outline: 2px solid rgba(255, 160, 40, 0.9); }
+  40%  { background: rgba(255, 200, 60, 0.55); }
+  100% { background: transparent; outline-color: transparent; }
+}
+
+.micro-cell.zombie-kill-flash {
+  animation: zombie-kill-burst 0.7s ease-out forwards;
+}
+
 .event-choice {
   margin: 0.35rem 0;
   border: 1px solid #4a7c59;

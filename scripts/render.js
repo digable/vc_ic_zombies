@@ -755,6 +755,9 @@ function renderBoard() {
           const spaceKey = key(sx, sy);
 
           let zombieClass = "";
+          if (state.recentKillKey === spaceKey) {
+            zombieClass = " zombie-kill-flash";
+          }
           const pzm2 = state.pendingZombieMovement;
           if (pzm2 && data.zombie && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
             zombieClass = " zombie-selectable";
@@ -787,6 +790,20 @@ function renderBoard() {
 
       refs.board.appendChild(cell);
     }
+  }
+
+  if (state.recentKillKey) {
+    const killKey = state.recentKillKey;
+    setTimeout(() => {
+      if (state.recentKillKey === killKey) {
+        state.recentKillKey = null;
+      }
+      const { x, y } = parseKey(killKey);
+      const el = refs.board.querySelector(`[data-sx="${x}"][data-sy="${y}"]`);
+      if (el) {
+        el.classList.remove("zombie-kill-flash");
+      }
+    }, 700);
   }
 }
 
@@ -1069,7 +1086,10 @@ function renderEventChoice() {
 }
 
 function renderLog() {
-  refs.log.innerHTML = state.logs.map((line) => `<div class="log-line">${line}</div>`).join("");
+  refs.log.innerHTML = state.logs.map((entry) => {
+    const typeClass = entry.type ? ` log-line--${entry.type}` : "";
+    return `<div class="log-line${typeClass}">${entry.text}</div>`;
+  }).join("");
 }
 
 function updateButtons() {
@@ -1198,7 +1218,8 @@ function renderGameOver() {
     refs.gameOverOverlay.classList.add("hidden");
     return;
   }
-  const lastLog = state.logs[state.logs.length - 1] || "";
+  const lastLogEntry = state.logs[state.logs.length - 1];
+  const lastLog = lastLogEntry ? lastLogEntry.text : "";
   refs.gameOverMessage.textContent = lastLog;
   refs.gameOverOverlay.classList.remove("hidden");
 }
