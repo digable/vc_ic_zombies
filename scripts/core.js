@@ -548,7 +548,7 @@ function findSpawnSpaceOnTile(tx, ty) {
   return null;
 }
 
-function spawnZombieOnTile(tx, ty, sourceName) {
+function spawnZombieOnTile(tx, ty, sourceName, type = ZOMBIE_TYPE.REGULAR) {
   const tile = state.board.get(key(tx, ty));
   if (!tile) {
     return false;
@@ -560,21 +560,21 @@ function spawnZombieOnTile(tx, ty, sourceName) {
     return false;
   }
 
-  state.zombies.set(key(spawn.x, spawn.y), { type: ZOMBIE_TYPE.REGULAR });
+  state.zombies.set(key(spawn.x, spawn.y), { type });
   return true;
 }
 
-function spawnZombiesOnTile(tx, ty, count, sourceName) {
+function spawnZombiesOnTile(tx, ty, count, sourceName, type = ZOMBIE_TYPE.REGULAR) {
   let placed = 0;
   for (let i = 0; i < count; i += 1) {
-    if (spawnZombieOnTile(tx, ty, sourceName)) {
+    if (spawnZombieOnTile(tx, ty, sourceName, type)) {
       placed += 1;
     }
   }
   return placed;
 }
 
-function spawnZombiesOnRoadExits(tx, ty, connectors) {
+function spawnZombiesOnRoadExits(tx, ty, connectors, type = ZOMBIE_TYPE.REGULAR) {
   let placed = 0;
   (connectors || []).forEach((dir) => {
     const door = DOOR_LOCAL[dir];
@@ -585,7 +585,7 @@ function spawnZombiesOnRoadExits(tx, ty, connectors) {
     const sy = ty * TILE_DIM + door.y;
     const sk = key(sx, sy);
     if (!state.zombies.has(sk)) {
-      state.zombies.set(sk, { type: ZOMBIE_TYPE.REGULAR });
+      state.zombies.set(sk, { type });
       placed += 1;
     }
   });

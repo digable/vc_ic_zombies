@@ -9,14 +9,20 @@
 // Tile properties:
 //   name           {string}              Display name (referenced by event cards via requiresTile)
 //   type           {string}              "road" | "named" | "helipad" | "special"
-//   count          {number}              Copies shuffled into the deck
-//   enabled        {false}               Omit to include; set false to exclude without deleting
-//   collection     {COLLECTIONS.*}  Which game set this belongs to
+//   collection     {object}              Preferred form — keys are COLLECTIONS.*, values are copy counts
+//                                        e.g. collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.IOWA_CITY]: 2 }
+//                                        Tile is included when ANY of its collections is enabled.
+//                                        Copies = sum of counts for all enabled collections.
+//   collection     {string|string[]}     Legacy form — still supported. Use with count (integer) below.
+//   count          {number}              Legacy — copies in the deck. If integer with no object collection,
+//                                        defaults to the base collection. Omit when using object collection.
 //   connectors     {string[]}            Road exits: "N" | "E" | "S" | "W"
 //                                        Placement requires adjacent connector alignment
 //   zombieSpawnMode {string}             "by_card"  — spawns zombieCount zombies when placed
 //                                        "by_exits" — spawns one zombie per connector
 //   zombieCount    {number}              Zombies spawned on placement (by_card mode only)
+//   zombieType     {ZOMBIE_TYPE.*}       Type of zombie spawned — omit for ZOMBIE_TYPE.REGULAR
+//                                        e.g. zombieType: ZOMBIE_TYPE.ENHANCED
 //   hearts         {number}              Heart tokens placed on tile when drawn
 //   bullets        {number}              Bullet tokens placed on tile when drawn
 //   isStartTile    {true}                Placed at (0,0) to start the game; one per standalone collection
@@ -49,9 +55,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Straight",
       type: "road",
-      count: 4,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 4 },
       connectors: ["N", "S"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -70,9 +75,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Corner",
       type: "road",
-      count: 4,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 4 },
       connectors: ["N", "E"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -91,9 +95,8 @@ function buildMapDeck(filters = null) {
     {
       name: "T-Junction",
       type: "road",
-      count: 4,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 4 },
       connectors: ["N", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -112,9 +115,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Parking Lot",
       type: "road",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["N", "S", "E", "W"],
       zombieSpawnMode: "by_exits",
       subTilesTemplate: {
@@ -138,9 +140,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Army Surplus",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -161,9 +162,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Gas Station",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -184,9 +184,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Police Station",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -207,9 +206,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Hospital",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 8,
@@ -230,9 +228,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Pharmacy",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -253,9 +250,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Fire Station",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -276,9 +272,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Toy Store",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -299,9 +294,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Skate Shop",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -322,9 +316,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Florist",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -345,9 +338,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Sporting Goods Store",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -368,9 +360,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Lawn & Garden Store",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["S"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -391,9 +382,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Hardware Store",
       type: "named",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
       connectors: ["E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -416,9 +406,8 @@ function buildMapDeck(filters = null) {
     {
       name: "The Deadwood",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -439,9 +428,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Hamburg Inn",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -462,9 +450,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Ped Mall",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 5,
@@ -485,9 +472,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Old Capitol",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 6,
@@ -508,9 +494,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Kinnick Stadium",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 10,
@@ -531,9 +516,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Main Library",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -554,9 +538,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Oakland Cemetery",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 8,
@@ -577,9 +560,8 @@ function buildMapDeck(filters = null) {
     {
       name: "City Park",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -600,9 +582,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Sanctuary",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["S", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -623,9 +604,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Prairie Lights",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "E"],
       zombieSpawnMode: "by_card",
       zombieCount: 2,
@@ -646,9 +626,8 @@ function buildMapDeck(filters = null) {
     {
       name: "FilmScene",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 3,
@@ -669,9 +648,8 @@ function buildMapDeck(filters = null) {
     {
       name: "UIHC",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 9,
@@ -692,9 +670,8 @@ function buildMapDeck(filters = null) {
     {
       name: "IMU",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["E", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 4,
@@ -715,9 +692,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Hy-Vee",
       type: "named",
-      count: 1,
       enabled: false,
-      collection: COLLECTIONS.IOWA_CITY,
+      collection: { [COLLECTIONS.IOWA_CITY]: 1 },
       connectors: ["N", "E", "S"],
       zombieSpawnMode: "by_card",
       zombieCount: 5,
@@ -744,9 +720,8 @@ function buildMapDeck(filters = null) {
     {
       name: "Helipad",
       type: "helipad",
-      count: 1,
       enabled: true,
-      collection: COLLECTIONS.DIRECTORS_CUT,
+      collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
       connectors: ["N", "E", "S", "W"],
       zombieSpawnMode: "by_card",
       zombieCount: 9,
@@ -769,15 +744,41 @@ function buildMapDeck(filters = null) {
 
   const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
 
+  // Normalise tile collection into { [collectionKey]: count } regardless of authoring form.
+  // Object collection  → use as-is
+  // String/array + count integer → { col: count } for each listed collection
+  // String/array, no count → { col: 1 }
+  // count integer, no collection → { [baseCollection]: count }
+  function resolveCollectionCounts(t) {
+    const base = getBaseCollection();
+    if (t.collection !== null && typeof t.collection === "object" && !Array.isArray(t.collection)) {
+      return t.collection;
+    }
+    const cols = Array.isArray(t.collection)
+      ? t.collection
+      : [t.collection || base];
+    const perCol = Math.max(1, t.count || 1);
+    return Object.fromEntries(cols.map((c) => [c, perCol]));
+  }
+
   const filtered = allTiles
     .filter((t) => {
-      const col = t.collection || getBaseCollection();
       if (!filters) return true;
-      const rule = filters[col];
-      if (!rule) return false;
-      return t.enabled !== false ? (rule.enabled ?? false) : (rule.disabled ?? false);
+      const colCounts = resolveCollectionCounts(t);
+      return Object.keys(colCounts).some((c) => {
+        const rule = filters[c];
+        if (!rule) return false;
+        return t.enabled !== false ? (rule.enabled ?? false) : (rule.disabled ?? false);
+      });
     })
-    .flatMap((t) => Array.from({ length: t.count || 1 }, () => ({ ...t })));
+    .flatMap((t) => {
+      const colCounts = resolveCollectionCounts(t);
+      const count = Object.entries(colCounts).reduce((sum, [c, n]) => {
+        if (!filters || filters[c]?.enabled) return sum + n;
+        return sum;
+      }, 0) || 1;
+      return Array.from({ length: count }, () => ({ ...t }));
+    });
 
   const winTiles = filtered.filter((t) => t.isWinTile);
   const cards = filtered.filter((t) => !t.isWinTile);

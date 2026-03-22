@@ -140,11 +140,12 @@ function placePendingTileAt(x, y) {
   logLine(`${currentPlayer().name} placed ${placedName} at (${placement.x}, ${placement.y}).`);
 
   const spawnCount = getZombieSpawnCountForPlacedTile(tile, placement.connectors);
+  const spawnType = tile.zombieType || ZOMBIE_TYPE.REGULAR;
   let placed = 0;
   if (tile.zombieSpawnMode === "by_exits") {
-    placed = spawnZombiesOnRoadExits(placement.x, placement.y, placement.connectors);
+    placed = spawnZombiesOnRoadExits(placement.x, placement.y, placement.connectors, spawnType);
   } else {
-    placed = spawnZombiesOnTile(placement.x, placement.y, spawnCount, placedName);
+    placed = spawnZombiesOnTile(placement.x, placement.y, spawnCount, placedName, spawnType);
   }
 
   if (spawnCount > 0 && tile.zombieSpawnMode === "by_exits") {
