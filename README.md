@@ -172,13 +172,15 @@ Supported per-subtile properties:
 
 ### Collections
 
-Tiles and event cards belong to a collection, selected at game setup. Collections are defined in `COLLECTIONS` in `core.js`:
+Tiles and event cards belong to a collection, selected at game setup. Collections are defined in `COLLECTIONS` and `COLLECTION_META` in `core.js`. The setup panel UI, default game start, and all fallback logic derive from these automatically — adding a new collection only requires editing `core.js`.
+
+Current collections:
 
 | Key | Value | Description |
 |-----|-------|-------------|
 | `DIRECTORS_CUT` | `"directors_cut"` | Base game — can be played standalone |
 | `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
-| `NOT_USED` | `"not_used"` | Excluded from all play |
+| `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Expansion — requires Director's Cut |
 
 Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` and in `event-deck.js` via `buildEventDeck`. Metadata for each collection is defined in `COLLECTION_META` in `core.js`:
 

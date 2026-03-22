@@ -771,7 +771,7 @@ function buildMapDeck(filters = null) {
 
   const filtered = allTiles
     .filter((t) => {
-      const col = t.collection || COLLECTIONS.DIRECTORS_CUT;
+      const col = t.collection || getBaseCollection();
       if (!filters) return true;
       const rule = filters[col];
       if (!rule) return false;
@@ -844,7 +844,7 @@ function buildStartTile(filters = null) {
 function getMapTileCountsByCollection() {
   const counts = {};
   buildMapDeck(null).forEach((t) => {
-    const col = t.collection || COLLECTIONS.DIRECTORS_CUT;
+    const col = t.collection || getBaseCollection();
     counts[col] = (counts[col] || 0) + 1;
   });
   return counts;

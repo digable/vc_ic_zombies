@@ -159,7 +159,7 @@ function renderMapDeckDebug() {
   state.mapDeck.forEach((tile, index) => {
     if (seenNames.has(tile.name)) return;
     seenNames.add(tile.name);
-    if (mapDeckDebugFilters.collection !== "all" && (tile.collection || COLLECTIONS.DIRECTORS_CUT) !== mapDeckDebugFilters.collection) return;
+    if (mapDeckDebugFilters.collection !== "all" && (tile.collection || getBaseCollection()) !== mapDeckDebugFilters.collection) return;
     if (mapDeckDebugFilters.enabled !== "all" && String(tile.enabled !== false) !== mapDeckDebugFilters.enabled) return;
     const group = getDebugGroup(tile);
     grouped.get(group)?.push({ tile, deckIndex: index });
@@ -233,7 +233,7 @@ function renderMapDeckDebug() {
           <strong>${getTileDisplayName(tileForRender)}</strong>
           <select data-debug-tile-id="${tileId}" data-debug-field="collection">
             ${Object.entries(COLLECTIONS).map(([key, val]) =>
-              `<option value="${val}" ${(tileForRender.collection || COLLECTIONS.DIRECTORS_CUT) === val ? "selected" : ""}>${key}</option>`
+              `<option value="${val}" ${(tileForRender.collection || getBaseCollection()) === val ? "selected" : ""}>${key}</option>`
             ).join("")}
           </select>
         </div>

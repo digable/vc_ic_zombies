@@ -1,3 +1,35 @@
+function buildCollectionRows() {
+  const grid = document.getElementById("collectionGrid");
+  if (!grid) return;
+
+  Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
+    const isBase = meta.requiresBase === null;
+    const tagClass = isBase ? "coll-tag-base" : "coll-tag-expansion";
+    const tagLabel = isBase ? "base" : "expansion";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "setup-coll-name";
+    nameSpan.setAttribute("data-coll", collKey);
+    nameSpan.innerHTML = `${meta.label} <span class="coll-tag ${tagClass}">${tagLabel}</span> <span class="coll-counts" data-coll-counts="${collKey}"></span>`;
+
+    const enabledInput = document.createElement("input");
+    enabledInput.type = "checkbox";
+    enabledInput.setAttribute("data-deck-coll", collKey);
+    enabledInput.setAttribute("data-deck-state", "enabled");
+    if (isBase) enabledInput.checked = true;
+    if (!isBase) enabledInput.setAttribute("data-requires-base", meta.requiresBase);
+
+    const disabledInput = document.createElement("input");
+    disabledInput.type = "checkbox";
+    disabledInput.setAttribute("data-deck-coll", collKey);
+    disabledInput.setAttribute("data-deck-state", "disabled");
+
+    grid.appendChild(nameSpan);
+    grid.appendChild(enabledInput);
+    grid.appendChild(disabledInput);
+  });
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     const setupSection = document.getElementById("setupSection");
@@ -214,8 +246,9 @@ function applyCollectionTooltips() {
   });
 }
 
+buildCollectionRows();
 attachListeners();
 populateCollectionCounts();
 applyCollectionTooltips();
-setupGame(2, { [COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } });
+setupGame(2, { [getBaseCollection()]: { enabled: true, disabled: false } });
 document.getElementById("setupSection").classList.add("hidden");

@@ -13,8 +13,8 @@ const DOOR_LOCAL = {
 };
 
 const COLLECTIONS = {
-  NOT_USED: "not_used",
   DIRECTORS_CUT: "directors_cut",
+  ZOMBIE_CORPS_E_: "zombie_corps_e_",
   IOWA_CITY: "iowa_city"
 };
 
@@ -39,16 +39,22 @@ const COLLECTION_META = {
     description: "Iowa City themed locations. Requires Director's Cut to play.",
     creator: "digable"
   },
-  [COLLECTIONS.NOT_USED]: {
-    label: "Not Used",
-    requiresBase: null,
-    year: null,
-    type: null,
-    version: null,
-    description: "A placeholder for test stuff.",
-    creator: null
+  [COLLECTIONS.ZOMBIE_CORPS_E_]: {
+    label: "Zombie Corps(e)",
+    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    year: 2007,
+    type: "Expansion",
+    version: "2nd Edition",
+    description: "Zombies!!! 2 - an expansion for the base game.",
+    creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein"
   }
 };
+
+// Returns the key of the first standalone base collection (requiresBase === null).
+function getBaseCollection() {
+  const entry = Object.entries(COLLECTION_META).find(([, meta]) => meta.requiresBase === null);
+  return entry ? entry[0] : Object.values(COLLECTIONS)[0];
+}
 
 const STEP = {
   DRAW_TILE: "DRAW_TILE",
