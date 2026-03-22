@@ -27,7 +27,8 @@ function setupGame(playerCount, deckFilters = null) {
       halfMovementNextTurn: false,
       x: 1,
       y: 1,
-      knockedOut: false
+      knockedOut: false,
+      knockouts: 0
     });
   }
 

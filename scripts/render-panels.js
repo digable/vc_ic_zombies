@@ -89,7 +89,7 @@ function renderPlayers() {
   refs.currentPlayerCard.innerHTML = `
     <div class="player-card">
       <strong>${cp.name}</strong><br />
-      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}<br />
+      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""} | KO: ${cp.knockouts || 0}<br />
       Position: Tile (${cptx}, ${cpty}) / Space (${cplx}, ${cply})
     </div>
   `;
@@ -104,7 +104,7 @@ function renderPlayers() {
     el.className = "player-card";
     el.innerHTML = `
       <strong>${p.name}</strong><br />
-      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}<br />
+      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""} | KO: ${p.knockouts || 0}<br />
       Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
     `;
     refs.playersList.appendChild(el);

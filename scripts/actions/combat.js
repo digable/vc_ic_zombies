@@ -7,6 +7,7 @@ function handleKnockout(player, options = {}) {
   player.x = 1;
   player.y = 1;
   player.knockedOut = true;
+  player.knockouts = (player.knockouts || 0) + 1;
   if (endStep) {
     state.step = STEP.END;
   }
