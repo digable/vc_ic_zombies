@@ -926,19 +926,73 @@ function renderCombatDecision() {
     return;
   }
 
+  const WIN = 4;
+  const roll = pending.modifiedRoll;
+
+  function actionWrap(btnHtml, hintText, hintClass) {
+    const hint = hintText ? `<span class="combat-hint ${hintClass || ""}">${hintText}</span>` : "";
+    return `<div class="combat-action-wrap">${btnHtml}${hint}</div>`;
+  }
+
+  const bulletsNeededToWin = Math.max(0, WIN - roll);
+  const bulletWins = roll + 1 >= WIN;
+  const canWinWithBullets = roll + player.bullets >= WIN;
+  const bulletResult = bulletWins
+    ? "kills the zombie!"
+    : canWinWithBullets
+      ? `need ${bulletsNeededToWin} total to win`
+      : "won't be enough — wasted bullet";
+  const bulletHintClass = bulletWins ? "good" : canWinWithBullets ? "good" : "warn";
+  const bulletBtn = actionWrap(
+    `<button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1)</button>`,
+    player.bullets > 0 ? `→ ${bulletResult}` : null,
+    bulletHintClass
+  );
+
+  const heartsAfterReroll = player.hearts - 1;
+  const rerollHint = player.hearts === 0 ? null
+    : player.hearts === 1 ? "last heart ⚠"
+    : `${heartsAfterReroll} heart${heartsAfterReroll !== 1 ? "s" : ""} left`;
+  const rerollHintClass = player.hearts === 1 ? "warn" : "muted";
+  const rerollBtn = actionWrap(
+    `<button data-combat-action="H" ${player.hearts > 0 ? "" : "disabled"}>Spend 1 Life Token (Reroll)</button>`,
+    rerollHint,
+    rerollHintClass
+  );
+
+  const fakBtn = player.items && player.items.some((c) => c.name === "First Aid Kit")
+    ? actionWrap(`<button data-combat-action="FAK">Use First Aid Kit (free reroll)</button>`, "no cost", "muted")
+    : "";
+
+  const weaponBtns = player.items
+    ? player.items.filter((c) => c.combatWeapon).map((c) => {
+        const boost = c.combatBoost || c.permanentAttackBoost;
+        const newTotal = roll + boost;
+        const wHint = newTotal >= WIN ? "kills the zombie!" : `→ total: ${newTotal}`;
+        const wClass = newTotal >= WIN ? "good" : "muted";
+        return actionWrap(
+          `<button data-combat-action="W:${c.name}" ${pending.weaponUsed ? "disabled" : ""}>${c.name} (+${boost})</button>`,
+          wHint, wClass
+        );
+      }).join("")
+    : "";
+
+  const loseBtn = actionWrap(
+    `<button data-combat-action="L">Lose Combat</button>`,
+    "respawns at Town Square — loses half your kills",
+    "muted"
+  );
+
   panel.classList.remove("hidden");
   panel.innerHTML = `
     <div class="combat-decision-title">Combat Decision Required: ${player.name}</div>
     <div class="small">
-      ${player.name} rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}).<br />
-      Current combat total: ${pending.modifiedRoll}. Choose one action:
+      Rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}) — need ${WIN} to win.<br />
+      Current total: <span class="combat-roll-total">${roll}</span>
     </div>
+    <div class="combat-resources"><span class="bullet-icon">⬤</span> ${player.bullets}&ensp;·&ensp;❤️ ${player.hearts}</div>
     <div class="combat-decision-actions">
-      <button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1)</button>
-      <button data-combat-action="H" ${player.hearts > 0 ? "" : "disabled"}>Spend 1 Life Token (Reroll)</button>
-      ${player.items && player.items.some((c) => c.name === "First Aid Kit") ? `<button data-combat-action="FAK">Use First Aid Kit (free reroll)</button>` : ""}
-      ${player.items ? player.items.filter((c) => c.combatWeapon).map((c) => `<button data-combat-action="W:${c.name}" ${pending.weaponUsed ? "disabled" : ""}>${c.name} (+${c.combatBoost || c.permanentAttackBoost})</button>`).join("") : ""}
-      <button data-combat-action="L">Lose Combat</button>
+      ${bulletBtn}${rerollBtn}${fakBtn}${weaponBtns}${loseBtn}
     </div>
   `;
 }

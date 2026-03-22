@@ -554,14 +554,55 @@
   background: #a33;
 }
 
+.combat-resources {
+  font-size: 0.8rem;
+  color: #5a4020;
+  margin: 0.3rem 0 0.1rem;
+}
+
 .combat-decision-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.4rem;
   margin-top: 0.35rem;
+  align-items: flex-start;
+}
+
+.combat-action-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .combat-decision-actions button {
   font-size: 0.8rem;
   padding: 0.25rem 0.5rem;
+}
+
+.combat-hint {
+  font-size: 0.68rem;
+  line-height: 1;
+  padding-left: 2px;
+}
+
+.combat-hint.good  { color: #2e7d32; font-weight: 600; }
+.combat-hint.warn  { color: #e65100; font-weight: 600; }
+.combat-hint.muted { color: #8a7050; }
+
+.combat-roll-total {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #b76a48;
+  background: #fdf3e7;
+  border: 1px solid #e0b888;
+  border-radius: 4px;
+  padding: 0 0.35em;
+  margin-left: 0.1em;
+}
+
+.bullet-icon {
+  color: #b8972a;
+  font-size: 0.7em;
+  vertical-align: middle;
 }
