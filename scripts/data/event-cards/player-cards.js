@@ -169,6 +169,7 @@ const playerEventCards = [
     description: "Play instead of making a movement roll. Gain 2 health.",
     count: 2,
     collection: COLLECTIONS.DIRECTORS_CUT,
+    canPlay() { return state.step === STEP.ROLL_MOVE; },
     apply(player) {
       player.hearts = Math.min(5, player.hearts + 2);
       if (state.step === STEP.ROLL_MOVE) {

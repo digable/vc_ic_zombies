@@ -37,7 +37,7 @@ function setupGame(playerCount, deckFilters = null) {
   state.eventDeck = buildEventDeck(deckFilters);
   state.eventDiscardPile = [];
   state.discardPile = [];
-  state.zombies = new Set();
+  state.zombies = new Map();
   state.spaceTokens = new Map();
   resetStepProgress(STEP.DRAW_TILE);
   state.turnNumber = 1;

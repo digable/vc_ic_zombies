@@ -127,7 +127,8 @@ function renderHand() {
 
   const isCardPlayable = (card) => {
     if (globallyBlocked) return false;
-    if (card.isWeapon && card.isItem && player.items && player.items.some((c) => c.name === card.name)) return false;
+    if (card.canPlay && !card.canPlay()) return false;
+    if (card.isItem && player.items && player.items.some((c) => c.name === card.name)) return false;
     if (card.isItem && card.requiresTile) {
       const tile = getTileAtSpace(player.x, player.y);
       const allowed = Array.isArray(card.requiresTile) ? card.requiresTile : [card.requiresTile];
@@ -198,8 +199,9 @@ function renderCombatDecision() {
     return;
   }
 
-  const WIN = MIN_COMBAT_ROLL;
+  const WIN = pending.killRoll;
   const roll = pending.modifiedRoll;
+  const zombieLabel = pending.isEnhanced ? "Government-Enhanced Zombie" : "Zombie";
 
   function actionWrap(btnHtml, hintText, hintClass) {
     const hint = hintText ? `<span class="combat-hint ${hintClass || ""}">${hintText}</span>` : "";
@@ -257,9 +259,9 @@ function renderCombatDecision() {
 
   panel.classList.remove("hidden");
   panel.innerHTML = `
-    <div class="combat-decision-title">Combat Decision Required: ${player.name}</div>
+    <div class="combat-decision-title">Combat vs ${zombieLabel}: ${player.name}</div>
     <div class="small">
-      Rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}) — need ${WIN} to win.<br />
+      Rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}) — need ${WIN}+ to win.<br />
       Current total: <span class="combat-roll-total">${roll}</span>
     </div>
     <div class="combat-resources"><span class="bullet-icon">⬤</span> ${player.bullets}&ensp;·&ensp;❤️ ${player.hearts}</div>
@@ -337,7 +339,7 @@ function renderZombieReplacePanel() {
 
   const pzm = state.pendingZombieMovement;
   if (pzm) {
-    const available = [...state.zombies].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
     panel.classList.remove("hidden");
     panel.innerHTML = `
       <div class="combat-decision-title">Zombie Movement — ${pzm.remaining} move(s) remaining</div>
@@ -405,8 +407,12 @@ function renderEventChoice() {
   const buttons = pending.options
     .map((o) => `<button data-event-choice="${o.key}">${o.label}</button>`)
     .join("");
+  const subtitle = pending.targetName
+    ? `<div class="small">${player.name} chooses what to take from ${pending.targetName}.</div>`
+    : "";
   panel.innerHTML = `
     <div class="combat-decision-title">Card Choice: ${pending.cardName} — ${player.name}</div>
+    ${subtitle}
     <div class="combat-decision-actions">${buttons}</div>
   `;
 }

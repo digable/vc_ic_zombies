@@ -29,7 +29,7 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 
 ### ⚔️ Combat System
 - Combat triggers when entering or sharing a space with a zombie
-- Roll d6 + attack bonus + temporary bonus; 4+ wins
+- Roll d6 + attack bonus + temporary bonus; kill threshold depends on zombie type (regular: 4+, government-enhanced: 5+)
 - On failure: spend a bullet for +1, spend a heart to reroll, use a weapon item, or take the loss
 - Combat panel shows current hearts and bullets, with smart hints (e.g. warns if spending bullets won't be enough to win)
 - All decisions resolved in-page — no browser prompts
@@ -40,6 +40,12 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Movement respects walls, doors, and tile connectors
 - One zombie per space; blocked zombies skip their move slot
 - Zombie count per roll capped at total zombies on the board
+- Zombie types have distinct stats defined in `ZOMBIE_TYPES` (`constants.js`):
+
+| Type | Kill Roll | Movement |
+|------|-----------|----------|
+| Regular | 4+ | 1 space |
+| Government-Enhanced | 5+ | 2 spaces |
 
 ### 🎴 Event Cards
 - Draw up to 3 event cards per turn
@@ -214,12 +220,12 @@ If an expansion is selected without its required base game, the engine falls bac
 - Tile placement requires connector alignment — roads must connect to roads
 - Helipad is shuffled into the second half of the deck
 - Zombies spawn on tiles when placed based on `zombieSpawnMode`
-- Combat roll: d6 + attack bonus + temp bonus; 4+ = win
+- Combat roll: d6 + attack bonus + temp bonus; kill threshold varies by zombie type (regular 4+, government-enhanced 5+)
 - Failed combat options: spend bullet (+1), spend heart (reroll), or accept loss
 - Knockout: lose half kills (rounded down), respawn Town Square, reset stats
 - Hearts are capped at 5
-- One event card may be played per turn cycle
-- Zombie movement is non-diagonal, one step, one zombie per space
+- One event card may be played per turn cycle; some cards have timing restrictions (e.g. Much Needed Rest must be played before rolling movement)
+- Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot
 - Win by reaching the **center square** of the Helipad or reaching 25 kills
 
 ---

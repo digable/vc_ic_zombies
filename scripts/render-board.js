@@ -70,7 +70,7 @@ function renderBoard() {
       const ensureCell = (lx, ly) => {
         const k = key(lx, ly);
         if (!occupantMap.has(k)) {
-          occupantMap.set(k, { players: [], zombie: false, hearts: 0, bullets: 0 });
+          occupantMap.set(k, { players: [], zombieType: null, hearts: 0, bullets: 0 });
         }
         return occupantMap.get(k);
       };
@@ -85,14 +85,14 @@ function renderBoard() {
         }
       });
 
-      state.zombies.forEach((zk) => {
+      state.zombies.forEach((zdata, zk) => {
         const z = parseKey(zk);
         const ztx = spaceToTileCoord(z.x);
         const zty = spaceToTileCoord(z.y);
         if (ztx === x && zty === y) {
           const lx = getLocalCoord(z.x, ztx);
           const ly = getLocalCoord(z.y, zty);
-          ensureCell(lx, ly).zombie = true;
+          ensureCell(lx, ly).zombieType = zdata.type;
         }
       });
 
@@ -113,7 +113,7 @@ function renderBoard() {
       for (let ly = 0; ly < 3; ly += 1) {
         for (let lx = 0; lx < 3; lx += 1) {
           const isWalkable = isLocalWalkable(tile, lx, ly);
-          const data = occupantMap.get(key(lx, ly)) || { players: [], zombie: false, hearts: 0, bullets: 0 };
+          const data = occupantMap.get(key(lx, ly)) || { players: [], zombieType: null, hearts: 0, bullets: 0 };
           const parts = [];
           const subType = getSubTileType(tile, lx, ly);
           const lineDirs = getRoadLineDirs(tile, lx, ly, getAdjacentTile);
@@ -140,8 +140,9 @@ function renderBoard() {
               parts.push(`<span class="${cls}">${pid}</span>`);
             });
           }
-          if (data.zombie) {
-            parts.push('<span class="mark zombie">Z</span>');
+          if (data.zombieType) {
+            const zombieCls = data.zombieType === ZOMBIE_TYPE.ENHANCED ? "mark zombie zombie-enhanced" : "mark zombie";
+            parts.push(`<span class="${zombieCls}">Z</span>`);
           }
           if (data.hearts > 0) {
             parts.push(`<span class="mark token">H${data.hearts}</span>`);
@@ -159,7 +160,7 @@ function renderBoard() {
             zombieClass = " zombie-kill-flash";
           }
           const pzm2 = state.pendingZombieMovement;
-          if (pzm2 && data.zombie && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
+          if (pzm2 && data.zombieType && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
             zombieClass = " zombie-selectable";
           } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
             zombieClass = " zombie-target";
@@ -168,9 +169,9 @@ function renderBoard() {
           } else if (pzr) {
             if (pzr.selectedZombieKey === spaceKey) {
               zombieClass = " zombie-selected";
-            } else if (!pzr.selectedZombieKey && data.zombie) {
+            } else if (!pzr.selectedZombieKey && data.zombieType) {
               zombieClass = " zombie-selectable";
-            } else if (pzr.selectedZombieKey && isWalkable && !data.zombie) {
+            } else if (pzr.selectedZombieKey && isWalkable && !data.zombieType) {
               zombieClass = " zombie-target";
             }
           }
@@ -264,7 +265,11 @@ function renderMoveStatus() {
     if (p.claustrophobiaActive)         msgs.push("Claustrophobia: cannot enter buildings. If in a building, exit by shortest route.");
     if (p.halfMovementNextTurn)         msgs.push("Your Shoe's Untied: movement roll will be halved.");
     if (p.brainCramp)                   msgs.push("Brain Cramp: an opponent will control your movement.");
-    if (state.pendingForcedMove)        msgs.push(`Forced movement: ${state.pendingForcedMove.remaining} space(s) remaining.`);
+    if (state.pendingForcedMove) {
+      const target = state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId);
+      const targetName = target ? target.name : "Unknown";
+      msgs.push(`Forced movement: moving ${targetName} — ${state.pendingForcedMove.remaining} space(s) remaining.`);
+    }
   }
 
   if (msgs.length === 0) { refs.moveStatusMsg.classList.add("hidden"); return; }

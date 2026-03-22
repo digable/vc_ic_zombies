@@ -82,10 +82,11 @@ const opponentEventCards = [
         return;
       }
 
-      logLine(`${player.name} played Butter Fingers on ${target.name} — choose what to remove.`);
+      logLine(`${player.name} played Butter Fingers on ${target.name} — ${player.name} chooses what to take.`);
       state.pendingEventChoice = {
         playerId: player.id,
         cardName: "Butter Fingers",
+        targetName: target.name,
         options,
         resolve(key) {
           if (key === "bullet_1") {

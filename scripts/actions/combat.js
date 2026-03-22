@@ -89,13 +89,14 @@ function resolvePendingCombatDecision(actionCode) {
     pending.modifiedRoll += 1;
     logLine(`${player.name} spent 1 bullet. Combat roll is now ${pending.modifiedRoll}.`);
 
-    if (pending.modifiedRoll >= MIN_COMBAT_ROLL) {
+    if (pending.modifiedRoll >= pending.killRoll) {
       state.zombies.delete(playerSpaceKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = playerSpaceKey;
       const bonusText = ` (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus})`;
-      logLine(`${player.name} raised the roll to ${pending.modifiedRoll}${bonusText} and killed the zombie.`, "kill");
+      const zombieLabel = pending.isEnhanced ? "government-enhanced zombie" : "zombie";
+      logLine(`${player.name} raised the roll to ${pending.modifiedRoll}${bonusText} and killed the ${zombieLabel}.`, "kill");
 
       const options = pending.options;
       state.pendingCombatDecision = null;
@@ -169,12 +170,13 @@ function resolvePendingCombatDecision(actionCode) {
       logLine(`${player.name} used the ${weapon.name} (+${weapon.permanentAttackBoost} permanent attack). Combat roll is now ${pending.modifiedRoll}.`);
     }
 
-    if (pending.modifiedRoll >= MIN_COMBAT_ROLL) {
+    if (pending.modifiedRoll >= pending.killRoll) {
       state.zombies.delete(pending.pKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = pending.pKey;
-      logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the zombie.`, "kill");
+      const zombieLabel = pending.isEnhanced ? "government-enhanced zombie" : "zombie";
+      logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the ${zombieLabel}.`, "kill");
       const options = pending.options;
       state.pendingCombatDecision = null;
       checkWin(player);
@@ -226,6 +228,11 @@ function resolveCombatForPlayer(player, options = {}) {
     return { fought: false, knockedOut: false, pending: false };
   }
 
+  const zombieData = state.zombies.get(playerSpaceKey);
+  const zombieTypeProps = ZOMBIE_TYPES[zombieData?.type] ?? ZOMBIE_TYPES[ZOMBIE_TYPE.REGULAR];
+  const killRoll = zombieTypeProps.killRoll;
+  const isEnhanced = zombieData?.type === ZOMBIE_TYPE.ENHANCED;
+
   const permanentBonus = player.attack || 0;
   const tempBonus = player.tempCombatBonus || 0;
   const shotgunBonus = player.shotgunCharges > 0 ? 1 : 0;
@@ -238,13 +245,14 @@ function resolveCombatForPlayer(player, options = {}) {
   const roll = rollD6();
   const baseCombatRoll = roll + permanentBonus + tempBonus + shotgunBonus + tileBonus;
   const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
+  const zombieLabel = isEnhanced ? "government-enhanced zombie" : "zombie";
 
-  if (baseCombatRoll >= MIN_COMBAT_ROLL) {
+  if (baseCombatRoll >= killRoll) {
     state.zombies.delete(playerSpaceKey);
     player.kills += 1;
     state.lastCombatResult = `Success (${baseCombatRoll})`;
     state.recentKillKey = playerSpaceKey;
-    logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and claimed a zombie kill.`, "kill");
+    logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and killed the ${zombieLabel}.`, "kill");
     checkWin(player);
     applyCombatPostStep(player, playerSpaceKey, { resumeStepAfterPending });
     return { fought: true, knockedOut: false, pending: false };
@@ -252,7 +260,7 @@ function resolveCombatForPlayer(player, options = {}) {
 
   if (player.bullets <= 0 && player.hearts <= 0) {
     state.lastCombatResult = `Knocked Out (${baseCombatRoll})`;
-    logLine(`${player.name} lost the fight and was knocked out.`);
+    logLine(`${player.name} lost the fight against a ${zombieLabel} and was knocked out.`);
     handleKnockout(player, { endStep: endStepOnKnockout });
     return { fought: true, knockedOut: true, pending: false };
   }
@@ -260,6 +268,8 @@ function resolveCombatForPlayer(player, options = {}) {
   state.pendingCombatDecision = {
     playerId: player.id,
     pKey: playerSpaceKey,
+    killRoll,
+    isEnhanced,
     roll,
     baseRoll: baseCombatRoll,
     modifiedRoll: baseCombatRoll,
@@ -273,7 +283,7 @@ function resolveCombatForPlayer(player, options = {}) {
     }
   };
   state.lastCombatResult = `Pending (${baseCombatRoll})`;
-  logLine(`${player.name} failed combat with a ${baseCombatRoll}. Choose how to resolve the fight.`);
+  logLine(`${player.name} failed combat (${baseCombatRoll}) against a ${zombieLabel}. Need ${killRoll}+ to win. Choose how to resolve.`);
   state.step = STEP.COMBAT;
   return { fought: false, knockedOut: false, pending: true };
 }

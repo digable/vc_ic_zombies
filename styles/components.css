@@ -346,6 +346,11 @@
   background: #395b2f;
 }
 
+.mark.zombie.zombie-enhanced {
+  background: #4a1a6e;
+  outline: 1px solid #c084fc;
+}
+
 .mark.token {
   background: #8f6b40;
 }

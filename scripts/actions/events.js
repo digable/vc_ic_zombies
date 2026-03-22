@@ -53,16 +53,18 @@ function playEvent(index) {
     return;
   }
 
-  if (card.isWeapon && card.isItem) {
-    const hasSameWeapon = player.items && player.items.some((c) => c.name === card.name);
-    if (hasSameWeapon) {
-      logLine(`${player.name} already has a ${card.name} in play. Discard it before playing another.`);
-      render();
-      return;
-    }
+  if (card.canPlay && !card.canPlay()) {
+    logLine(`${card.name} cannot be played at this time.`);
+    render();
+    return;
   }
 
   if (card.isItem) {
+    if (player.items && player.items.some((c) => c.name === card.name)) {
+      logLine(`${player.name} already has ${card.name} in play.`);
+      render();
+      return;
+    }
     if (card.requiresTile) {
       const tile = getTileAtSpace(player.x, player.y);
       const allowed = Array.isArray(card.requiresTile) ? card.requiresTile : [card.requiresTile];
@@ -162,8 +164,9 @@ function handleZombieReplaceClick(sx, sy) {
   if (!isLocalWalkable(tile, getLocalCoord(sx, tileX), getLocalCoord(sy, tileY))) return;
   if (state.zombies.has(spaceKey)) return;
 
+  const replacedData = state.zombies.get(pzr.selectedZombieKey);
   state.zombies.delete(pzr.selectedZombieKey);
-  state.zombies.add(spaceKey);
+  state.zombies.set(spaceKey, replacedData);
   logLine(`Zombie moved from ${pzr.selectedZombieKey} to ${spaceKey}.`);
 
   pzr.remaining -= 1;
@@ -187,7 +190,7 @@ function handleZombiePlaceClick(sx, sy) {
   if (state.zombies.has(spaceKey)) return;
   if (state.players.some((p) => key(p.x, p.y) === spaceKey)) return;
 
-  state.zombies.add(spaceKey);
+  state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
   logLine(`Zombie placed at ${spaceKey}.`);
   pzp.remaining -= 1;
 
@@ -239,10 +242,10 @@ function handleBuildingSelectClick(sx, sy) {
   if (mode === "double") {
     // Fill up to existingZombies empty spaces
     const toFill = emptySpaces.slice(0, existingZombies);
-    toFill.forEach((spaceKey) => { state.zombies.add(spaceKey); placed++; });
+    toFill.forEach((spaceKey) => { state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR }); placed++; });
   } else {
     // "fill_all" — fill every empty legal space
-    emptySpaces.forEach((spaceKey) => { state.zombies.add(spaceKey); placed++; });
+    emptySpaces.forEach((spaceKey) => { state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR }); placed++; });
   }
 
   state.pendingBuildingSelect = null;

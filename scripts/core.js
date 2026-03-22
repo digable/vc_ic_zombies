@@ -28,7 +28,7 @@ const COLLECTION_META = {
     type: "Base Game",
     version: "2nd Edition",
     description: "The core tile set. Standalone — no other collection required.",
-    creator: "Based on the Twilight Creations Zombies!!!"
+    creator: "Based on the Twilight Creations Zombies!!! by Todd A. Breitenstein"
   },
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
@@ -68,7 +68,7 @@ const state = {
   mapDeck: [],
   eventDeck: [],
   discardPile: [],
-  zombies: new Set(),
+  zombies: new Map(),
   spaceTokens: new Map(),
   step: STEP.DRAW_TILE,
   movesRemaining: 0,
@@ -554,7 +554,7 @@ function spawnZombieOnTile(tx, ty, sourceName) {
     return false;
   }
 
-  state.zombies.add(key(spawn.x, spawn.y));
+  state.zombies.set(key(spawn.x, spawn.y), { type: ZOMBIE_TYPE.REGULAR });
   return true;
 }
 
@@ -579,7 +579,7 @@ function spawnZombiesOnRoadExits(tx, ty, connectors) {
     const sy = ty * TILE_DIM + door.y;
     const sk = key(sx, sy);
     if (!state.zombies.has(sk)) {
-      state.zombies.add(sk);
+      state.zombies.set(sk, { type: ZOMBIE_TYPE.REGULAR });
       placed += 1;
     }
   });
