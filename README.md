@@ -233,6 +233,14 @@ If an expansion is selected without its required base game, the engine falls bac
 
 ---
 
+## 🎲 Original Game
+
+This project is a fan adaptation inspired by the physical board game series by **Twilight Creations, Inc.** If you enjoy this, consider supporting the original creators and picking up the physical version.
+
+**[▶ Shop at Twilight Creations →](https://www.twilightcreationsinc.com/)**
+
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Feel free to:
