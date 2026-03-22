@@ -199,12 +199,17 @@ function applyCollectionTooltips() {
   document.querySelectorAll(".setup-coll-name[data-coll]").forEach((el) => {
     const meta = COLLECTION_META[el.getAttribute("data-coll")];
     if (!meta) return;
+
+    const headerParts = [];
+    if (meta.type)    headerParts.push(meta.type);
+    if (meta.version) headerParts.push(/^\d+(\.\d+)*$/.test(String(meta.version)) ? `v${meta.version}` : meta.version);
+    if (meta.year)    headerParts.push(meta.year);
+
     const lines = [];
-    if (meta.type)    lines.push(`Type: ${meta.type}`);
-    if (meta.version) lines.push(`Version: ${meta.version}`);
-    if (meta.year)    lines.push(`Year: ${meta.year}`);
-    if (meta.creator) lines.push(`Creator: ${meta.creator}`);
-    if (meta.description) lines.push((lines.length ? "\n" : "") + meta.description);
+    if (headerParts.length) lines.push(headerParts.join("  ·  "));
+    if (meta.description)   lines.push(meta.description);
+    if (meta.creator)       lines.push(`By ${meta.creator}`);
+
     if (lines.length) el.setAttribute("data-tooltip", lines.join("\n"));
   });
 }
