@@ -81,6 +81,7 @@ vc_ic_zombies/
 ├── index.html                        # Game UI
 ├── tile-editor.html                  # Tile debug / editor panel
 ├── README.md                         # This file
+├── LICENSE                           # MIT License
 ├── scripts/
 │   ├── constants.js                  # Shared numeric constants (TILE_DIM, WIN_KILLS, etc.)
 │   ├── core.js                       # State, collections, shared helpers
