@@ -82,6 +82,7 @@ vc_ic_zombies/
 ├── tile-editor.html                  # Tile debug / editor panel
 ├── README.md                         # This file
 ├── LICENSE                           # MIT License
+├── RULES_REFERENCE.md                # Official Zombies!!! rules & FAQ summary
 ├── scripts/
 │   ├── constants.js                  # Shared numeric constants (TILE_DIM, WIN_KILLS, etc.)
 │   ├── core.js                       # State, collections, shared helpers
@@ -230,6 +231,12 @@ If an expansion is selected without its required base game, the engine falls bac
 - One event card may be played per turn cycle; some cards have timing restrictions (e.g. Much Needed Rest must be played before rolling movement)
 - Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot
 - Win by reaching the **center square** of the Helipad or reaching 25 kills
+
+---
+
+## 📚 Rules Reference
+
+A full summary of the official Zombies!!! rulebooks (base game through expansion 15), including official card rulings and FAQ answers from Twilight Creations, Inc., is available in [RULES_REFERENCE.md](RULES_REFERENCE.md).
 
 ---
 
