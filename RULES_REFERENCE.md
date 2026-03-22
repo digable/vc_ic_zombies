@@ -1,7 +1,7 @@
 # Zombies!!! Official Rules Reference
 
-Summaries and official Q&A from Twilight Creations, Inc. rulesets in `.claude/rules/`.
-Clarifications sourced from `zombies rules clairification.txt` (official rulings by Kerry Breitenstein).
+Summaries and official Q&A from Twilight Creations, Inc. rulesets.
+Clarifications sourced from official rulings by Kerry Breitenstein.
 
 ---
 
