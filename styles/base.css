@@ -59,6 +59,13 @@ body {
     linear-gradient(160deg, #f3ead2 0%, #f7f5ef 65%, #efe3c4 100%);
 }
 
+.site-footer {
+  text-align: center;
+  padding: 0.6rem;
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+
 button,
 input {
   border: 1px solid #8f7d56;
