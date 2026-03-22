@@ -17,60 +17,92 @@
     <main class="layout">
       <section class="panel controls">
         <h2>Game Controls</h2>
-        <div class="row">
-          <label for="playerCount">Players</label>
-          <input id="playerCount" type="number" min="1" max="4" value="2" />
+
+        <div id="setupSection">
+          <div class="row">
+            <label for="playerCount">Players</label>
+            <input id="playerCount" type="number" min="1" max="4" value="2" />
+          </div>
+          <div class="setup-collection-grid">
+            <span></span><span class="setup-col-header">Enabled</span><span class="setup-col-header">Disabled</span>
+            <span class="setup-coll-name">Director's Cut <span class="coll-tag coll-tag-base">base</span> <span class="coll-counts" data-coll-counts="directors_cut"></span></span>
+            <input type="checkbox" data-deck-coll="directors_cut" data-deck-state="enabled" checked />
+            <input type="checkbox" data-deck-coll="directors_cut" data-deck-state="disabled" />
+            <span class="setup-coll-name">Iowa City <span class="coll-tag coll-tag-expansion">expansion</span> <span class="coll-counts" data-coll-counts="iowa_city"></span></span>
+            <input type="checkbox" data-deck-coll="iowa_city" data-deck-state="enabled" data-requires-base="directors_cut" />
+            <input type="checkbox" data-deck-coll="iowa_city" data-deck-state="disabled" />
+            <span class="setup-coll-name">Not Used <span class="coll-counts" data-coll-counts="not_used"></span></span>
+            <input type="checkbox" data-deck-coll="not_used" data-deck-state="enabled" />
+            <input type="checkbox" data-deck-coll="not_used" data-deck-state="disabled" />
+          </div>
         </div>
-        <div class="setup-collection-grid">
-          <span></span><span class="setup-col-header">Enabled</span><span class="setup-col-header">Disabled</span>
-          <span class="setup-coll-name">Director's Cut <span class="coll-tag coll-tag-base">base</span> <span class="coll-counts" data-coll-counts="directors_cut"></span></span>
-          <input type="checkbox" data-deck-coll="directors_cut" data-deck-state="enabled" checked />
-          <input type="checkbox" data-deck-coll="directors_cut" data-deck-state="disabled" />
-          <span class="setup-coll-name">Iowa City <span class="coll-tag coll-tag-expansion">expansion</span> <span class="coll-counts" data-coll-counts="iowa_city"></span></span>
-          <input type="checkbox" data-deck-coll="iowa_city" data-deck-state="enabled" data-requires-base="directors_cut" />
-          <input type="checkbox" data-deck-coll="iowa_city" data-deck-state="disabled" />
-          <span class="setup-coll-name">Not Used <span class="coll-counts" data-coll-counts="not_used"></span></span>
-          <input type="checkbox" data-deck-coll="not_used" data-deck-state="enabled" />
-          <input type="checkbox" data-deck-coll="not_used" data-deck-state="disabled" />
-        </div>
+
         <div class="row">
           <button id="newGameBtn">New Game</button>
         </div>
-        <div class="row">
-          <button id="drawTileBtn">1. Draw & Place Tile</button>
-          <button id="combatBtn">2. Combat Current Space</button>
-          <button id="drawEventsBtn">3. Draw to 3 Events</button>
+
+        <div class="phase-group">
+          <span class="phase-label">Tile</span>
+          <div class="row">
+            <button id="drawTileBtn">Draw & Place Tile</button>
+          </div>
+          <div class="row">
+            <span id="pendingTileInfo">Pending Tile: -</span>
+          </div>
+          <div class="row">
+            <button id="rotateLeftBtn">Rotate ⟲</button>
+            <button id="rotateRightBtn">Rotate ⟳</button>
+          </div>
         </div>
-        <div id="combatDecisionPanel" class="combat-decision hidden" aria-live="polite"></div>
-        <div id="eventChoicePanel" class="event-choice hidden" aria-live="polite"></div>
-        <div id="zombieReplacePanel" class="zombie-replace hidden" aria-live="polite"></div>
-        <div id="zombieDiceChallengePanel" class="combat-decision hidden" aria-live="polite"></div>
-        <div class="row">
-          <span id="pendingTileInfo">Pending Tile: -</span>
+
+        <div class="phase-group">
+          <span class="phase-label">Combat</span>
+          <div class="row">
+            <button id="combatBtn">Combat Current Space</button>
+          </div>
+          <div id="combatDecisionPanel" class="combat-decision hidden" aria-live="polite"></div>
         </div>
-        <div class="row">
-          <button id="rotateLeftBtn">Rotate ⟲</button>
-          <button id="rotateRightBtn">Rotate ⟳</button>
+
+        <div class="phase-group">
+          <span class="phase-label">Events</span>
+          <div class="row">
+            <button id="drawEventsBtn">Draw to 3 Events</button>
+          </div>
+          <div id="eventChoicePanel" class="event-choice hidden" aria-live="polite"></div>
+          <div id="zombieDiceChallengePanel" class="combat-decision hidden" aria-live="polite"></div>
         </div>
-        <div class="row">
-          <button id="rollMoveBtn">4. Roll Movement</button>
-          <span id="moveRollOutput">Move Roll: -</span>
+
+        <div class="phase-group">
+          <span class="phase-label">Movement</span>
+          <div class="row">
+            <button id="rollMoveBtn">Roll Movement</button>
+            <span id="moveRollOutput">Move Roll: -</span>
+          </div>
+          <div id="moveStatusMsg" class="move-status-msg hidden"></div>
+          <div class="row dir-row">
+            <button class="moveDirBtn" data-dir="N">Move ↑</button>
+            <button class="moveDirBtn" data-dir="W">Move ←</button>
+            <button class="moveDirBtn" data-dir="E">Move →</button>
+            <button class="moveDirBtn" data-dir="S">Move ↓</button>
+            <button id="endMoveBtn">End Movement</button>
+          </div>
         </div>
-        <div id="moveStatusMsg" class="move-status-msg hidden"></div>
-        <div class="row dir-row">
-          <button class="moveDirBtn" data-dir="N">Move ↑</button>
-          <button class="moveDirBtn" data-dir="W">Move ←</button>
-          <button class="moveDirBtn" data-dir="E">Move →</button>
-          <button class="moveDirBtn" data-dir="S">Move ↓</button>
-          <button id="endMoveBtn">End Movement</button>
+
+        <div class="phase-group">
+          <span class="phase-label">Zombies</span>
+          <div class="row">
+            <button id="moveZombiesBtn">Move Zombies</button>
+            <span id="zombieRollOutput">Zombie Roll: -</span>
+          </div>
+          <div id="zombieReplacePanel" class="zombie-replace hidden" aria-live="polite"></div>
         </div>
-        <div class="row">
-          <button id="moveZombiesBtn">5. Move Zombies</button>
-          <span id="zombieRollOutput">Zombie Roll: -</span>
-        </div>
-        <div class="row">
-          <button id="discardBtn">6. Discard Selected Event</button>
-          <button id="endTurnBtn">End Turn</button>
+
+        <div class="phase-group">
+          <span class="phase-label">End Turn</span>
+          <div class="row">
+            <button id="discardBtn">Discard Selected Event</button>
+            <button id="endTurnBtn">End Turn</button>
+          </div>
         </div>
       </section>
 

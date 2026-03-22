@@ -1,5 +1,11 @@
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
+    const setupSection = document.getElementById("setupSection");
+    if (setupSection.classList.contains("hidden")) {
+      setupSection.classList.remove("hidden");
+      return;
+    }
+    setupSection.classList.add("hidden");
     const count = Number(refs.playerCount.value) || 2;
     const filters = {};
     document.querySelectorAll("[data-deck-coll]").forEach((el) => {
@@ -27,7 +33,7 @@ function attachListeners() {
   if (refs.gameOverNewGameBtn) {
     refs.gameOverNewGameBtn.addEventListener("click", () => {
       refs.gameOverOverlay.classList.add("hidden");
-      refs.newGameBtn.click();
+      document.getElementById("setupSection").classList.remove("hidden");
     });
   }
 
@@ -192,3 +198,4 @@ function populateCollectionCounts() {
 attachListeners();
 populateCollectionCounts();
 setupGame(2, { [TILE_COLLECTIONS.DIRECTORS_CUT]: { enabled: true, disabled: false } });
+document.getElementById("setupSection").classList.add("hidden");
