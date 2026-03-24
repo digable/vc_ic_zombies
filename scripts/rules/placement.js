@@ -44,7 +44,7 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs) {
     touching += 1;
     const meHas = connectors.includes(dir);
     const themHas = hasRoad(neighbor, def.opposite);
-    if (meHas !== themHas) return false;
+    if (!meHas || !themHas) return false;
 
     // Zone check only when connectors actually touch
     if (meHas && themHas && tileDeck !== undefined) {
