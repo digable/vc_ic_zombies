@@ -216,6 +216,9 @@ If an expansion is selected without its required base game, the map deck falls b
 | `bullets` | Bullet tokens placed on the tile when drawn |
 | `isStartTile` | `true` — tile placed at (0,0) to start the game; one per standalone collection |
 | `isWinTile` | `true` — tile shuffled into the back half of the deck; reaching its center wins the game |
+| `firstDrawWhenSolo` | `true` — tile is moved to position 0 in the shuffled deck when its collection is the only enabled collection. Ignored in mixed-collection games. |
+| `companionTiles` | Array of `{ name }` objects — tiles pulled from the deck and auto-placed in a chain when this tile is drawn. e.g. `[{ name: "Straight" }, { name: "4-Way" }]` |
+| `companionDir` | Which connector side companions chain from in the tile's unrotated orientation (default `"S"`). The opposite side is treated as the map-connection side. The engine auto-detects if the tile is placed reversed and flips the chain accordingly. |
 
 ---
 

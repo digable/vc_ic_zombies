@@ -2,7 +2,50 @@
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
 function renderBoard() {
-  const { minX, maxX, minY, maxY } = boardBounds();
+  // Build companion preview map: cellKey → { tile } for every valid gate placement option.
+  // Compound direction is determined per-option: away from the side that connects to the
+  // existing board, so companions always extend into open space regardless of gate rotation.
+  const companionPreviewMap = new Map();
+  if (state.pendingTile && state.pendingCompanionTiles && state.pendingCompanionTiles.length > 0) {
+    state.pendingTileOptions
+      .filter((o) => o.rotation === state.pendingRotation)
+      .forEach((o) => {
+        const r = o.rotation;
+        const baseDir = state.pendingTile.companionDir || "S";
+        const companionSide = rotateDir(baseDir, r);
+        const mapSide = rotateDir(DIRS[baseDir].opposite, r);
+        const companionNeighbor = key(o.x + DIRS[companionSide].x, o.y + DIRS[companionSide].y);
+        const mapNeighbor = key(o.x + DIRS[mapSide].x, o.y + DIRS[mapSide].y);
+        // Compound faces away from the existing map connection
+        const compoundDir = state.board.has(mapNeighbor) ? companionSide
+          : state.board.has(companionNeighbor) ? mapSide
+          : companionSide;
+        const ddx = DIRS[compoundDir].x;
+        const ddy = DIRS[compoundDir].y;
+
+        let blocked = false;
+        state.pendingCompanionTiles.forEach((companion, idx) => {
+          if (blocked) return;
+          const cx = o.x + ddx * (idx + 1);
+          const cy = o.y + ddy * (idx + 1);
+          const ck = key(cx, cy);
+          if (state.board.has(ck)) { blocked = true; return; }
+          if (!companionPreviewMap.has(ck)) {
+            companionPreviewMap.set(ck, { tile: companion });
+          }
+        });
+      });
+  }
+
+  let { minX, maxX, minY, maxY } = boardBounds();
+  companionPreviewMap.forEach((_, ck) => {
+    const { x, y } = parseKey(ck);
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  });
+
   const cols = maxX - minX + 1;
   refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(74px, 84px))`;
   refs.board.innerHTML = "";
@@ -51,6 +94,23 @@ function renderBoard() {
             </div>
             <div class="micro-grid">${buildMicroGridHtml(previewTileForWalk)}</div>
             <div class="small">Click to place</div>
+          `;
+        } else if (companionPreviewMap.has(k)) {
+          const { tile: cTile } = companionPreviewMap.get(k);
+          cell.classList.add("companion-preview");
+          cell.classList.add(getTileClassName(cTile));
+          const rotatedConnectors = getRotatedConnectors(cTile.connectors, state.pendingRotation);
+          const cSourceSubTiles = getTileSubTileMap(cTile);
+          const cRotatedSubTiles = getRotatedSubTiles(cSourceSubTiles, state.pendingRotation);
+          const cPreviewTile = {
+            type: cTile.type,
+            connectors: rotatedConnectors,
+            ...(cRotatedSubTiles ? { subTiles: cRotatedSubTiles } : {})
+          };
+          cell.innerHTML = `
+            <div><strong>${cTile.name}</strong></div>
+            <div class="small">auto-placed</div>
+            <div class="micro-grid">${buildMicroGridHtml(cPreviewTile)}</div>
           `;
         }
         refs.board.appendChild(cell);

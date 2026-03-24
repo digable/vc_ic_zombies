@@ -39,6 +39,22 @@ function buildMapDeck(filters = null) {
   }
 
   shuffle(cards);
+
+  // If only one collection is enabled, promote any firstDrawWhenSolo tile to position 0.
+  if (filters) {
+    const enabledCols = Object.entries(filters)
+      .filter(([, rule]) => rule.enabled)
+      .map(([col]) => col);
+    if (enabledCols.length === 1) {
+      const soloCol = enabledCols[0];
+      const firstIdx = cards.findIndex((t) => {
+        if (!t.firstDrawWhenSolo) return false;
+        return Object.keys(resolveCollectionCounts(t)).includes(soloCol);
+      });
+      if (firstIdx > 0) cards.unshift(cards.splice(firstIdx, 1)[0]);
+    }
+  }
+
   winTiles.forEach((wt) => {
     const start = Math.floor(cards.length / 2);
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));

@@ -36,6 +36,17 @@
   filter: brightness(0.97);
 }
 
+.cell.companion-preview {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #5a7fbf;
+  background:
+    linear-gradient(135deg, rgba(90, 127, 191, 0.18), rgba(90, 127, 191, 0.06)),
+    #eef2fb;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
 .tile-town {
   background: linear-gradient(135deg, #f7c88f 0%, #ebb36e 100%);
 }

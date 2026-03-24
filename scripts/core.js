@@ -116,6 +116,7 @@ const state = {
   pendingTile: null,
   pendingRotation: 0,
   pendingTileOptions: [],
+  pendingCompanionTiles: [], // tiles reserved from deck when main tile is drawn (e.g. Front Gate companions)
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
   knockoutBanner: null, // { playerName, lostKills } — shown briefly after knockout
   recentKillKey: null,
@@ -174,6 +175,7 @@ function clearPendingTileState() {
   state.pendingTile = null;
   state.pendingRotation = 0;
   state.pendingTileOptions = [];
+  state.pendingCompanionTiles = [];
 }
 
 function key(x, y) {

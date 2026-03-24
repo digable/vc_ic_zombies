@@ -485,9 +485,14 @@ function renderMeta() {
   refs.turnInfo.textContent = `Turn ${state.turnNumber} | ${currentPlayer().name} | Step: ${state.step}${combatText}`;
   refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}`;
   refs.zombieRollOutput.textContent = `Zombie Roll: ${state.currentZombieRoll ?? "-"}`;
-  refs.pendingTileInfo.textContent = state.pendingTile
-    ? `Pending Tile: ${getTileDisplayName(state.pendingTile)} (${state.pendingTileOptions.length} valid placements)`
-    : "Pending Tile: -";
+  if (state.pendingTile) {
+    const companions = state.pendingCompanionTiles && state.pendingCompanionTiles.length > 0
+      ? ` + ${state.pendingCompanionTiles.map((t) => t.name).join(" + ")}`
+      : "";
+    refs.pendingTileInfo.textContent = `Pending Tile: ${getTileDisplayName(state.pendingTile)}${companions} (${state.pendingTileOptions.length} valid placements)`;
+  } else {
+    refs.pendingTileInfo.textContent = "Pending Tile: -";
+  }
 }
 
 function renderKnockoutBanner() {

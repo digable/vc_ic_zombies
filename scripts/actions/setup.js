@@ -100,7 +100,24 @@ function drawAndPlaceTile() {
   state.pendingTile = tile;
   state.pendingRotation = 0;
   state.pendingTileOptions = options;
-  logLine(`${currentPlayer().name} drew ${drawnName}. Click a highlighted map space to place it.`);
+  state.pendingCompanionTiles = [];
+
+  // If this tile has companions, pull them from the deck now so they're reserved.
+  if (tile.companionTiles && tile.companionTiles.length > 0) {
+    tile.companionTiles.forEach(({ name }) => {
+      const idx = state.mapDeck.findIndex((t) => t.name === name);
+      if (idx !== -1) {
+        state.pendingCompanionTiles.push(state.mapDeck.splice(idx, 1)[0]);
+      } else {
+        logLine(`Note: companion tile "${name}" not found in deck — will be skipped when placed.`);
+      }
+    });
+  }
+
+  const companionNote = state.pendingCompanionTiles.length > 0
+    ? ` (+${state.pendingCompanionTiles.map((t) => t.name).join(", ")})`
+    : "";
+  logLine(`${currentPlayer().name} drew ${drawnName}${companionNote}. Click a highlighted map space to place it.`);
   render();
 }
 
@@ -112,6 +129,57 @@ function rotatePendingTile(delta) {
   state.pendingRotation = next;
   logLine(`${currentPlayer().name} rotated pending tile to ${next * 90} degrees.`);
   render();
+}
+
+// Auto-place companion tiles when a tile with companions is placed.
+// Uses state.pendingCompanionTiles (reserved at draw time).
+// Compound direction is determined from which side of the placed tile connects to an existing
+// board tile — companions always chain away from the map connection into open space.
+function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
+  if (!state.pendingCompanionTiles || state.pendingCompanionTiles.length === 0) return;
+
+  const baseDir = mainTile.companionDir || "S";
+  const companionSide = rotateDir(baseDir, tileRotation);
+  const mapSide = rotateDir(DIRS[baseDir].opposite, tileRotation);
+  const companionNeighbor = key(tileX + DIRS[companionSide].x, tileY + DIRS[companionSide].y);
+  const mapNeighbor = key(tileX + DIRS[mapSide].x, tileY + DIRS[mapSide].y);
+  const compoundDir = state.board.has(mapNeighbor) ? companionSide
+    : state.board.has(companionNeighbor) ? mapSide
+    : companionSide;
+
+  let cx = tileX;
+  let cy = tileY;
+
+  state.pendingCompanionTiles.forEach((companion) => {
+    cx += DIRS[compoundDir].x;
+    cy += DIRS[compoundDir].y;
+
+    if (state.board.has(key(cx, cy))) {
+      logLine(`Cannot place ${companion.name} at (${cx}, ${cy}) — space already occupied; returning to deck.`);
+      state.mapDeck.unshift(companion);
+      return;
+    }
+
+    const rotatedConnectors = getRotatedConnectors(companion.connectors, tileRotation);
+    const sourceSubTiles = getTileSubTileMap(companion);
+    const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, tileRotation);
+
+    addTile(cx, cy, {
+      ...companion,
+      connectors: rotatedConnectors,
+      ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
+    });
+
+    const spawnCount = getZombieSpawnCountForPlacedTile(companion, rotatedConnectors);
+    if (companion.zombieSpawnMode === "by_exits") {
+      const exitType = Object.keys(companion.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
+      const placed = spawnZombiesOnRoadExits(cx, cy, rotatedConnectors, exitType);
+      if (placed > 0) logLine(`${placed} zombie(s) placed on ${companion.name} from ${spawnCount} access point(s).`);
+    }
+
+    state.discardPile.push(companion);
+    logLine(`${companion.name} auto-placed at (${cx}, ${cy}) as part of ${mainTile.name}.`);
+  });
 }
 
 function placePendingTileAt(x, y) {
@@ -164,6 +232,7 @@ function placePendingTileAt(x, y) {
   }
 
   state.discardPile.push(tile);
+  placeCompanionTilesFor(tile, placement.x, placement.y, placement.rotation);
   clearPendingTileState();
   state.step = STEP.COMBAT;
   autoSkipCombatIfClear();

@@ -26,6 +26,18 @@
 //   bullets        {number}              Bullet tokens placed on tile when drawn
 //   isStartTile    {true}                Placed at (0,0) to start the game; one per standalone collection
 //   isWinTile      {true}                Shuffled into back half of deck; reaching its center wins the game
+//   firstDrawWhenSolo {true}             Moved to position 0 in the deck when its collection is the ONLY
+//                                        enabled collection. Ignored in mixed-collection games.
+//
+// Companion tile system — tiles that auto-place alongside another when it is drawn/placed:
+//   companionTiles {Array}               List of tiles to pull from the deck and auto-place when this tile is
+//                                        drawn. Each entry: { name: "TileName" }. Tiles chain in a line.
+//                                        e.g. companionTiles: [{ name: "Straight" }, { name: "4-Way" }]
+//   companionDir   {string}              Which connector side the companions chain from, in the tile's UNROTATED
+//                                        orientation. Default "S". The opposite side is assumed to be the
+//                                        map-connection side (N for "S", W for "E", etc.).
+//                                        The engine auto-detects if the tile is placed reversed and flips
+//                                        the chain direction accordingly.
 //
 // subTilesTemplate — 3×3 movement grid, keyed by "lx,ly" (0–2 each axis):
 //   walkable  {bool}      true = players/zombies can enter; false = solid (walls, grass)
@@ -426,12 +438,20 @@ const namedTiles = [
     name: "Front Gate",
     type: "town",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    isStartTile: true,
     connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 0,
+    // First tile drawn when Zombie Corps(e) is played solo.
+    firstDrawWhenSolo: true,
+    // Companions chain from the S side (compound interior).
+    // Front Gate [N connects to map] → [S] Straight [N] → [S] 4-Way
+    companionDir: "S",
+    companionTiles: [
+      { name: "Straight" },
+      { name: "4-Way" }
+    ],
     subTilesTemplate: {
       "0,0": { walkable: true, type: "parking", walls: ["W"] },
       "1,0": { walkable: true, type: "road" },
