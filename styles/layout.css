@@ -477,6 +477,15 @@
   margin: 0.25rem 0;
 }
 
+.deck-info-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7a5c2a;
+  padding: 0.1rem 0 0.1rem 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .deck-empty-badge {
   display: inline-block;
   margin-left: 0.4rem;

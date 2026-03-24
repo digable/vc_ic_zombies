@@ -88,6 +88,22 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button.needs-restart {
+  background: #e8a020;
+  color: #fff;
+  font-weight: 700;
+  animation: pulse-restart 1.2s ease-in-out infinite;
+}
+
+button.needs-restart:hover {
+  background: #c98010;
+}
+
+@keyframes pulse-restart {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 160, 32, 0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(232, 160, 32, 0); }
+}
+
 input[type="number"] {
   width: 72px;
 }

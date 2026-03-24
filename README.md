@@ -184,21 +184,24 @@ Current collections:
 |-----|-------|-------------|
 | `DIRECTORS_CUT` | `"directors_cut"` | Base game — can be played standalone |
 | `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
-| `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Expansion — requires Director's Cut |
+| `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Standalone or expansion — playable alone or alongside Director's Cut; tiles form an isolated zone when mixed |
 
-Map tile and event card collections are configured **independently** in the setup panel — choosing an expansion for tiles doesn't automatically apply it for events. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`):
+Map tile and event card collections are configured **independently** in the setup panel. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`):
+
+Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTION_META`) get their own separate tile deck. When mixed with a base collection, their tiles can only be placed adjacent to tiles from the same collection — the one exception is the **gateway tile** (e.g. Front Gate), whose `zoneGatewayConnector` side may touch base-zone tiles, and the gateway tile itself is shuffled into the base deck. The standalone deck button is locked in the UI until the gateway tile is placed. When played without a base collection, the standalone deck is available immediately and Front Gate is the first tile drawn.
 
 | Property | Description |
 |----------|-------------|
 | `label` | Display name |
-| `type` | `"base"` or `"expansion"` |
+| `type` | Free-form display string (e.g. `"Base Game"`, `"Expansion"`, `"Standalone / Expansion"`) |
 | `version` | Version string — integers and dot-notation (e.g. `2`, `0.1.0`) are prefixed with `v`; text values like `"2nd Edition"` are shown as-is |
 | `year` | Release year |
 | `description` | Short description shown in the setup tooltip |
 | `creator` | Author or creator name |
-| `requiresBase` | `null` for standalone base games; `COLLECTIONS.X` for expansions that need a base |
+| `requiresBase` | `null` if the collection can be played without any other collection; `COLLECTIONS.X` if it always requires a specific base |
+| `standaloneDeck` | `true` if the collection's tiles form their own isolated deck and placement zone when active alongside a base collection |
 
-If an expansion is selected without its required base game, the map deck falls back to Director's Cut's Town Square (start tile) and Helipad (win tile). Event cards have no fallback — if no event collections are enabled you simply play with an empty event deck.
+If a collection with `requiresBase` set is selected without its required base game, the map deck falls back to Director's Cut's Town Square (start tile) and Helipad (win tile). Event cards have no fallback — if no event collections are enabled you simply play with an empty event deck.
 
 ### Tile Properties
 
@@ -219,6 +222,7 @@ If an expansion is selected without its required base game, the map deck falls b
 | `firstDrawWhenSolo` | `true` — tile is moved to position 0 in the shuffled deck when its collection is the only enabled collection. Ignored in mixed-collection games. |
 | `companionTiles` | Array of `{ name }` objects — tiles pulled from the deck and auto-placed in a chain when this tile is drawn. e.g. `[{ name: "Straight" }, { name: "4-Way" }]` |
 | `companionDir` | Which connector side companions chain from in the tile's unrotated orientation (default `"S"`). The opposite side is treated as the map-connection side. The engine auto-detects if the tile is placed reversed and flips the chain accordingly. |
+| `zoneGatewayConnector` | The connector (unrotated) that may touch base-zone tiles. All other connectors on this tile are zone-isolated. Only meaningful on standalone-deck tiles. |
 
 ---
 

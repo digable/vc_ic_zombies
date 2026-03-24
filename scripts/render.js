@@ -4,6 +4,7 @@
 function updateButtons() {
   if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect) {
     refs.drawTileBtn.disabled = true;
+    document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
     refs.rotateLeftBtn.disabled = true;
     refs.rotateRightBtn.disabled = true;
     refs.combatBtn.disabled = true;
@@ -24,7 +25,13 @@ function updateButtons() {
   const p = currentPlayer();
   const combatRequired = isCombatRequiredForCurrentPlayer();
 
-  refs.drawTileBtn.disabled = state.step !== STEP.DRAW_TILE || state.gameOver || Boolean(state.pendingTile);
+  const hasBaseDeck = state.mapDeck && state.mapDeck.length > 0;
+  refs.drawTileBtn.style.display = (state.standaloneDecks && Object.keys(state.standaloneDecks).length > 0 && !hasBaseDeck) ? "none" : "";
+  refs.drawTileBtn.disabled = state.step !== STEP.DRAW_TILE || state.gameOver || Boolean(state.pendingTile) || state.mapDeck.length === 0;
+  // Once any tile is drawn, disable all standalone draw buttons — only one draw per turn.
+  if (state.step !== STEP.DRAW_TILE || state.pendingTile || state.gameOver) {
+    document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
+  }
   refs.rotateLeftBtn.disabled = !state.pendingTile || state.gameOver || state.step !== STEP.DRAW_TILE;
   refs.rotateRightBtn.disabled = !state.pendingTile || state.gameOver || state.step !== STEP.DRAW_TILE;
   refs.combatBtn.disabled = state.step !== STEP.COMBAT || state.gameOver || !combatRequired;
@@ -53,12 +60,14 @@ function render() {
   renderPlayers();
   renderHand();
   renderDeckInfo();
+  renderStandaloneDeckInfo();
   renderEventDeckInfo();
   renderCombatDecision();
   renderEventChoice();
   renderZombieReplacePanel();
   renderZombieDiceChallenge();
   renderLog();
+  rebuildStandaloneDrawBtns();
   updateButtons();
   renderMoveStatus();
   renderGameOver();

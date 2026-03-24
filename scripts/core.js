@@ -18,8 +18,8 @@ const COLLECTIONS = {
   IOWA_CITY: "iowa_city"
 };
 
-// requiresBase: null  → standalone base game
-// requiresBase: string → expansion, must be used with that collection
+// requiresBase: null  → can be played without any other collection (standalone or add-on)
+// requiresBase: string → always requires that collection to be enabled
 const COLLECTION_META = {
   [COLLECTIONS.DIRECTORS_CUT]: {
     label: "Director's Cut",
@@ -41,12 +41,13 @@ const COLLECTION_META = {
   },
   [COLLECTIONS.ZOMBIE_CORPS_E_]: {
     label: "Zombie Corps(e)",
-    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    requiresBase: null,
     year: 2007,
-    type: "Expansion",
+    type: "Standalone / Expansion",
     version: "2nd Edition",
-    description: "Zombies!!! 2 - an expansion for the base game.",
-    creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein"
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein",
+    standaloneDeck: true
   }
 };
 
@@ -117,6 +118,9 @@ const state = {
   pendingRotation: 0,
   pendingTileOptions: [],
   pendingCompanionTiles: [], // tiles reserved from deck when main tile is drawn (e.g. Front Gate companions)
+  standaloneDecks: {},          // { [collKey]: tile[] } — one deck per enabled standalone collection
+  activeStandaloneDecks: new Set(), // collKeys whose gateway tile is now on the board
+  pendingTileDeck: "base",      // "base" | collKey — which deck the current pending tile came from
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
   knockoutBanner: null, // { playerName, lostKills } — shown briefly after knockout
   recentKillKey: null,
@@ -176,6 +180,7 @@ function clearPendingTileState() {
   state.pendingRotation = 0;
   state.pendingTileOptions = [];
   state.pendingCompanionTiles = [];
+  state.pendingTileDeck = "base";
 }
 
 function key(x, y) {

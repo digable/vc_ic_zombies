@@ -42,13 +42,25 @@ function renderDeckInfo(previewDeck) {
 
   const totalStart = state.deckStartTotal ?? (state.mapDeck.length + state.discardPile.length);
   const totalPlayed = state.discardPile.length;
-  const totalLeft = state.mapDeck.length;
+  const standaloneLeft = Object.values(state.standaloneDecks || {}).reduce((s, d) => s + d.length, 0);
+  const totalLeft = state.mapDeck.length + standaloneLeft;
 
   const deckRows = state.mapDeck.map((t, i) => {
     const meta = state.deckStartCounts?.[t.name];
     const total = meta?.count ?? 1;
     const copy = total > 1 ? `${t._copyNum}/${total}` : null;
     return tileRow(t, `#${i + 1}`, false, copy);
+  }).join("");
+
+  const standaloneRows = Object.entries(state.standaloneDecks || {}).map(([collKey, deck]) => {
+    const label = COLLECTION_META[collKey]?.label || collKey;
+    const rows = deck.map((t, i) => {
+      const meta = state.deckStartCounts?.[t.name];
+      const total = meta?.count ?? 1;
+      const copy = total > 1 ? `${t._copyNum}/${total}` : null;
+      return tileRow(t, `#${i + 1}`, false, copy);
+    }).join("");
+    return rows ? `<div class="deck-info-divider"></div><div class="deck-info-section-label">${label} Deck</div>${rows}` : "";
   }).join("");
 
   const playedRows = state.discardPile.map((t) => {
@@ -59,16 +71,60 @@ function renderDeckInfo(previewDeck) {
     return tileRow(t, posStr, true, copy);
   }).join("");
 
-  const emptyBadge = totalLeft === 0 ? ` <span class="deck-empty-badge">DECK EMPTY — tile draw step skipped</span>` : "";
+  const baseDeckEmpty = state.mapDeck.length === 0;
+  const allDecksEmpty = totalLeft === 0;
+  const emptyBadge = baseDeckEmpty && standaloneLeft > 0 && (state.baseMapDeckStartCount ?? 1) > 0
+    ? ` <span class="deck-empty-badge">BASE DECK EMPTY — draw from standalone deck(s)</span>`
+    : allDecksEmpty
+      ? ` <span class="deck-empty-badge">DECK EMPTY — tile draw step skipped</span>`
+      : "";
   box.innerHTML = `
     <div>Total in Deck (start): ${totalStart}</div>
     <div>Total Played: ${totalPlayed}</div>
     <div>Total Left: ${totalLeft}${emptyBadge}</div>
     <details class="deck-info-details"${detailsOpen ? " open" : ""}>
       <summary>Show cards</summary>
-      <div class="deck-info-breakdown">${deckRows}${playedRows ? `<div class="deck-info-divider"></div>${playedRows}` : ""}</div>
+      <div class="deck-info-breakdown">${deckRows}${standaloneRows}${playedRows ? `<div class="deck-info-divider"></div>${playedRows}` : ""}</div>
     </details>
   `;
+}
+
+function renderStandaloneDeckInfo(previewDecks) {
+  // Render per-standalone-deck info below the base deck info box.
+  // previewDecks: optional { [collKey]: tile[] } — used during setup preview (no active game).
+  const box = document.getElementById("deckInfoBox");
+  if (!box) return;
+
+  const source = previewDecks || state.standaloneDecks;
+  if (!source || Object.keys(source).length === 0) return;
+
+  Object.entries(source).forEach(([collKey, deck]) => {
+    const label = COLLECTION_META[collKey]?.label || collKey;
+    const remaining = deck.length;
+    const divider = document.createElement("div");
+    divider.className = "deck-info-divider";
+    box.appendChild(divider);
+    const header = document.createElement("div");
+    header.style.fontWeight = "700";
+    header.style.fontSize = "0.8rem";
+
+    if (previewDecks) {
+      header.textContent = `${label} Deck (preview)`;
+    } else {
+      const isActive = state.activeStandaloneDecks.has(collKey);
+      header.textContent = `${label} Deck${isActive ? "" : " \uD83D\uDD12"}`;
+    }
+
+    box.appendChild(header);
+    const countDiv = document.createElement("div");
+    countDiv.style.fontSize = "0.78rem";
+    countDiv.textContent = previewDecks
+      ? `${remaining} tile(s) in deck`
+      : (state.activeStandaloneDecks.has(collKey)
+          ? `${remaining} tile(s) remaining`
+          : "Locked — place gateway tile to unlock");
+    box.appendChild(countDiv);
+  });
 }
 
 function renderEventDeckInfo(previewDeck) {

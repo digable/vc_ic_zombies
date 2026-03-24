@@ -38,6 +38,9 @@
 //                                        map-connection side (N for "S", W for "E", etc.).
 //                                        The engine auto-detects if the tile is placed reversed and flips
 //                                        the chain direction accordingly.
+//   zoneGatewayConnector {string}        On standalone-deck tiles only. The connector (in unrotated
+//                                        orientation) that faces the base map and may touch base-zone
+//                                        tiles. All other connectors are standalone-zone only.
 //
 // subTilesTemplate — 3×3 movement grid, keyed by "lx,ly" (0–2 each axis):
 //   walkable  {bool}      true = players/zombies can enter; false = solid (walls, grass)
@@ -448,6 +451,7 @@ const namedTiles = [
     // Companions chain from the S side (compound interior).
     // Front Gate [N connects to map] → [S] Straight [N] → [S] 4-Way
     companionDir: "S",
+    zoneGatewayConnector: "N",   // N connector (map-facing side) accepts base-zone tiles
     companionTiles: [
       { name: "Straight" },
       { name: "4-Way" }

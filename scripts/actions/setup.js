@@ -35,6 +35,22 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.currentPlayerIndex = 0;
   state.board = new Map();
   state.mapDeck = buildMapDeck(deckFilters);
+  // Build standalone decks for enabled standalone collections
+  state.standaloneDecks = {};
+  state.activeStandaloneDecks = new Set();
+  const hasBaseCollection = deckFilters && Object.entries(COLLECTION_META).some(
+    ([c, meta]) => meta.requiresBase === null && !meta.standaloneDeck && deckFilters[c]?.enabled
+  );
+  if (deckFilters) {
+    Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
+      if (!meta.standaloneDeck) return;
+      const rule = deckFilters[collKey];
+      if (!rule || !rule.enabled) return;
+      state.standaloneDecks[collKey] = buildStandaloneDeck(collKey, deckFilters);
+      // When no base collection is active (solo standalone play), unlock immediately.
+      if (!hasBaseCollection) state.activeStandaloneDecks.add(collKey);
+    });
+  }
   state.eventDeck = buildEventDeck(eventFilters ?? deckFilters);
   state.eventDiscardPile = [];
   state.discardPile = [];
@@ -54,6 +70,13 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
     deckMeta[t.name].count += 1;
     t._copyNum = deckMeta[t.name].count;
   });
+  Object.entries(state.standaloneDecks).forEach(([, deck]) => {
+    deck.forEach((t) => {
+      if (!deckMeta[t.name]) deckMeta[t.name] = { count: 0, type: t.type };
+      deckMeta[t.name].count += 1;
+      t._copyNum = deckMeta[t.name].count;
+    });
+  });
 
   const startTile = buildStartTile(deckFilters);
   startTile._copyNum = 1;
@@ -61,34 +84,52 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.discardPile.push(startTile);
 
   state.deckStartCounts = deckMeta;
-  state.deckStartTotal = state.mapDeck.length + 1; // +1 for the pre-placed start tile
+  const standaloneTotalCount = Object.values(state.standaloneDecks).reduce((s, d) => s + d.length, 0);
+  state.baseMapDeckStartCount = state.mapDeck.length;
+  state.deckStartTotal = state.mapDeck.length + 1 + standaloneTotalCount; // +1 for the pre-placed start tile
   state.eventDeckStartTotal = state.eventDeck.length;
 
-  addTile(0, 0, buildStartTile(deckFilters));
+  // When no base collection is active, stamp the start tile with the standalone deck key
+  // so zone compatibility checks allow standalone tiles to connect to it.
+  if (!hasBaseCollection) {
+    const firstSAKey = Object.keys(state.standaloneDecks)[0];
+    if (firstSAKey) startTile.placedDeck = firstSAKey;
+  }
+  addTile(0, 0, startTile);
 
   const summaryParts = Object.entries(deckMeta).map(([name, m]) => `${name} ×${m.count}`).join(", ");
   logLine(`Tile deck: ${state.deckStartTotal} card(s) — ${summaryParts}`);
+  Object.entries(state.standaloneDecks).forEach(([collKey, deck]) => {
+    const label = COLLECTION_META[collKey]?.label || collKey;
+    const isUnlocked = state.activeStandaloneDecks.has(collKey);
+    logLine(`${label} deck: ${deck.length} tile(s) — ${isUnlocked ? "ready to draw." : "locked until gateway tile is placed."}`);
+  });
   logLine("Town Square deployed. No zombies are auto-placed at setup.");
   logLine(`${currentPlayer().name} goes first (most recent zombie movie watcher).`);
 
   render();
 }
 
-function drawAndPlaceTile() {
-  if (state.step !== STEP.DRAW_TILE || state.gameOver) {
-    return;
-  }
+function drawAndPlaceTile(deckId = "base") {
+  if (state.step !== STEP.DRAW_TILE || state.gameOver) return;
 
-  if (state.mapDeck.length === 0) {
-    logLine("Map deck is empty — skipping tile draw, continuing turn.");
+  // Standalone deck: must be active (gateway tile placed)
+  if (deckId !== "base" && !state.activeStandaloneDecks.has(deckId)) return;
+
+  const deck = deckId === "base" ? state.mapDeck : state.standaloneDecks[deckId];
+  if (!deck) return;
+
+  if (deck.length === 0) {
+    const label = deckId === "base" ? "Map deck" : (COLLECTION_META[deckId]?.label || deckId) + " deck";
+    logLine(`${label} is empty — skipping tile draw, continuing turn.`);
     state.step = STEP.DRAW_EVENTS;
     render();
     return;
   }
 
-  const tile = state.mapDeck.shift();
+  const tile = deck.shift();
   const drawnName = getTileDisplayName(tile);
-  const options = getPlacementOptions(tile);
+  const options = getPlacementOptions(tile, deckId);
   if (options.length === 0) {
     logLine(`No valid placement for ${drawnName}; tile discarded, continuing turn.`);
     state.discardPile.push(tile);
@@ -100,16 +141,24 @@ function drawAndPlaceTile() {
   state.pendingTile = tile;
   state.pendingRotation = 0;
   state.pendingTileOptions = options;
+  state.pendingTileDeck = deckId;
   state.pendingCompanionTiles = [];
 
-  // If this tile has companions, pull them from the deck now so they're reserved.
   if (tile.companionTiles && tile.companionTiles.length > 0) {
     tile.companionTiles.forEach(({ name }) => {
-      const idx = state.mapDeck.findIndex((t) => t.name === name);
+      // Search current deck first, then all standalone decks.
+      let idx = deck.findIndex((t) => t.name === name);
+      let sourceDeck = deck;
+      if (idx === -1) {
+        for (const sd of Object.values(state.standaloneDecks)) {
+          const sdIdx = sd.findIndex((t) => t.name === name);
+          if (sdIdx !== -1) { idx = sdIdx; sourceDeck = sd; break; }
+        }
+      }
       if (idx !== -1) {
-        state.pendingCompanionTiles.push(state.mapDeck.splice(idx, 1)[0]);
+        state.pendingCompanionTiles.push(sourceDeck.splice(idx, 1)[0]);
       } else {
-        logLine(`Note: companion tile "${name}" not found in deck — will be skipped when placed.`);
+        logLine(`Note: companion tile "${name}" not found in any deck — will be skipped when placed.`);
       }
     });
   }
@@ -154,19 +203,26 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
     cx += DIRS[compoundDir].x;
     cy += DIRS[compoundDir].y;
 
+    const companionCols = Object.keys(resolveCollectionCounts(companion));
+    const companionDeck = companionCols.length > 0 && COLLECTION_META[companionCols[0]]?.standaloneDeck
+      ? companionCols[0]
+      : (state.pendingTileDeck || "base");
+
     if (state.board.has(key(cx, cy))) {
       logLine(`Cannot place ${companion.name} at (${cx}, ${cy}) — space already occupied; returning to deck.`);
-      state.mapDeck.unshift(companion);
+      const returnDeck = companionDeck === "base" ? state.mapDeck : (state.standaloneDecks[companionDeck] || state.mapDeck);
+      returnDeck.unshift(companion);
       return;
     }
 
     const rotatedConnectors = getRotatedConnectors(companion.connectors, tileRotation);
     const sourceSubTiles = getTileSubTileMap(companion);
     const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, tileRotation);
-
     addTile(cx, cy, {
       ...companion,
       connectors: rotatedConnectors,
+      placedDeck: companionDeck,
+      placedRotation: tileRotation,
       ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
     });
 
@@ -202,6 +258,8 @@ function placePendingTileAt(x, y) {
   addTile(placement.x, placement.y, {
     ...tile,
     connectors: placement.connectors,
+    placedDeck: state.pendingTileDeck || "base",
+    placedRotation: placement.rotation,
     ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
   });
 
@@ -232,6 +290,19 @@ function placePendingTileAt(x, y) {
   }
 
   state.discardPile.push(tile);
+
+  // Unlock standalone deck when a gateway tile is placed
+  if (tile.zoneGatewayConnector) {
+    const tileCols = Object.keys(resolveCollectionCounts(tile));
+    tileCols.forEach((collKey) => {
+      if (state.standaloneDecks[collKey] && !state.activeStandaloneDecks.has(collKey)) {
+        state.activeStandaloneDecks.add(collKey);
+        const label = COLLECTION_META[collKey]?.label || collKey;
+        logLine(`${label} deck unlocked — you may now draw from it.`);
+      }
+    });
+  }
+
   placeCompanionTilesFor(tile, placement.x, placement.y, placement.rotation);
   clearPendingTileState();
   state.step = STEP.COMBAT;

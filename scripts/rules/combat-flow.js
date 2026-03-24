@@ -52,7 +52,14 @@ function autoSkipDrawTileIfEmpty() {
   if (state.mapDeck.length > 0) {
     return;
   }
+  // Don't skip if any standalone deck still has tiles to draw from.
+  const standaloneLeft = Object.entries(state.standaloneDecks || {}).some(
+    ([collKey, deck]) => deck.length > 0 && state.activeStandaloneDecks.has(collKey)
+  );
+  if (standaloneLeft) {
+    return;
+  }
 
-  logLine(`Map deck is empty — tile draw step skipped.`);
+  logLine(`All tile decks are empty — tile draw step skipped.`);
   state.step = STEP.DRAW_EVENTS;
 }

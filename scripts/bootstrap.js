@@ -30,8 +30,30 @@ function buildCollectionRows() {
   });
 }
 
+function rebuildStandaloneDrawBtns() {
+  const container = document.getElementById("standaloneDrawBtns");
+  if (!container) return;
+  container.innerHTML = "";
+  Object.keys(state.standaloneDecks).forEach((collKey) => {
+    const meta = COLLECTION_META[collKey];
+    const label = meta?.label || collKey;
+    const btn = document.createElement("button");
+    btn.id = `drawBtn_${collKey}`;
+    btn.textContent = `Draw ${label} Tile`;
+    btn.className = "standalone-draw-btn";
+    const deck = state.standaloneDecks[collKey];
+    btn.disabled = !state.activeStandaloneDecks.has(collKey) || (deck && deck.length === 0);
+    btn.addEventListener("click", () => drawAndPlaceTile(collKey));
+    const row = document.createElement("div");
+    row.className = "row";
+    row.appendChild(btn);
+    container.appendChild(row);
+  });
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
+    refs.newGameBtn.classList.remove("needs-restart");
     const count = Number(refs.playerCount.value) || 2;
     setupGame(Math.max(1, Math.min(4, count)), readCurrentFilters(), readCurrentEventFilters());
   });
@@ -82,7 +104,7 @@ function attachListeners() {
     });
   }
 
-  refs.drawTileBtn.addEventListener("click", drawAndPlaceTile);
+  refs.drawTileBtn.addEventListener("click", () => drawAndPlaceTile("base"));
   refs.rotateLeftBtn.addEventListener("click", () => rotatePendingTile(-1));
   refs.rotateRightBtn.addEventListener("click", () => rotatePendingTile(1));
   refs.combatBtn.addEventListener("click", resolveCombatOnCurrentTile);
@@ -302,13 +324,27 @@ function readCurrentEventFilters() {
 }
 
 function updateDeckPreviewCounts() {
+  refs.newGameBtn.classList.add("needs-restart");
   const el = document.getElementById("deckPreviewCount");
   if (!el) return;
-  const mapPreview = buildMapDeck(readCurrentFilters());
+  const filters = readCurrentFilters();
+  const mapPreview = buildMapDeck(filters);
   const eventPreview = buildEventDeck(readCurrentEventFilters());
-  const mapTotal = mapPreview.length + 1; // +1 for pre-placed town square
+
+  // Build standalone deck previews for any enabled standalone collections
+  const standalonePreview = {};
+  Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
+    if (!meta.standaloneDeck) return;
+    const rule = filters[collKey];
+    if (!rule || !rule.enabled) return;
+    standalonePreview[collKey] = buildStandaloneDeck(collKey, filters);
+  });
+  const standaloneTotal = Object.values(standalonePreview).reduce((s, d) => s + d.length, 0);
+
+  const mapTotal = mapPreview.length + 1 + standaloneTotal; // +1 for pre-placed town square
   el.textContent = `Deck preview: ${mapTotal} map tile${mapTotal !== 1 ? "s" : ""}, ${eventPreview.length} event card${eventPreview.length !== 1 ? "s" : ""}`;
   renderDeckInfo(mapPreview);
+  renderStandaloneDeckInfo(Object.keys(standalonePreview).length > 0 ? standalonePreview : null);
   renderEventDeckInfo(eventPreview);
 }
 
