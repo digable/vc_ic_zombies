@@ -192,6 +192,17 @@ function getTileBackgroundStyle(type) {
   return map[type] || "#9faab4";
 }
 
+function getCollectionShortCode(collection, deckKey) {
+  if (!collection) return "";
+  if (deckKey && COLLECTION_META[deckKey]?.shortCode) {
+    return COLLECTION_META[deckKey].shortCode;
+  }
+  const keys = typeof collection === "object" && !Array.isArray(collection)
+    ? Object.keys(collection)
+    : [collection];
+  return keys.map((k) => COLLECTION_META[k]?.shortCode ?? "").filter(Boolean).join("/");
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")

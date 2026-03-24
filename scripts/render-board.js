@@ -47,7 +47,7 @@ function renderBoard() {
   });
 
   const cols = maxX - minX + 1;
-  refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(74px, 84px))`;
+  refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(84px, 96px))`;
   refs.board.innerHTML = "";
 
   const pendingCoords = new Set(
@@ -85,8 +85,9 @@ function renderBoard() {
             ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
           };
 
+          const previewShortCode = getCollectionShortCode(previewTile.collection, state.pendingTileDeck);
           cell.innerHTML = `
-            <div><strong>${getTileDisplayName(previewTile)}</strong></div>
+            <div><strong>${getTileDisplayName(previewTile)}</strong>${previewShortCode ? ` <span class="coll-short-code">${previewShortCode}</span>` : ""}</div>
             <div class="small">
               Z${getZombieSpawnCountForPlacedTile(previewTile, option?.connectors || [])},
               L${previewTile.hearts || 0},
@@ -239,8 +240,9 @@ function renderBoard() {
         }
       }
 
+      const tileShortCode = getCollectionShortCode(tile.collection, tile.placedDeck);
       cell.innerHTML = `
-        <div><strong>${getTileDisplayName(tile)}</strong></div>
+        <div><strong>${getTileDisplayName(tile)}</strong>${tileShortCode ? ` <span class="coll-short-code">${tileShortCode}</span>` : ""}</div>
         <div class="small">
           Z${getZombieSpawnCountForPlacedTile(tile, tile.connectors || [])},
           L${tile.hearts || 0},

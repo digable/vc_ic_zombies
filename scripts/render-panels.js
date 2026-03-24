@@ -257,8 +257,9 @@ function renderHand() {
 
     const playDisabled = !canPlay || globallyBlocked;
     const showSelect = state.step === STEP.DISCARD && !state.pendingCombatDecision;
+    const cardShortCode = getCollectionShortCode(card.collection);
     el.innerHTML = `
-      <strong>${card.name}</strong><br />
+      <strong>${card.name}</strong>${cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : ""}<br />
       <span class="small">${card.description}</span><br />
       <button ${playDisabled ? "disabled" : ""} data-play-index="${index}">Play</button>
       ${showSelect ? `<button data-select-index="${index}">Select</button>` : ""}

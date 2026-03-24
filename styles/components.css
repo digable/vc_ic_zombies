@@ -1,6 +1,6 @@
 .cell {
-  width: 84px;
-  height: 106px;
+  width: 96px;
+  height: 114px;
   border: 1px solid #9e8a66;
   border-radius: var(--radius-lg);
   position: relative;
@@ -15,6 +15,21 @@
 .cell > div:first-child,
 .cell > .small {
   padding: 0.15rem 0.2rem 0;
+}
+
+.cell > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.cell > div:first-child strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .cell.empty {
@@ -505,6 +520,19 @@
 .coll-tag-expansion {
   background: #7a5c1a;
   color: #fff;
+}
+
+.coll-short-code {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: #6b6b6b;
+  color: #f0f0f0;
+  border-radius: 3px;
+  padding: 1px 4px;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
 .game-over-overlay {

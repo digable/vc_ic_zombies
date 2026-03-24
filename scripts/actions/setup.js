@@ -89,11 +89,17 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.deckStartTotal = state.mapDeck.length + 1 + standaloneTotalCount; // +1 for the pre-placed start tile
   state.eventDeckStartTotal = state.eventDeck.length;
 
-  // When no base collection is active, stamp the start tile with the standalone deck key
-  // so zone compatibility checks allow standalone tiles to connect to it.
+  // Stamp placedDeck so the shortCode badge shows only the active collection.
   if (!hasBaseCollection) {
     const firstSAKey = Object.keys(state.standaloneDecks)[0];
     if (firstSAKey) startTile.placedDeck = firstSAKey;
+  } else {
+    const startCollKeys = Object.keys(startTile.collection || {});
+    const activeBaseKey = startCollKeys.find((c) => {
+      const meta = COLLECTION_META[c];
+      return meta && meta.requiresBase === null && !meta.standaloneDeck && deckFilters[c]?.enabled;
+    });
+    if (activeBaseKey) startTile.placedDeck = activeBaseKey;
   }
   addTile(0, 0, startTile);
 

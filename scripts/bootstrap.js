@@ -18,7 +18,8 @@ function buildCollectionRows() {
     const nameSpan = document.createElement("span");
     nameSpan.className = "setup-coll-name";
     nameSpan.setAttribute("data-coll", collKey);
-    nameSpan.innerHTML = `${meta.label} ${collTagsHtml(meta)}<br><span class="coll-counts" data-coll-counts="${collKey}"></span>`;
+    const sc = meta.shortCode ? ` <span class="coll-short-code">${meta.shortCode}</span>` : "";
+    nameSpan.innerHTML = `${meta.label}${sc} ${collTagsHtml(meta)}<br><span class="coll-counts" data-coll-counts="${collKey}"></span>`;
 
     const mapInput = document.createElement("input");
     mapInput.type = "checkbox";

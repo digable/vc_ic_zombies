@@ -13,18 +13,27 @@ function hasRoad(tile, dir) {
 // Returns true if the tile being placed (with tileDeck) may connect to neighborTile
 // via the neighbor's connector in direction neighborConnDir.
 // Zone rules: tiles must share the same placedDeck, except at a gateway connector.
-function isZoneCompatible(neighborTile, neighborConnDir, tileDeck) {
-  const neighborDeck = neighborTile.placedDeck || "base";
+// incomingDir: direction from the incoming tile toward the neighbor.
+// incomingGatewayDirs: rotated gateway connector directions on the incoming tile (or null).
+function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, incomingGatewayDirs) {
+  // The start tile (Town Square) always acts as "base" zone regardless of its placedDeck stamp.
+  const neighborDeck = (neighborTile.isStartTile ? null : neighborTile.placedDeck) || "base";
   if (neighborDeck === tileDeck) return true;
 
-  // Cross-zone allowed only at the neighbor's gateway connector
+  // Cross-zone allowed at the neighbor's gateway connector
   const gwConn = neighborTile.zoneGatewayConnector;
-  if (!gwConn) return false;
-  const actualGwDir = rotateDir(gwConn, neighborTile.placedRotation || 0);
-  return actualGwDir === neighborConnDir;
+  if (gwConn) {
+    const actualGwDir = rotateDir(gwConn, neighborTile.placedRotation || 0);
+    if (actualGwDir === neighborConnDir) return true;
+  }
+
+  // Cross-zone also allowed when the incoming tile's gateway faces this neighbor
+  if (incomingGatewayDirs && incomingDir && incomingGatewayDirs.has(incomingDir)) return true;
+
+  return false;
 }
 
-function isValidPlacement(x, y, connectors, tileDeck) {
+function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs) {
   const here = key(x, y);
   if (state.board.has(here)) return false;
 
@@ -39,7 +48,7 @@ function isValidPlacement(x, y, connectors, tileDeck) {
 
     // Zone check only when connectors actually touch
     if (meHas && themHas && tileDeck !== undefined) {
-      if (!isZoneCompatible(neighbor, def.opposite, tileDeck)) return false;
+      if (!isZoneCompatible(neighbor, def.opposite, tileDeck, dir, incomingGatewayDirs)) return false;
     }
   }
 
@@ -61,7 +70,10 @@ function getPlacementOptions(tile, tileDeck = "base") {
     const { x, y } = parseKey(k);
     for (let r = 0; r < 4; r += 1) {
       const connectors = rotateConnectors(tile.connectors, r);
-      if (isValidPlacement(x, y, connectors, tileDeck)) {
+      const gwDirs = tile.zoneGatewayConnector
+        ? new Set([rotateDir(tile.zoneGatewayConnector, r)])
+        : null;
+      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs)) {
         options.push({ x, y, connectors, rotation: r });
       }
     }

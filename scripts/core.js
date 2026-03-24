@@ -23,6 +23,7 @@ const COLLECTIONS = {
 const COLLECTION_META = {
   [COLLECTIONS.DIRECTORS_CUT]: {
     label: "Director's Cut",
+    shortCode: "Z1",
     requiresBase: null,
     year: 2004,
     type: "Base Game",
@@ -32,6 +33,7 @@ const COLLECTION_META = {
   },
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
+    shortCode: "IC",
     requiresBase: COLLECTIONS.DIRECTORS_CUT,
     year: 2026,
     type: "Expansion",
@@ -41,6 +43,7 @@ const COLLECTION_META = {
   },
   [COLLECTIONS.ZOMBIE_CORPS_E_]: {
     label: "Zombie Corps(e)",
+    shortCode: "Z2",
     requiresBase: null,
     year: 2007,
     type: "Standalone / Expansion",
