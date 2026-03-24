@@ -32,21 +32,8 @@ function buildCollectionRows() {
 
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
-    const setupSection = document.getElementById("setupSection");
-    if (setupSection.classList.contains("hidden")) {
-      setupSection.classList.remove("hidden");
-      return;
-    }
-    setupSection.classList.add("hidden");
     const count = Number(refs.playerCount.value) || 2;
-    const filters = {};
-    document.querySelectorAll("[data-deck-coll]").forEach((el) => {
-      const col = el.getAttribute("data-deck-coll");
-      const st = el.getAttribute("data-deck-state");
-      if (!filters[col]) filters[col] = { enabled: false, disabled: false };
-      if (el.checked) filters[col][st] = true;
-    });
-    setupGame(Math.max(1, Math.min(4, count)), filters);
+    setupGame(Math.max(1, Math.min(4, count)), readCurrentFilters(), readCurrentEventFilters());
   });
 
   document.querySelectorAll("[data-requires-base][data-deck-state='enabled']").forEach((el) => {
@@ -58,14 +45,40 @@ function attachListeners() {
       );
       if (baseEnabled && !baseEnabled.checked) {
         baseEnabled.checked = true;
+        updateDeckPreviewCounts();
       }
     });
   });
+
+  const grid = document.getElementById("collectionGrid");
+  if (grid) {
+    grid.addEventListener("change", updateDeckPreviewCounts);
+  }
+
+  document.querySelectorAll("[data-event-requires-base][data-event-state='enabled']").forEach((el) => {
+    el.addEventListener("change", () => {
+      if (!el.checked) return;
+      const baseCol = el.getAttribute("data-event-requires-base");
+      const baseEnabled = document.querySelector(
+        `[data-event-coll="${baseCol}"][data-event-state="enabled"]`
+      );
+      if (baseEnabled && !baseEnabled.checked) {
+        baseEnabled.checked = true;
+        updateDeckPreviewCounts();
+      }
+    });
+  });
+
+  const eventGrid = document.getElementById("eventCollectionGrid");
+  if (eventGrid) {
+    eventGrid.addEventListener("change", updateDeckPreviewCounts);
+  }
 
   if (refs.gameOverNewGameBtn) {
     refs.gameOverNewGameBtn.addEventListener("click", () => {
       refs.gameOverOverlay.classList.add("hidden");
       document.getElementById("setupSection").classList.remove("hidden");
+      updateDeckPreviewCounts();
     });
   }
 
@@ -212,6 +225,40 @@ function attachListeners() {
 
 }
 
+function buildEventCollectionRows() {
+  const grid = document.getElementById("eventCollectionGrid");
+  if (!grid) return;
+  const eventCounts = getEventCardCountsByCollection();
+
+  Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
+    if (!eventCounts[collKey]) return;
+    const isBase = meta.requiresBase === null;
+    const tagClass = isBase ? "coll-tag-base" : "coll-tag-expansion";
+    const tagLabel = isBase ? "base" : "expansion";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "setup-coll-name";
+    nameSpan.setAttribute("data-coll", collKey);
+    nameSpan.innerHTML = `${meta.label} <span class="coll-tag ${tagClass}">${tagLabel}</span> <span class="coll-counts" data-event-coll-counts="${collKey}"></span>`;
+
+    const enabledInput = document.createElement("input");
+    enabledInput.type = "checkbox";
+    enabledInput.setAttribute("data-event-coll", collKey);
+    enabledInput.setAttribute("data-event-state", "enabled");
+    if (isBase) enabledInput.checked = true;
+    if (!isBase) enabledInput.setAttribute("data-event-requires-base", meta.requiresBase);
+
+    const disabledInput = document.createElement("input");
+    disabledInput.type = "checkbox";
+    disabledInput.setAttribute("data-event-coll", collKey);
+    disabledInput.setAttribute("data-event-state", "disabled");
+
+    grid.appendChild(nameSpan);
+    grid.appendChild(enabledInput);
+    grid.appendChild(disabledInput);
+  });
+}
+
 function populateCollectionCounts() {
   const tileCounts = getMapTileCountsByCollection();
   const eventCounts = getEventCardCountsByCollection();
@@ -225,6 +272,44 @@ function populateCollectionCounts() {
       el.textContent = `(${tiles} map tiles, ${events} event cards)`;
     }
   });
+  document.querySelectorAll("[data-event-coll-counts]").forEach((el) => {
+    const col = el.getAttribute("data-event-coll-counts");
+    const events = eventCounts[col] || 0;
+    el.textContent = events ? `(${events})` : "";
+  });
+}
+
+function readCurrentFilters() {
+  const filters = {};
+  document.querySelectorAll("[data-deck-coll]").forEach((el) => {
+    const col = el.getAttribute("data-deck-coll");
+    const st = el.getAttribute("data-deck-state");
+    if (!filters[col]) filters[col] = { enabled: false, disabled: false };
+    if (el.checked) filters[col][st] = true;
+  });
+  return filters;
+}
+
+function readCurrentEventFilters() {
+  const filters = {};
+  document.querySelectorAll("[data-event-coll]").forEach((el) => {
+    const col = el.getAttribute("data-event-coll");
+    const st = el.getAttribute("data-event-state");
+    if (!filters[col]) filters[col] = { enabled: false, disabled: false };
+    if (el.checked) filters[col][st] = true;
+  });
+  return filters;
+}
+
+function updateDeckPreviewCounts() {
+  const el = document.getElementById("deckPreviewCount");
+  if (!el) return;
+  const mapPreview = buildMapDeck(readCurrentFilters());
+  const eventPreview = buildEventDeck(readCurrentEventFilters());
+  const mapTotal = mapPreview.length + 1; // +1 for pre-placed town square
+  el.textContent = `Deck preview: ${mapTotal} map tile${mapTotal !== 1 ? "s" : ""}, ${eventPreview.length} event card${eventPreview.length !== 1 ? "s" : ""}`;
+  renderDeckInfo(mapPreview);
+  renderEventDeckInfo(eventPreview);
 }
 
 function applyCollectionTooltips() {
@@ -247,8 +332,10 @@ function applyCollectionTooltips() {
 }
 
 buildCollectionRows();
+buildEventCollectionRows();
 attachListeners();
 populateCollectionCounts();
 applyCollectionTooltips();
-setupGame(2, { [getBaseCollection()]: { enabled: true, disabled: false } });
-document.getElementById("setupSection").classList.add("hidden");
+updateDeckPreviewCounts();
+const _baseFilter = { [getBaseCollection()]: { enabled: true, disabled: false } };
+setupGame(2, _baseFilter, _baseFilter);

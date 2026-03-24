@@ -159,7 +159,7 @@ function renderMapDeckDebug() {
   state.mapDeck.forEach((tile, index) => {
     if (seenNames.has(tile.name)) return;
     seenNames.add(tile.name);
-    if (mapDeckDebugFilters.collection !== "all" && (tile.collection || getBaseCollection()) !== mapDeckDebugFilters.collection) return;
+    if (mapDeckDebugFilters.collection !== "all" && !Object.keys(resolveCollectionCounts(tile)).includes(mapDeckDebugFilters.collection)) return;
     if (mapDeckDebugFilters.enabled !== "all" && String(tile.enabled !== false) !== mapDeckDebugFilters.enabled) return;
     const group = getDebugGroup(tile);
     grouped.get(group)?.push({ tile, deckIndex: index });
@@ -231,11 +231,15 @@ function renderMapDeckDebug() {
         <div class="small">#${deckIndex + 1}</div>
         <div class="deck-tile-edit-line">
           <strong>${getTileDisplayName(tileForRender)}</strong>
-          <select data-debug-tile-id="${tileId}" data-debug-field="collection">
-            ${Object.entries(COLLECTIONS).map(([key, val]) =>
-              `<option value="${val}" ${(tileForRender.collection || getBaseCollection()) === val ? "selected" : ""}>${key}</option>`
-            ).join("")}
-          </select>
+        </div>
+        <div class="deck-tile-collections">
+          <strong>Collections</strong>
+          <div class="deck-tile-collections-grid">
+            ${Object.entries(COLLECTIONS).map(([k, v]) => {
+              const cnt = resolveCollectionCounts(tileForRender)[v] || 0;
+              return `<label style="opacity:${cnt > 0 ? 1 : 0.4}">${k}:<input type="number" min="0" value="${cnt}" data-debug-tile-id="${tileId}" data-debug-field="collectionCount" data-debug-dir="${v}" class="deck-tile-count-input" /></label>`;
+            }).join("")}
+          </div>
         </div>
         <div class="deck-tile-edit-line">
           <strong>Type</strong>
@@ -259,10 +263,6 @@ function renderMapDeckDebug() {
           <strong>Enabled</strong>
           <input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="enabled" ${tileForRender.enabled !== false ? "checked" : ""} />
         </label>
-        <label class="deck-tile-edit-line">
-          <strong>Count</strong>
-          <input type="number" min="1" value="${tileForRender.count || 1}" data-debug-tile-id="${tileId}" data-debug-field="count" class="deck-tile-count-input" />
-        </label>
         <div class="deck-tile-edit-line">
           <strong>Connectors</strong>
           <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="N" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("N") ? "checked" : ""}/>N</label>
@@ -272,7 +272,7 @@ function renderMapDeckDebug() {
         </div>
         <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
         <div class="small">
-          Z${tileForRender.zombieCount || 0},
+          Z${Object.values(tileForRender.zombies || {}).reduce((s,n)=>s+n,0)},
           L${tileForRender.hearts || 0},
           B${tileForRender.bullets || 0}
         </div>

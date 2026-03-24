@@ -1,4 +1,4 @@
-function setupGame(playerCount, deckFilters = null) {
+function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.players = [];
   for (let i = 0; i < playerCount; i += 1) {
     state.players.push({
@@ -35,7 +35,7 @@ function setupGame(playerCount, deckFilters = null) {
   state.currentPlayerIndex = 0;
   state.board = new Map();
   state.mapDeck = buildMapDeck(deckFilters);
-  state.eventDeck = buildEventDeck(deckFilters);
+  state.eventDeck = buildEventDeck(eventFilters ?? deckFilters);
   state.eventDiscardPile = [];
   state.discardPile = [];
   state.zombies = new Map();
@@ -43,6 +43,7 @@ function setupGame(playerCount, deckFilters = null) {
   resetStepProgress(STEP.DRAW_TILE);
   state.turnNumber = 1;
   state.gameOver = false;
+  state.winInfo = null;
   state.lastCombatResult = null;
   clearPendingTileState();
   state.logs = [];
@@ -60,7 +61,7 @@ function setupGame(playerCount, deckFilters = null) {
   state.discardPile.push(startTile);
 
   state.deckStartCounts = deckMeta;
-  state.deckStartTotal = state.mapDeck.length;
+  state.deckStartTotal = state.mapDeck.length + 1; // +1 for the pre-placed start tile
   state.eventDeckStartTotal = state.eventDeck.length;
 
   addTile(0, 0, buildStartTile(deckFilters));
@@ -140,12 +141,14 @@ function placePendingTileAt(x, y) {
   logLine(`${currentPlayer().name} placed ${placedName} at (${placement.x}, ${placement.y}).`);
 
   const spawnCount = getZombieSpawnCountForPlacedTile(tile, placement.connectors);
-  const spawnType = tile.zombieType || ZOMBIE_TYPE.REGULAR;
   let placed = 0;
   if (tile.zombieSpawnMode === "by_exits") {
-    placed = spawnZombiesOnRoadExits(placement.x, placement.y, placement.connectors, spawnType);
+    const exitType = Object.keys(tile.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
+    placed = spawnZombiesOnRoadExits(placement.x, placement.y, placement.connectors, exitType);
   } else {
-    placed = spawnZombiesOnTile(placement.x, placement.y, spawnCount, placedName, spawnType);
+    Object.entries(tile.zombies || { [ZOMBIE_TYPE.REGULAR]: spawnCount }).forEach(([type, count]) => {
+      placed += spawnZombiesOnTile(placement.x, placement.y, count, placedName, type);
+    });
   }
 
   if (spawnCount > 0 && tile.zombieSpawnMode === "by_exits") {

@@ -3,10 +3,25 @@
 
 function formatTileCode(obj) {
   const identRe = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
+  // Reverse maps so runtime values render as their constant expressions
+  const collectionsReverse = Object.fromEntries(
+    Object.entries(COLLECTIONS).map(([k, v]) => [v, `COLLECTIONS.${k}`])
+  );
+  const zombieTypeReverse = Object.fromEntries(
+    Object.entries(ZOMBIE_TYPE).map(([k, v]) => [v, `ZOMBIE_TYPE.${k}`])
+  );
+
   function fmtKey(k) {
     return identRe.test(k) ? k : JSON.stringify(k);
   }
-  function fmt(val, depth) {
+
+  function fmtComputedKey(k, reverseMap) {
+    return reverseMap[k] ? `[${reverseMap[k]}]` : fmtKey(k);
+  }
+
+  // fieldName is the parent property name, used to pick the right key formatter
+  function fmt(val, depth, fieldName) {
     if (val === null) return "null";
     if (typeof val === "string") return JSON.stringify(val);
     if (typeof val !== "object") return String(val);
@@ -15,12 +30,21 @@ function formatTileCode(obj) {
     }
     const entries = Object.entries(val);
     if (entries.length === 0) return "{}";
+
+    // collection and zombies: always one entry per line with computed key notation
+    if (fieldName === "collection" || fieldName === "zombies") {
+      const reverseMap = fieldName === "collection" ? collectionsReverse : zombieTypeReverse;
+      const pad = "  ".repeat(depth + 1);
+      const close = "  ".repeat(depth);
+      return "{\n" + entries.map(([k, v]) => `${pad}${fmtComputedKey(k, reverseMap)}: ${fmt(v, depth + 1)}`).join(",\n") + ",\n" + close + "}";
+    }
+
     if (depth >= 2) {
       return "{ " + entries.map(([k, v]) => `${fmtKey(k)}: ${fmt(v, depth + 1)}`).join(", ") + " }";
     }
     const pad = "  ".repeat(depth + 1);
     const close = "  ".repeat(depth);
-    return "{\n" + entries.map(([k, v]) => `${pad}${fmtKey(k)}: ${fmt(v, depth + 1)}`).join(",\n") + "\n" + close + "}";
+    return "{\n" + entries.map(([k, v]) => `${pad}${fmtKey(k)}: ${fmt(v, depth + 1, k)}`).join(",\n") + "\n" + close + "}";
   }
   return fmt(obj, 0);
 }

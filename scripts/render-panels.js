@@ -1,36 +1,69 @@
 // render-panels.js — UI panel rendering functions.
 // Handles deck info, players, hand, combat, zombie panels, event choice, log, meta, and game over.
 
-function renderDeckInfo() {
+function renderDeckInfo(previewDeck) {
   const box = document.getElementById("deckInfoBox");
   if (!box) return;
-  const totalStart = state.deckStartTotal ?? (state.mapDeck.length + state.discardPile.length);
-  const totalPlayed = state.discardPile.length;
-  const totalLeft = state.mapDeck.length;
 
-  function tileRow(t, posStr, played) {
-    const meta = state.deckStartCounts?.[t.name];
-    const total = meta?.count ?? 1;
-    const copy = total > 1 ? ` <span class="deck-info-copy">${t._copyNum}/${total}</span>` : "";
+  function collectionLabel(collection) {
+    if (!collection) return "";
+    const keys = typeof collection === "object" && !Array.isArray(collection)
+      ? Object.keys(collection)
+      : [collection];
+    return keys.map((k) => COLLECTION_META[k]?.label ?? k).join(", ");
+  }
+
+  function tileRow(t, posStr, played, copyStr) {
+    const coll = collectionLabel(t.collection);
+    const copy = copyStr ? ` <span class="deck-info-copy">${copyStr}</span>` : "";
     return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
-      + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${t.collection ? ` <em class="deck-info-collection">${t.collection}</em>` : ""}${copy}</span>`
+      + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${coll ? ` <em class="deck-info-collection">${coll}</em>` : ""}${copy}</span>`
       + `<span class="deck-info-pos">${posStr}</span>`
       + `</div>`;
   }
 
-  const deckRows = state.mapDeck.map((t, i) => tileRow(t, `#${i + 1}`, false)).join("");
+  const detailsOpen = box.querySelector(".deck-info-details")?.open ?? false;
+
+  if (previewDeck) {
+    const startTile = buildStartTile(readCurrentFilters());
+    const startRow = tileRow(startTile, "pre-placed", true, null);
+    const previewRows = previewDeck.map((t, i) => tileRow(t, `#${i + 1}`, false, null)).join("");
+    box.innerHTML = `
+      <div>Total in Deck (start): ${previewDeck.length + 1}</div>
+      <div>Total Played: 1</div>
+      <div>Total Left: ${previewDeck.length}</div>
+      <details class="deck-info-details"${detailsOpen ? " open" : ""}>
+        <summary>Show cards</summary>
+        <div class="deck-info-breakdown">${previewRows}<div class="deck-info-divider"></div>${startRow}</div>
+      </details>
+    `;
+    return;
+  }
+
+  const totalStart = state.deckStartTotal ?? (state.mapDeck.length + state.discardPile.length);
+  const totalPlayed = state.discardPile.length;
+  const totalLeft = state.mapDeck.length;
+
+  const deckRows = state.mapDeck.map((t, i) => {
+    const meta = state.deckStartCounts?.[t.name];
+    const total = meta?.count ?? 1;
+    const copy = total > 1 ? `${t._copyNum}/${total}` : null;
+    return tileRow(t, `#${i + 1}`, false, copy);
+  }).join("");
 
   const playedRows = state.discardPile.map((t) => {
     const meta = state.deckStartCounts?.[t.name];
     const posStr = meta?.prePlaced ? "pre-placed" : "played";
-    return tileRow(t, posStr, true);
+    const total = meta?.count ?? 1;
+    const copy = total > 1 ? `${t._copyNum}/${total}` : null;
+    return tileRow(t, posStr, true, copy);
   }).join("");
 
-  const detailsOpen = box.querySelector(".deck-info-details")?.open ?? false;
+  const emptyBadge = totalLeft === 0 ? ` <span class="deck-empty-badge">DECK EMPTY — tile draw step skipped</span>` : "";
   box.innerHTML = `
     <div>Total in Deck (start): ${totalStart}</div>
     <div>Total Played: ${totalPlayed}</div>
-    <div>Total Left: ${totalLeft}</div>
+    <div>Total Left: ${totalLeft}${emptyBadge}</div>
     <details class="deck-info-details"${detailsOpen ? " open" : ""}>
       <summary>Show cards</summary>
       <div class="deck-info-breakdown">${deckRows}${playedRows ? `<div class="deck-info-divider"></div>${playedRows}` : ""}</div>
@@ -38,33 +71,52 @@ function renderDeckInfo() {
   `;
 }
 
-function renderEventDeckInfo() {
+function renderEventDeckInfo(previewDeck) {
   const box = document.getElementById("eventDeckInfoBox");
   if (!box) return;
 
-  const totalStart = state.eventDeckStartTotal ?? 0;
-
-  const inDeck = state.eventDeck.length;
-  const inHands = state.players?.reduce((s, p) => s + (p.hand?.length ?? 0), 0) ?? 0;
-  const discarded = state.eventDiscardPile?.length ?? 0;
+  function collectionLabel(collection) {
+    if (!collection) return "";
+    const keys = typeof collection === "object" && !Array.isArray(collection)
+      ? Object.keys(collection)
+      : [collection];
+    return keys.map((k) => COLLECTION_META[k]?.label ?? k).join(", ");
+  }
 
   function cardRow(c, label, played) {
-    const total = c.count ?? 1;
+    const coll = collectionLabel(c.collection);
     return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
-      + `<span class="deck-info-name">${c.name}${c.collection ? ` <em class="deck-info-collection">${c.collection}</em>` : ""}</span>`
+      + `<span class="deck-info-name">${c.name}${coll ? ` <em class="deck-info-collection">${coll}</em>` : ""}</span>`
       + `<span class="deck-info-pos">${label}</span>`
       + `</div>`;
   }
 
-  const deckRows = state.eventDeck.map((c, i) => cardRow(c, `#${i + 1}`, false)).join("");
+  const detailsOpen = box.querySelector(".deck-info-details")?.open ?? false;
 
+  if (previewDeck) {
+    const previewRows = previewDeck.map((c, i) => cardRow(c, `#${i + 1}`, false)).join("");
+    box.innerHTML = `
+      <div>Total in Deck (start): ${previewDeck.length}</div>
+      <div>In Deck: ${previewDeck.length} &nbsp; In Hands: 0 &nbsp; Played: 0</div>
+      <details class="deck-info-details"${detailsOpen ? " open" : ""}>
+        <summary>Show cards</summary>
+        <div class="deck-info-breakdown">${previewRows}</div>
+      </details>
+    `;
+    return;
+  }
+
+  const totalStart = state.eventDeckStartTotal ?? 0;
+  const inDeck = state.eventDeck.length;
+  const inHands = state.players?.reduce((s, p) => s + (p.hand?.length ?? 0), 0) ?? 0;
+  const discarded = state.eventDiscardPile?.length ?? 0;
+
+  const deckRows = state.eventDeck.map((c, i) => cardRow(c, `#${i + 1}`, false)).join("");
   const handRows = (state.players ?? []).flatMap((p) =>
     (p.hand ?? []).map((c) => cardRow(c, p.name, false))
   ).join("");
-
   const playedRows = (state.eventDiscardPile ?? []).map((c) => cardRow(c, "played", true)).join("");
 
-  const detailsOpen = box.querySelector(".deck-info-details")?.open ?? false;
   box.innerHTML = `
     <div>Total in Deck (start): ${totalStart}</div>
     <div>In Deck: ${inDeck} &nbsp; In Hands: ${inHands} &nbsp; Played: ${discarded}</div>
@@ -218,7 +270,7 @@ function renderCombatDecision() {
       : "won't be enough — wasted bullet";
   const bulletHintClass = bulletWins ? "good" : canWinWithBullets ? "good" : "warn";
   const bulletBtn = actionWrap(
-    `<button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1)</button>`,
+    `<button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1) — ${player.bullets} left</button>`,
     player.bullets > 0 ? `→ ${bulletResult}` : null,
     bulletHintClass
   );
@@ -240,9 +292,13 @@ function renderCombatDecision() {
 
   const weaponBtns = player.items
     ? player.items.filter((c) => c.combatWeapon).map((c) => {
-        const boost = c.combatBoost || c.permanentAttackBoost;
+        const boost = c.combatBoost || c.turnCombatBoost || c.permanentAttackBoost;
         const newTotal = roll + boost;
-        const wHint = newTotal >= WIN ? "kills the zombie!" : `→ total: ${newTotal}`;
+        const isTurnBoost = Boolean(c.turnCombatBoost);
+        const turnNote = isTurnBoost ? ` (+${boost} all combats this turn)` : "";
+        const wHint = newTotal >= WIN
+          ? `kills the zombie!${turnNote}`
+          : `→ total: ${newTotal}${turnNote}`;
         const wClass = newTotal >= WIN ? "good" : "muted";
         return actionWrap(
           `<button data-combat-action="W:${c.name}" ${pending.weaponUsed ? "disabled" : ""}>${c.name} (+${boost})</button>`,
@@ -458,10 +514,31 @@ function renderGameOver() {
   if (!refs.gameOverOverlay) return;
   if (!state.gameOver) {
     refs.gameOverOverlay.classList.add("hidden");
+    refs.gameOverOverlay.classList.remove("game-over-overlay--victory");
     return;
   }
-  const lastLogEntry = state.logs[state.logs.length - 1];
-  const lastLog = lastLogEntry ? lastLogEntry.text : "";
-  refs.gameOverMessage.textContent = lastLog;
+
+  const info = state.winInfo;
+  if (info) {
+    refs.gameOverOverlay.classList.add("game-over-overlay--victory");
+    if (refs.gameOverTitle) refs.gameOverTitle.textContent = "VICTORY!";
+    const howWon = info.winType === "helipad"
+      ? "escaped by helicopter"
+      : `eliminated ${info.kills} zombies`;
+    refs.gameOverMessage.innerHTML = `
+      <div class="game-over-winner">${escapeHtml(info.playerName)}</div>
+      <div class="game-over-how">${escapeHtml(howWon)}</div>
+      <div class="game-over-stats">
+        <span>Kills: <strong>${info.kills}</strong></span>
+        <span>KOs taken: <strong>${info.knockouts}</strong></span>
+      </div>
+    `;
+  } else {
+    refs.gameOverOverlay.classList.remove("game-over-overlay--victory");
+    if (refs.gameOverTitle) refs.gameOverTitle.textContent = "GAME OVER";
+    const lastLogEntry = state.logs[state.logs.length - 1];
+    refs.gameOverMessage.textContent = lastLogEntry ? lastLogEntry.text : "";
+  }
+
   refs.gameOverOverlay.classList.remove("hidden");
 }

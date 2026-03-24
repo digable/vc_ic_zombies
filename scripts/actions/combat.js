@@ -43,6 +43,12 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
       return;
     }
 
+    if (resumeStepAfterPending === STEP.DRAW_TILE) {
+      state.step = STEP.DRAW_TILE;
+      autoSkipDrawTileIfEmpty();
+      return;
+    }
+
     state.step = resumeStepAfterPending;
     return;
   }
@@ -164,6 +170,11 @@ function resolvePendingCombatDecision(actionCode) {
     if (weapon.combatBoost) {
       pending.modifiedRoll += weapon.combatBoost;
       logLine(`${player.name} used the ${weapon.name} (+${weapon.combatBoost}). Combat roll is now ${pending.modifiedRoll}.`);
+    }
+    if (weapon.turnCombatBoost) {
+      pending.modifiedRoll += weapon.turnCombatBoost;
+      player.tempCombatBonus = (player.tempCombatBonus || 0) + weapon.turnCombatBoost;
+      logLine(`${player.name} used the ${weapon.name} (+${weapon.turnCombatBoost} this combat and all remaining combats this turn). Combat roll is now ${pending.modifiedRoll}.`);
     }
     if (weapon.permanentAttackBoost) {
       player.attack += weapon.permanentAttackBoost;

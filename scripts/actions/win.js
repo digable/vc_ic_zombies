@@ -6,6 +6,7 @@ function checkWin(player) {
     const lx = getLocalCoord(player.x, tx);
     const ly = getLocalCoord(player.y, ty);
     if (lx === 1 && ly === 1) {
+      state.winInfo = { playerName: player.name, kills: player.kills, knockouts: player.knockouts || 0, winType: "helipad" };
       state.gameOver = true;
       logLine(`${player.name} reached the center of the Helipad and wins!`);
       return true;
@@ -13,6 +14,7 @@ function checkWin(player) {
   }
 
   if (player.kills >= WIN_KILLS) {
+    state.winInfo = { playerName: player.name, kills: player.kills, knockouts: player.knockouts || 0, winType: "kills" };
     state.gameOver = true;
     logLine(`${player.name} reached ${WIN_KILLS} kills and wins.`);
     return true;

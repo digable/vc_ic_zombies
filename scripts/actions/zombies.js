@@ -46,34 +46,57 @@ function chooseZombieCombatTarget(playersOnSpace, options = {}) {
 }
 
 function pickNearestZombieToMove(availableZombieKeys) {
-  let nearest = [];
-  let nearestDist = Infinity;
+  if (availableZombieKeys.length === 0) return undefined;
+  if (availableZombieKeys.length === 1) return availableZombieKeys[0];
 
-  availableZombieKeys.forEach((zk) => {
+  // Priority: current player first, then others in turn order.
+  const orderedPlayers = [];
+  for (let i = 0; i < state.players.length; i++) {
+    orderedPlayers.push(state.players[(state.currentPlayerIndex + i) % state.players.length]);
+  }
+
+  const distVec = (zk) => {
     const { x, y } = parseKey(zk);
-    const d = nearestPlayerDistance(x, y);
-    if (d < nearestDist) {
-      nearestDist = d;
-      nearest = [zk];
-    } else if (d === nearestDist) {
-      nearest.push(zk);
+    return orderedPlayers.map((p) => Math.abs(p.x - x) + Math.abs(p.y - y));
+  };
+
+  const compareVec = (a, b) => {
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] < b[i]) return -1;
+      if (a[i] > b[i]) return 1;
+    }
+    return 0;
+  };
+
+  let bestKeys = [];
+  let bestVec = null;
+  availableZombieKeys.forEach((zk) => {
+    const vec = distVec(zk);
+    if (bestVec === null) {
+      bestVec = vec;
+      bestKeys = [zk];
+    } else {
+      const cmp = compareVec(vec, bestVec);
+      if (cmp < 0) {
+        bestVec = vec;
+        bestKeys = [zk];
+      } else if (cmp === 0) {
+        bestKeys.push(zk);
+      }
     }
   });
 
-  if (nearest.length <= 1) {
-    return nearest[0];
-  }
+  if (bestKeys.length === 1) return bestKeys[0];
 
-  nearest.sort((a, b) => {
+  // Position tie-break: top-left first
+  bestKeys.sort((a, b) => {
     const pa = parseKey(a);
     const pb = parseKey(b);
-    if (pa.y !== pb.y) {
-      return pa.y - pb.y;
-    }
+    if (pa.y !== pb.y) return pa.y - pb.y;
     return pa.x - pb.x;
   });
 
-  const chosenZombie = nearest[0];
+  const chosenZombie = bestKeys[0];
   const chosenPos = parseKey(chosenZombie);
   logLine(`Zombie tie auto-resolved: moved zombie at (${chosenPos.x}, ${chosenPos.y}).`);
   return chosenZombie;

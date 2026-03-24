@@ -51,6 +51,7 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Draw up to 3 event cards per turn
 - Play one card per turn cycle (resets at the start of your next turn)
 - Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves
+- Event card collections are configured independently from map tile collections at setup — you can mix any combination
 
 ### 🏆 Win Conditions
 - **Escape** — reach the center square of the Helipad tile
@@ -110,7 +111,8 @@ vc_ic_zombies/
 │   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
 │   │   └── board-bounds.js           # Dynamic board render bounds
 │   └── data/
-│       ├── map-deck.js               # Tile definitions and buildMapDeck()
+│       ├── map-tiles.js              # Tile definitions (roadTiles, namedTiles, specialTiles, START_TILES)
+│       ├── map-deck.js               # buildMapDeck(), buildStartTile(), tile filtering/shuffling
 │       ├── event-deck.js             # Event deck builder
 │       └── event-cards/
 │           ├── helpers.js            # Shared event utilities
@@ -184,7 +186,7 @@ Current collections:
 | `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
 | `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Expansion — requires Director's Cut |
 
-Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` and in `event-deck.js` via `buildEventDeck`. Metadata for each collection is defined in `COLLECTION_META` in `core.js`:
+Map tile and event card collections are configured **independently** in the setup panel — choosing an expansion for tiles doesn't automatically apply it for events. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`):
 
 | Property | Description |
 |----------|-------------|
@@ -196,7 +198,7 @@ Collections are configured in `map-deck.js` via `buildStartTile`/`buildMapDeck` 
 | `creator` | Author or creator name |
 | `requiresBase` | `null` for standalone base games; `COLLECTIONS.X` for expansions that need a base |
 
-If an expansion is selected without its required base game, the engine falls back to Director's Cut's Town Square (start tile) and Helipad (win tile), and uses Director's Cut events if the expansion has none of its own.
+If an expansion is selected without its required base game, the map deck falls back to Director's Cut's Town Square (start tile) and Helipad (win tile). Event cards have no fallback — if no event collections are enabled you simply play with an empty event deck.
 
 ### Tile Properties
 
@@ -220,7 +222,7 @@ If an expansion is selected without its required base game, the engine falls bac
 ## 📋 Rule Summary
 
 - Players start at Town Square with 3 hearts and 3 bullets
-- Before starting, choose which tile collections (Director's Cut, Iowa City, Not Used) to include — if only an expansion is selected without its base game, Town Square and Helipad are used as fallbacks for the start and win tiles
+- Before starting, choose which tile collections and event card collections to include independently — if only an expansion is selected without its base game, Town Square and Helipad are used as fallbacks for the start and win tiles
 - Tile placement requires connector alignment — roads must connect to roads
 - Helipad is shuffled into the second half of the deck
 - Zombies spawn on tiles when placed based on `zombieSpawnMode`

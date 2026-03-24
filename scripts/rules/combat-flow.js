@@ -44,3 +44,15 @@ function autoSkipZombieMoveIfClear() {
   state.currentZombieRoll = null;
   state.step = STEP.DISCARD;
 }
+
+function autoSkipDrawTileIfEmpty() {
+  if (state.step !== STEP.DRAW_TILE || state.gameOver) {
+    return;
+  }
+  if (state.mapDeck.length > 0) {
+    return;
+  }
+
+  logLine(`Map deck is empty — tile draw step skipped.`);
+  state.step = STEP.DRAW_EVENTS;
+}

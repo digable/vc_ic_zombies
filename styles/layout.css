@@ -69,12 +69,29 @@
   min-width: 5rem;
 }
 
+.setup-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tone-muted);
+  margin-top: 0.35rem;
+  margin-bottom: 0.1rem;
+}
+
 .setup-collection-grid {
   display: grid;
   grid-template-columns: auto 1fr 1fr;
   gap: 0.25rem 0.5rem;
   align-items: center;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.3rem;
+}
+
+.deck-preview-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--tone-muted);
+  margin-bottom: 0.4rem;
 }
 
 .setup-col-header {
@@ -195,6 +212,41 @@
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
   gap: 0.4rem;
   align-items: start;
+}
+
+.deck-tile-edit-line {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  flex-wrap: wrap;
+}
+
+.deck-tile-collections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+}
+
+.deck-tile-collections-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.deck-tile-collections-grid label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+}
+
+.deck-tile-count-input {
+  width: 3.2rem;
+  font-size: 0.72rem;
+  padding: 0.08rem 0.16rem;
 }
 
 .deck-tile {
@@ -423,6 +475,19 @@
 .deck-info-divider {
   border-top: 1px dashed #c0a87a;
   margin: 0.25rem 0;
+}
+
+.deck-empty-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  background: #c24a3e;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  vertical-align: middle;
 }
 
 #log {

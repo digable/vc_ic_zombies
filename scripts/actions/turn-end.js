@@ -12,10 +12,12 @@ function endTurn() {
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
   outgoing.noCombatThisTurn = false;
+  outgoing.claustrophobiaActive = false;
   if (outgoing.cannotMoveTurns > 0) {
     outgoing.cannotMoveTurns -= 1;
   }
   state.playerTrail = [];
+  state.lastCombatResult = null;
 
   state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
   if (state.currentPlayerIndex === 0) {
@@ -29,11 +31,12 @@ function endTurn() {
     player.cannotPlayCardTurns -= 1;
   }
   resetStepProgress(STEP.DRAW_TILE);
+  autoSkipDrawTileIfEmpty();
 
   logLine(`Turn passes to ${player.name}.`);
 
   const playerSpaceKey = key(player.x, player.y);
-  if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
+  if (state.step === STEP.DRAW_TILE && state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
     state.step = STEP.COMBAT;
     logLine(`${player.name} starts the turn in a zombie space. Combat resolves immediately.`);
     const combat = resolveCombatForPlayer(player, {

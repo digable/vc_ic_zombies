@@ -72,12 +72,12 @@ const playerEventCards = [
   },
   {
     name: "Chainsaw",
-    description: "Play in the Lawn & Garden Store to place in front of you. Select in combat to gain +2 to that combat roll (discarded after use).",
+    description: "Play in the Lawn & Garden Store to place in front of you. Select in combat to gain +2 to all combat rolls for the rest of your turn (discarded after use).",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
     isItem: true,
     isWeapon: true,
     combatWeapon: true,
-    combatBoost: 2,
+    turnCombatBoost: 2,
     requiresTile: "Lawn & Garden Store",
     apply(player) {
       logLine(`${player.name} placed Chainsaw in front of them.`);
@@ -98,10 +98,10 @@ const playerEventCards = [
   },
   {
     name: "First Aid Kit",
-    description: "Play in the Hospital or Pharmacy to place in front of you. Discard instead of losing a health token during combat (free reroll).",
+    description: "Play in the Hospital or Drug Store to place in front of you. Discard instead of losing a health token during combat (free reroll).",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
     isItem: true,
-    requiresTile: ["Hospital", "Pharmacy"],
+    requiresTile: ["Hospital", "Drug Store"],
     apply(player) {
       logLine(`${player.name} placed First Aid Kit in front of them.`);
     },

@@ -521,6 +521,12 @@
   box-shadow: 0 0 60px rgba(194, 74, 62, 0.5);
 }
 
+.game-over-overlay--victory .game-over-box {
+  background: #0a1a06;
+  border-color: #c8a227;
+  box-shadow: 0 0 60px rgba(200, 162, 39, 0.45);
+}
+
 .game-over-title {
   font-size: 3rem;
   font-weight: 900;
@@ -530,11 +536,40 @@
   margin-bottom: 1rem;
 }
 
+.game-over-overlay--victory .game-over-title {
+  color: #e8c132;
+  text-shadow: 0 0 24px rgba(232, 193, 50, 0.75);
+}
+
 .game-over-message {
   font-size: 1.15rem;
   line-height: 1.5;
   margin-bottom: 1.75rem;
   color: #e8dcc8;
+}
+
+.game-over-winner {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #e8c132;
+  margin-bottom: 0.3rem;
+}
+
+.game-over-how {
+  font-size: 1rem;
+  color: #a8d98a;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.game-over-stats {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 0.95rem;
+  color: #c8dbb8;
+  border-top: 1px solid rgba(200, 162, 39, 0.3);
+  padding-top: 0.75rem;
 }
 
 .game-over-btn {
@@ -549,8 +584,16 @@
   letter-spacing: 0.05em;
 }
 
+.game-over-overlay--victory .game-over-btn {
+  background: #5a8c2a;
+}
+
 .game-over-btn:hover {
   background: #a33;
+}
+
+.game-over-overlay--victory .game-over-btn:hover {
+  background: #436e1e;
 }
 
 .combat-resources {

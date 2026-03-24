@@ -56,6 +56,22 @@ function getBaseCollection() {
   return entry ? entry[0] : Object.values(COLLECTIONS)[0];
 }
 
+// Normalise a tile or card's collection field into { [collectionKey]: count }.
+// Object collection  → use as-is
+// String/array + count integer → { col: count } for each listed collection
+// String/array, no count → { col: 1 }
+// No collection → { [baseCollection]: count || 1 }
+function resolveCollectionCounts(item) {
+  if (item.collection !== null && typeof item.collection === "object" && !Array.isArray(item.collection)) {
+    return item.collection;
+  }
+  const cols = Array.isArray(item.collection)
+    ? item.collection
+    : [item.collection || getBaseCollection()];
+  const perCol = Math.max(1, item.count || 1);
+  return Object.fromEntries(cols.map((c) => [c, perCol]));
+}
+
 const STEP = {
   DRAW_TILE: "DRAW_TILE",
   COMBAT: "COMBAT",
@@ -83,6 +99,7 @@ const state = {
   selectedHandIndex: null,
   turnNumber: 1,
   gameOver: false,
+  winInfo: null,
   lastCombatResult: null,
   pendingCombatDecision: null,
   pendingEventChoice: null,
@@ -136,6 +153,7 @@ const refs = {
   playerCount: document.getElementById("playerCount"),
   moveStatusMsg: document.getElementById("moveStatusMsg"),
   gameOverOverlay: document.getElementById("gameOverOverlay"),
+  gameOverTitle: document.getElementById("gameOverTitle"),
   gameOverMessage: document.getElementById("gameOverMessage"),
   gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn"),
   knockoutBanner: document.getElementById("knockoutBanner")
@@ -599,7 +617,7 @@ function getZombieSpawnCountForPlacedTile(tile, connectors) {
 
   const mode = tile.zombieSpawnMode || "none";
   if (mode === "by_card") {
-    return Math.max(0, tile.zombieCount || 0);
+    return Object.values(tile.zombies || {}).reduce((s, n) => s + n, 0);
   }
   if (mode === "by_exits") {
     return Array.isArray(connectors) ? connectors.length : 0;
