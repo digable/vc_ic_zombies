@@ -87,6 +87,10 @@
   margin-bottom: 0.3rem;
 }
 
+.setup-collection-grid--2col {
+  grid-template-columns: auto 1fr;
+}
+
 .deck-preview-count {
   font-size: 0.78rem;
   font-weight: 600;

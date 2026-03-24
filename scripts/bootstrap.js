@@ -1,32 +1,46 @@
+function collTagsHtml(meta) {
+  const isBase = meta.requiresBase === null;
+  const isBoth = isBase && meta.standaloneDeck;
+  if (isBoth) {
+    return `<span class="coll-tag coll-tag-base">base</span> <span class="coll-tag coll-tag-expansion">expansion</span>`;
+  }
+  return `<span class="coll-tag ${isBase ? "coll-tag-base" : "coll-tag-expansion"}">${isBase ? "base" : "expansion"}</span>`;
+}
+
 function buildCollectionRows() {
   const grid = document.getElementById("collectionGrid");
   if (!grid) return;
+  const eventCounts = getEventCardCountsByCollection();
 
   Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
     const isBase = meta.requiresBase === null;
-    const tagClass = isBase ? "coll-tag-base" : "coll-tag-expansion";
-    const tagLabel = isBase ? "base" : "expansion";
 
     const nameSpan = document.createElement("span");
     nameSpan.className = "setup-coll-name";
     nameSpan.setAttribute("data-coll", collKey);
-    nameSpan.innerHTML = `${meta.label} <span class="coll-tag ${tagClass}">${tagLabel}</span> <span class="coll-counts" data-coll-counts="${collKey}"></span>`;
+    nameSpan.innerHTML = `${meta.label} ${collTagsHtml(meta)}<br><span class="coll-counts" data-coll-counts="${collKey}"></span>`;
 
-    const enabledInput = document.createElement("input");
-    enabledInput.type = "checkbox";
-    enabledInput.setAttribute("data-deck-coll", collKey);
-    enabledInput.setAttribute("data-deck-state", "enabled");
-    if (isBase) enabledInput.checked = true;
-    if (!isBase) enabledInput.setAttribute("data-requires-base", meta.requiresBase);
-
-    const disabledInput = document.createElement("input");
-    disabledInput.type = "checkbox";
-    disabledInput.setAttribute("data-deck-coll", collKey);
-    disabledInput.setAttribute("data-deck-state", "disabled");
+    const mapInput = document.createElement("input");
+    mapInput.type = "checkbox";
+    mapInput.setAttribute("data-deck-coll", collKey);
+    mapInput.setAttribute("data-deck-state", "enabled");
+    if (isBase && !meta.standaloneDeck) mapInput.checked = true;
+    if (!isBase) mapInput.setAttribute("data-requires-base", meta.requiresBase);
 
     grid.appendChild(nameSpan);
-    grid.appendChild(enabledInput);
-    grid.appendChild(disabledInput);
+    grid.appendChild(mapInput);
+
+    if (eventCounts[collKey]) {
+      const eventInput = document.createElement("input");
+      eventInput.type = "checkbox";
+      eventInput.setAttribute("data-event-coll", collKey);
+      eventInput.setAttribute("data-event-state", "enabled");
+      if (isBase && !meta.standaloneDeck) eventInput.checked = true;
+      if (!isBase) eventInput.setAttribute("data-event-requires-base", meta.requiresBase);
+      grid.appendChild(eventInput);
+    } else {
+      grid.appendChild(document.createElement("span"));
+    }
   });
 }
 
@@ -91,10 +105,6 @@ function attachListeners() {
     });
   });
 
-  const eventGrid = document.getElementById("eventCollectionGrid");
-  if (eventGrid) {
-    eventGrid.addEventListener("change", updateDeckPreviewCounts);
-  }
 
   if (refs.gameOverNewGameBtn) {
     refs.gameOverNewGameBtn.addEventListener("click", () => {
@@ -247,39 +257,6 @@ function attachListeners() {
 
 }
 
-function buildEventCollectionRows() {
-  const grid = document.getElementById("eventCollectionGrid");
-  if (!grid) return;
-  const eventCounts = getEventCardCountsByCollection();
-
-  Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
-    if (!eventCounts[collKey]) return;
-    const isBase = meta.requiresBase === null;
-    const tagClass = isBase ? "coll-tag-base" : "coll-tag-expansion";
-    const tagLabel = isBase ? "base" : "expansion";
-
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "setup-coll-name";
-    nameSpan.setAttribute("data-coll", collKey);
-    nameSpan.innerHTML = `${meta.label} <span class="coll-tag ${tagClass}">${tagLabel}</span> <span class="coll-counts" data-event-coll-counts="${collKey}"></span>`;
-
-    const enabledInput = document.createElement("input");
-    enabledInput.type = "checkbox";
-    enabledInput.setAttribute("data-event-coll", collKey);
-    enabledInput.setAttribute("data-event-state", "enabled");
-    if (isBase) enabledInput.checked = true;
-    if (!isBase) enabledInput.setAttribute("data-event-requires-base", meta.requiresBase);
-
-    const disabledInput = document.createElement("input");
-    disabledInput.type = "checkbox";
-    disabledInput.setAttribute("data-event-coll", collKey);
-    disabledInput.setAttribute("data-event-state", "disabled");
-
-    grid.appendChild(nameSpan);
-    grid.appendChild(enabledInput);
-    grid.appendChild(disabledInput);
-  });
-}
 
 function populateCollectionCounts() {
   const tileCounts = getMapTileCountsByCollection();
@@ -368,7 +345,6 @@ function applyCollectionTooltips() {
 }
 
 buildCollectionRows();
-buildEventCollectionRows();
 attachListeners();
 populateCollectionCounts();
 applyCollectionTooltips();

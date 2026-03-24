@@ -26,10 +26,10 @@ function buildMapDeck(filters = null) {
         if (isSA) {
           // Gateway tiles go into the base deck when mixed with a base collection.
           return hasBaseCollection && !!t.zoneGatewayConnector
-            ? (t.enabled !== false ? (rule.enabled ?? false) : (rule.disabled ?? false))
+            ? (rule.enabled ?? false)
             : false;
         }
-        return t.enabled !== false ? (rule.enabled ?? false) : (rule.disabled ?? false);
+        return rule.enabled ?? false;
       });
     })
     .flatMap((t) => {
@@ -105,7 +105,7 @@ function buildStandaloneDeck(collKey, filters = null) {
       if (hasBaseCollection && t.zoneGatewayConnector) return false; // gateway goes to base deck when mixed
       const colCounts = resolveCollectionCounts(t);
       if (!colCounts[collKey]) return false;
-      return t.enabled !== false ? (rule?.enabled ?? true) : (rule?.disabled ?? false);
+      return rule?.enabled ?? true;
     })
     .flatMap((t) => {
       const colCounts = resolveCollectionCounts(t);

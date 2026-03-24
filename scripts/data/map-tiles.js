@@ -12,7 +12,6 @@
 //                                        Copies = sum of counts for all enabled collections.
 //   collection     {string|string[]}     Legacy form — still supported alongside integer count below.
 //   count          {number}              Legacy — copies in deck. Omit when using object collection.
-//   enabled        {false}               Omit to include; set false to exclude without deleting
 //   connectors     {string[]}            Road exits: "N" | "E" | "S" | "W"
 //   zombieSpawnMode {string}             "by_card"  — spawns zombies per the zombies object when placed
 //                                        "by_exits" — spawns one zombie per connector (type from zombies key)
@@ -64,7 +63,6 @@ const roadTiles = [
   {
     name: "Straight",
     type: "road",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "S"],
     zombieSpawnMode: "by_exits",
@@ -85,7 +83,6 @@ const roadTiles = [
   {
     name: "Corner",
     type: "road",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "E"],
     zombieSpawnMode: "by_exits",
@@ -106,7 +103,6 @@ const roadTiles = [
   {
     name: "T-Junction",
     type: "road",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "E", "W"],
     zombieSpawnMode: "by_exits",
@@ -126,7 +122,6 @@ const roadTiles = [
   {
     name: "4-Way",
     type: "road",
-    enabled: true,
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_exits",
@@ -147,7 +142,6 @@ const roadTiles = [
   {
     name: "Parking Lot",
     type: "road",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["N", "S", "E", "W"],
     zombieSpawnMode: "by_exits",
@@ -174,7 +168,6 @@ const namedTiles = [
   {
     name: "Army Surplus",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "W"],
     zombieSpawnMode: "by_card",
@@ -196,7 +189,6 @@ const namedTiles = [
   {
     name: "Gas Station",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -218,7 +210,6 @@ const namedTiles = [
   {
     name: "Police Station",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -240,7 +231,6 @@ const namedTiles = [
   {
     name: "Hospital",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -262,7 +252,6 @@ const namedTiles = [
   {
     name: "Drug Store",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "W"],
     zombieSpawnMode: "by_card",
@@ -284,7 +273,6 @@ const namedTiles = [
   {
     name: "Fire Station",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["S", "W"],
     zombieSpawnMode: "by_card",
@@ -306,7 +294,6 @@ const namedTiles = [
   {
     name: "Toy Store",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "S"],
     zombieSpawnMode: "by_card",
@@ -328,7 +315,6 @@ const namedTiles = [
   {
     name: "Skate Shop",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -350,7 +336,6 @@ const namedTiles = [
   {
     name: "Florist",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -372,7 +357,6 @@ const namedTiles = [
   {
     name: "Sporting Goods Store",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -394,7 +378,6 @@ const namedTiles = [
   {
     name: "Lawn & Garden Store",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -416,7 +399,6 @@ const namedTiles = [
   {
     name: "Hardware Store",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["E", "S"],
     zombieSpawnMode: "by_card",
@@ -471,7 +453,6 @@ const namedTiles = [
   {
     name: "Top Secret Lab",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -493,7 +474,6 @@ const namedTiles = [
   {
     name: "Mess Hall",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: ["E", "W"],
     zombieSpawnMode: "by_card",
@@ -515,7 +495,6 @@ const namedTiles = [
   {
     name: "Barracks",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
@@ -537,7 +516,6 @@ const namedTiles = [
   {
     name: "Armory",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -559,7 +537,6 @@ const namedTiles = [
   {
     name: "Motor Pool",
     type: "named",
-    enabled: true,
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: ["S"],
     zombieSpawnMode: "by_card",
@@ -583,7 +560,6 @@ const namedTiles = [
   {
     name: "The Deadwood",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["S", "W"],
     zombieSpawnMode: "by_card",
@@ -605,7 +581,6 @@ const namedTiles = [
   {
     name: "Hamburg Inn",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "W"],
     zombieSpawnMode: "by_card",
@@ -627,7 +602,6 @@ const namedTiles = [
   {
     name: "Ped Mall",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -649,7 +623,6 @@ const namedTiles = [
   {
     name: "Old Capitol",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -671,7 +644,6 @@ const namedTiles = [
   {
     name: "Kinnick Stadium",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
@@ -693,7 +665,6 @@ const namedTiles = [
   {
     name: "Main Library",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E"],
     zombieSpawnMode: "by_card",
@@ -715,7 +686,6 @@ const namedTiles = [
   {
     name: "Oakland Cemetery",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
@@ -737,7 +707,6 @@ const namedTiles = [
   {
     name: "City Park",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -759,7 +728,6 @@ const namedTiles = [
   {
     name: "Sanctuary",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["S", "E"],
     zombieSpawnMode: "by_card",
@@ -781,7 +749,6 @@ const namedTiles = [
   {
     name: "Prairie Lights",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E"],
     zombieSpawnMode: "by_card",
@@ -803,7 +770,6 @@ const namedTiles = [
   {
     name: "FilmScene",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["S", "W"],
     zombieSpawnMode: "by_card",
@@ -825,7 +791,6 @@ const namedTiles = [
   {
     name: "UIHC",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
@@ -847,7 +812,6 @@ const namedTiles = [
   {
     name: "IMU",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["E", "W"],
     zombieSpawnMode: "by_card",
@@ -869,7 +833,6 @@ const namedTiles = [
   {
     name: "Hy-Vee",
     type: "named",
-    enabled: false,
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S"],
     zombieSpawnMode: "by_card",
@@ -897,7 +860,6 @@ const specialTiles = [
   {
     name: "Helipad",
     type: "helipad",
-    enabled: true,
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",

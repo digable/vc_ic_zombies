@@ -9,7 +9,7 @@ function buildEventDeck(filters = null) {
         return Object.keys(colCounts).some((k) => {
           const rule = filterSet[k];
           if (!rule) return false;
-          return c.enabled !== false ? (rule.enabled ?? false) : (rule.disabled ?? false);
+          return rule.enabled ?? false;
         });
       })
       .flatMap((c) => {
