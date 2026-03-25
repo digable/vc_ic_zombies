@@ -21,11 +21,12 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 
 ### 🗺️ Tile-Based City Building
 - Draw and place map tiles each turn to reveal new city blocks
-- Road tiles connect via compass connectors — roads must align
+- Road tiles connect via compass connectors — roads must align; wall-to-wall adjacency is allowed as long as at least one side has a road-to-road connection
 - Named buildings spawn zombies and loot when placed
 - Helipad shuffled into the second half of the deck — escape is possible but never guaranteed
-- Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles
+- Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles — supports all tile fields including flags, zone gateway, and companion tiles
 - Collection metadata (type, version, year, description, creator) shown as tooltip on setup checkboxes
+- Each tile and event card shows a short collection code badge (Z1, Z2, IC) — on the board, in your event hand, and in the setup panel
 
 ### ⚔️ Combat System
 - Combat triggers when entering or sharing a space with a zombie
@@ -153,11 +154,10 @@ Supported per-subtile properties:
 {
   name: "Corner Store",
   type: "named",
-  count: 1,
-  enabled: true,
+  collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
   connectors: ["N", "E"],
   zombieSpawnMode: "by_card",
-  zombieCount: 2,
+  zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
   hearts: 1,
   bullets: 1,
   subTilesTemplate: {
@@ -208,13 +208,11 @@ If a collection with `requiresBase` set is selected without its required base ga
 | Property | Description |
 |----------|-------------|
 | `name` | Display name |
-| `type` | `"road"`, `"named"`, `"helipad"`, `"special"` |
-| `count` | Number of copies in the deck |
-| `enabled` | `false` to exclude from play |
-| `collection` | `COLLECTIONS.DIRECTORS_CUT`, `IOWA_CITY`, or `NOT_USED` — controls which game setup filter includes this tile |
+| `type` | `"road"`, `"named"`, `"helipad"`, `"special"`, `"grass"` |
+| `collection` | Object keyed by `COLLECTIONS.*` with per-collection copy counts, e.g. `{ [COLLECTIONS.DIRECTORS_CUT]: 2 }` |
 | `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
-| `zombieSpawnMode` | `"by_card"` uses `zombieCount`; `"by_exits"` spawns one per connector |
-| `zombieCount` | Zombies to spawn when placed (by_card mode) |
+| `zombieSpawnMode` | `"by_card"` uses `zombies` counts; `"by_exits"` spawns one per connector |
+| `zombies` | Object keyed by zombie type with spawn counts, e.g. `{ [ZOMBIE_TYPE.REGULAR]: 2 }` |
 | `hearts` | Heart tokens placed on the tile when drawn |
 | `bullets` | Bullet tokens placed on the tile when drawn |
 | `isStartTile` | `true` — tile placed at (0,0) to start the game; one per standalone collection |
