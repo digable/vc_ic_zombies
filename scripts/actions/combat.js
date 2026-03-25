@@ -273,13 +273,6 @@ function resolveCombatForPlayer(player, options = {}) {
     return { fought: true, knockedOut: false, pending: false };
   }
 
-  if (player.bullets <= 0 && player.hearts <= 0) {
-    state.lastCombatResult = `Knocked Out (${baseCombatRoll})`;
-    logLine(`${player.name} lost the fight against a ${zombieLabel} and was knocked out.`);
-    handleKnockout(player, { endStep: endStepOnKnockout });
-    return { fought: true, knockedOut: true, pending: false };
-  }
-
   state.pendingCombatDecision = {
     playerId: player.id,
     pKey: playerSpaceKey,

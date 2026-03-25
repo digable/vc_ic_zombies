@@ -208,7 +208,12 @@ function getCollectionShortCode(collection, deckKey) {
   const keys = typeof collection === "object" && !Array.isArray(collection)
     ? Object.keys(collection)
     : [collection];
-  return keys.map((k) => COLLECTION_META[k]?.shortCode ?? "").filter(Boolean).join("/");
+  const filters = typeof state !== "undefined" && state.deckFilters;
+  const activeKeys = filters
+    ? keys.filter((k) => filters[k]?.enabled)
+    : keys;
+  const display = (activeKeys.length > 0 ? activeKeys : keys);
+  return display.map((k) => COLLECTION_META[k]?.shortCode ?? "").filter(Boolean).join("/");
 }
 
 function escapeHtml(value) {

@@ -34,6 +34,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   }
 
   state.currentPlayerIndex = 0;
+  state.deckFilters = deckFilters || {};
   state.board = new Map();
   state.mapDeck = buildMapDeck(deckFilters);
   // Build standalone decks for enabled standalone collections
