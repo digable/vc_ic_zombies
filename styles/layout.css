@@ -476,6 +476,19 @@
   opacity: 0.5;
 }
 
+.deck-info-row[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+}
+.deck-info-row.dragging {
+  opacity: 0.35;
+}
+.deck-info-row.drag-over {
+  background: rgba(100, 160, 220, 0.22);
+  border-radius: 3px;
+  outline: 1px dashed #6098d4;
+}
+
 .deck-info-divider {
   border-top: 1px dashed #c0a87a;
   margin: 0.25rem 0;

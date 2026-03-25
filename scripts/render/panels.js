@@ -5,10 +5,13 @@ function renderDeckInfo(previewDeck) {
   const box = document.getElementById("deckInfoBox");
   if (!box) return;
 
-  function tileRow(t, posStr, played, copyStr) {
+  function tileRow(t, posStr, played, copyStr, deckId, dragIdx) {
     const coll = getCollectionLabel(t.collection);
     const copy = copyStr ? ` <span class="deck-info-copy">${copyStr}</span>` : "";
-    return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
+    const drag = (!played && deckId !== undefined && dragIdx !== undefined)
+      ? ` draggable="true" data-drag-deck="${deckId}" data-drag-idx="${dragIdx}"`
+      : "";
+    return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}"${drag}>`
       + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${coll ? ` <em class="deck-info-collection">${coll}</em>` : ""}${copy}</span>`
       + `<span class="deck-info-pos">${posStr}</span>`
       + `</div>`;
@@ -41,7 +44,7 @@ function renderDeckInfo(previewDeck) {
     const meta = state.deckStartCounts?.[t.name];
     const total = meta?.count ?? 1;
     const copy = total > 1 ? `${t._copyNum}/${total}` : null;
-    return tileRow(t, `#${i + 1}`, false, copy);
+    return tileRow(t, `#${i + 1}`, false, copy, "base", i);
   }).join("");
 
   const standaloneRows = Object.entries(state.standaloneDecks || {}).map(([collKey, deck]) => {
@@ -50,7 +53,7 @@ function renderDeckInfo(previewDeck) {
       const meta = state.deckStartCounts?.[t.name];
       const total = meta?.count ?? 1;
       const copy = total > 1 ? `${t._copyNum}/${total}` : null;
-      return tileRow(t, `#${i + 1}`, false, copy);
+      return tileRow(t, `#${i + 1}`, false, copy, collKey, i);
     }).join("");
     return rows ? `<div class="deck-info-divider"></div><div class="deck-info-section-label">${label} Deck</div>${rows}` : "";
   }).join("");
@@ -123,9 +126,12 @@ function renderEventDeckInfo(previewDeck) {
   const box = document.getElementById("eventDeckInfoBox");
   if (!box) return;
 
-  function cardRow(c, label, played) {
+  function cardRow(c, label, played, dragIdx) {
     const coll = getCollectionLabel(c.collection);
-    return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
+    const drag = (!played && dragIdx !== undefined)
+      ? ` draggable="true" data-drag-event-idx="${dragIdx}"`
+      : "";
+    return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}"${drag}>`
       + `<span class="deck-info-name">${c.name}${coll ? ` <em class="deck-info-collection">${coll}</em>` : ""}</span>`
       + `<span class="deck-info-pos">${label}</span>`
       + `</div>`;
@@ -151,7 +157,7 @@ function renderEventDeckInfo(previewDeck) {
   const inHands = state.players?.reduce((s, p) => s + (p.hand?.length ?? 0), 0) ?? 0;
   const discarded = state.eventDiscardPile?.length ?? 0;
 
-  const deckRows = state.eventDeck.map((c, i) => cardRow(c, `#${i + 1}`, false)).join("");
+  const deckRows = state.eventDeck.map((c, i) => cardRow(c, `#${i + 1}`, false, i)).join("");
   const handRows = (state.players ?? []).flatMap((p) =>
     (p.hand ?? []).map((c) => cardRow(c, p.name, false))
   ).join("");
@@ -634,4 +640,100 @@ function renderGameOver() {
   }
 
   refs.gameOverOverlay.classList.remove("hidden");
+}
+
+// ---------------------------------------------------------------------------
+// Deck drag-and-drop reordering (map deck + event deck "Show cards" rows)
+// ---------------------------------------------------------------------------
+
+function attachDeckDragListeners() {
+  // --- Map / standalone deck ---
+  const deckBox = document.getElementById("deckInfoBox");
+  if (deckBox) {
+    let dragFrom = null; // { deckId, idx }
+
+    deckBox.addEventListener("dragstart", (e) => {
+      const row = e.target.closest("[data-drag-deck]");
+      if (!row) return;
+      dragFrom = { deckId: row.dataset.dragDeck, idx: Number(row.dataset.dragIdx) };
+      e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+
+    deckBox.addEventListener("dragend", () => {
+      deckBox.querySelectorAll(".dragging, .drag-over").forEach((el) =>
+        el.classList.remove("dragging", "drag-over")
+      );
+      dragFrom = null;
+    });
+
+    deckBox.addEventListener("dragover", (e) => {
+      if (!dragFrom) return;
+      const row = e.target.closest("[data-drag-deck]");
+      if (!row || row.dataset.dragDeck !== dragFrom.deckId) return;
+      e.preventDefault();
+      deckBox.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
+      row.classList.add("drag-over");
+    });
+
+    deckBox.addEventListener("drop", (e) => {
+      if (!dragFrom) return;
+      const row = e.target.closest("[data-drag-deck]");
+      if (!row || row.dataset.dragDeck !== dragFrom.deckId) return;
+      e.preventDefault();
+      const toIdx = Number(row.dataset.dragIdx);
+      if (toIdx === dragFrom.idx) return;
+      const deck = dragFrom.deckId === "base"
+        ? state.mapDeck
+        : (state.standaloneDecks || {})[dragFrom.deckId];
+      if (!deck) return;
+      const [item] = deck.splice(dragFrom.idx, 1);
+      deck.splice(toIdx, 0, item);
+      dragFrom = null;
+      render();
+    });
+  }
+
+  // --- Event deck ---
+  const eventBox = document.getElementById("eventDeckInfoBox");
+  if (eventBox) {
+    let eventDragFrom = null; // index
+
+    eventBox.addEventListener("dragstart", (e) => {
+      const row = e.target.closest("[data-drag-event-idx]");
+      if (!row) return;
+      eventDragFrom = Number(row.dataset.dragEventIdx);
+      e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+
+    eventBox.addEventListener("dragend", () => {
+      eventBox.querySelectorAll(".dragging, .drag-over").forEach((el) =>
+        el.classList.remove("dragging", "drag-over")
+      );
+      eventDragFrom = null;
+    });
+
+    eventBox.addEventListener("dragover", (e) => {
+      if (eventDragFrom === null) return;
+      const row = e.target.closest("[data-drag-event-idx]");
+      if (!row) return;
+      e.preventDefault();
+      eventBox.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
+      row.classList.add("drag-over");
+    });
+
+    eventBox.addEventListener("drop", (e) => {
+      if (eventDragFrom === null) return;
+      const row = e.target.closest("[data-drag-event-idx]");
+      if (!row) return;
+      e.preventDefault();
+      const toIdx = Number(row.dataset.dragEventIdx);
+      if (toIdx === eventDragFrom) return;
+      const [item] = state.eventDeck.splice(eventDragFrom, 1);
+      state.eventDeck.splice(toIdx, 0, item);
+      eventDragFrom = null;
+      render();
+    });
+  }
 }
