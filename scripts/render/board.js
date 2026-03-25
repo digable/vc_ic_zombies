@@ -220,12 +220,12 @@ function renderBoard() {
           if (state.recentKillKey === spaceKey) {
             zombieClass = " zombie-kill-flash";
           }
-          const pzm2 = state.pendingZombieMovement;
-          if (pzm2 && data.zombieType && !pzm2.movedKeys.has(spaceKey) && !pzm2.stuckKeys.has(spaceKey)) {
+          const pzm = state.pendingZombieMovement;
+          if (pzm && data.zombieType && !pzm.movedKeys.has(spaceKey) && !pzm.stuckKeys.has(spaceKey)) {
             zombieClass = " zombie-selectable";
           } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
             zombieClass = " zombie-target";
-          } else if (state.pendingZombiePlace && isWalkable && !data.zombie) {
+          } else if (state.pendingZombiePlace && isWalkable && !data.zombieType) {
             zombieClass = " zombie-target";
           } else if (pzr) {
             if (pzr.selectedZombieKey === spaceKey) {

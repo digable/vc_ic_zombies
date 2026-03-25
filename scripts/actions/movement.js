@@ -103,7 +103,7 @@ function rollMovement() {
       logLine(`${player.name} lost their jeep — they're inside a building.`);
     } else {
       move *= 2;
-      logLine(`${player.name} uses the jeep — movement doubled to ${move} space(s).`);
+      logLine(`${player.name} uses the jeep — movement doubled to ${move} space(s). Doubled movement lasts this full turn; jeep is lost if you start next turn in a building.`);
     }
   }
   if (state.doubleMovementThisTurn) {

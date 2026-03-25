@@ -525,7 +525,9 @@ function renderLog() {
 function renderMeta() {
   const combatText = state.lastCombatResult ? ` | Combat: ${state.lastCombatResult}` : "";
   refs.turnInfo.textContent = `Turn ${state.turnNumber} | ${currentPlayer().name} | Step: ${state.step}${combatText}`;
-  refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}`;
+  const cp = currentPlayer();
+  const jeepHint = cp.hasJeep ? "  |  Jeep: doubles roll on road — entering a building ends it at turn's end" : "";
+  refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}${jeepHint}`;
   refs.zombieRollOutput.textContent = `Zombie Roll: ${state.currentZombieRoll ?? "-"}`;
   if (state.pendingTile) {
     const companions = state.pendingCompanionTiles && state.pendingCompanionTiles.length > 0

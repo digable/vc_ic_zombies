@@ -88,15 +88,16 @@ vc_ic_zombies/
 ├── scripts/
 │   ├── constants.js                  # Shared numeric constants (TILE_DIM, WIN_KILLS, etc.)
 │   ├── core.js                       # State, collections, shared helpers
-│   ├── render-helpers.js             # Rendering utilities (formatTileCode, micro-grid, etc.)
-│   ├── render-board.js               # Board grid, player trail SVG, move status
-│   ├── render-panels.js              # Sidebar panels, combat UI, log, knockout banner
-│   ├── render-debug.js               # Tile editor / map deck debug rendering
-│   ├── render.js                     # Render orchestrator (updateButtons + render())
 │   ├── bootstrap.js                  # Event listener wiring, game boot
 │   ├── tile-debug.js                 # Tile editor page logic
 │   ├── subtile-editor-row.js         # Subtile editor row renderer
-│   ├── compass-checkboxes.js         # Compass direction checkbox helper
+│   ├── render/
+│   │   ├── helpers.js                # Rendering utilities (formatTileCode, collection labels, road lines)
+│   │   ├── board.js                  # Board grid, player trail SVG, move status
+│   │   ├── panels.js                 # Sidebar panels, combat UI, log, knockout banner
+│   │   ├── debug.js                  # Tile editor / map deck debug rendering
+│   │   ├── render.js                 # Render orchestrator (updateButtons + render())
+│   │   └── compass-checkboxes.js     # Compass direction checkbox helper (tile editor)
 │   ├── actions/
 │   │   ├── setup.js                  # Game setup, tile draw/place
 │   │   ├── combat.js                 # Combat resolution and knockout

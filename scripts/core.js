@@ -232,10 +232,6 @@ function directionToArrow(dir) {
   return dir;
 }
 
-function formatTileExits(tile) {
-  return (tile.connectors || []).map(directionToArrow).join(" ") || "None";
-}
-
 function getRotatedConnectors(connectors, rotation) {
   const order = ["N", "E", "S", "W"];
   return (connectors || []).map((dir) => {
@@ -363,28 +359,6 @@ function getTileSubTileMap(tile) {
     return null;
   }
   return tile.subTiles || tile.subTilesTemplate || null;
-}
-
-function isLocalWalkable(tile, lx, ly) {
-  if (!tile) {
-    return false;
-  }
-  if (lx < 0 || lx > 2 || ly < 0 || ly > 2) {
-    return false;
-  }
-
-  if (tile.subTiles) {
-    return Boolean(tile.subTiles[key(lx, ly)]?.walkable);
-  }
-
-  if (lx === 1 && ly === 1) {
-    return true;
-  }
-
-  return tile.connectors.some((dir) => {
-    const d = DOOR_LOCAL[dir];
-    return d.x === lx && d.y === ly;
-  });
 }
 
 function buildSubTilesForTile(tile) {
@@ -553,6 +527,28 @@ function canExitSubTile(tile, lx, ly, toDir) {
     return Boolean(sub.exitTo[toDir]);
   }
   return Boolean(sub.enterFrom?.[toDir]);
+}
+
+function isLocalWalkable(tile, lx, ly) {
+  if (!tile) {
+    return false;
+  }
+  if (lx < 0 || lx > 2 || ly < 0 || ly > 2) {
+    return false;
+  }
+
+  if (tile.subTiles) {
+    return Boolean(tile.subTiles[key(lx, ly)]?.walkable);
+  }
+
+  if (lx === 1 && ly === 1) {
+    return true;
+  }
+
+  return tile.connectors.some((dir) => {
+    const d = DOOR_LOCAL[dir];
+    return d.x === lx && d.y === ly;
+  });
 }
 
 function isBuildingSubtileOpen(tile, lx, ly) {
