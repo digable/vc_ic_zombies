@@ -175,6 +175,30 @@ function attachListeners() {
       return;
     }
 
+    if (state.pendingRocketLauncher) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleRocketLauncherClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
+    if (state.pendingMinefield) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleMinefieldClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
+    if (state.pendingDynamiteTarget) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleDynamiteTargetClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
     if (state.pendingBuildingSelect) {
       const mc = target.closest(".micro-cell");
       if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
@@ -227,7 +251,10 @@ function attachListeners() {
       if (zmAction === "auto") { autoFinishZombieMovement(); return; }
       if (zmAction === "done") { autoFinishZombieMovement(); return; }
       if (event.target.id === "zombieReplaceDoneBtn") {
-        if (state.pendingZombiePlace) finishZombiePlace();
+        if (state.pendingRocketLauncher) finishRocketLauncher();
+        else if (state.pendingMinefield) finishMinefield();
+        else if (state.pendingDynamiteTarget) finishDynamite();
+        else if (state.pendingZombiePlace) finishZombiePlace();
         else finishZombieReplace();
       }
     });

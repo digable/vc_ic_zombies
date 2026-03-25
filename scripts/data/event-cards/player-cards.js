@@ -19,6 +19,59 @@
 
 const playerEventCards = [
   {
+    name: "Dynamite",
+    description: "Roll 1 die. 4–6: kill all zombies on 3 adjacent spaces (including diagonals). 1–3: lose 2 life tokens.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    isWeapon: true,
+    apply(player) {
+      const roll = rollD6();
+      logLine(`${player.name} played Dynamite — rolled ${roll}.`);
+      if (roll >= 4) {
+        const adjacentZombies = [...state.zombies.keys()].filter((zk) => {
+          const [zx, zy] = zk.split(",").map(Number);
+          return Math.abs(zx - player.x) <= 1 && Math.abs(zy - player.y) <= 1 && !(zx === player.x && zy === player.y);
+        });
+        if (adjacentZombies.length === 0) {
+          logLine(`${player.name}'s Dynamite succeeded but there are no adjacent zombies.`);
+          return;
+        }
+        state.pendingDynamiteTarget = { playerId: player.id, remaining: 3 };
+        logLine(`${player.name}'s Dynamite succeeded! Select up to 3 adjacent zombie spaces to destroy.`);
+      } else {
+        player.hearts -= 2;
+        logLine(`${player.name}'s Dynamite fizzled — loses 2 life tokens.`);
+        if (player.hearts <= 0) {
+          handleKnockout(player, { endStep: true });
+        }
+      }
+    }
+  },
+  {
+    name: "Breakthrough",
+    description: "Play during movement. Choose a direction to break through to an adjacent tile. Roll: 5–6 creates a permanent path and you may move through; 4 or less loses 1 life and ends movement. Cannot be used to/from the Helipad.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    canPlay() {
+      return state.step === STEP.MOVE && state.movesRemaining > 0 &&
+             !state.pendingBreakthrough && !state.pendingForcedMove;
+    },
+    apply(player) {
+      state.pendingBreakthrough = { playerId: player.id };
+      logLine(`${player.name} played Breakthrough — choose a direction to attempt to break through.`);
+    }
+  },
+  {
+    name: "Adjusting Nicely",
+    description: "Play when you have 13+ kills. Triggers automatically on knockout — discard to keep all kills.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    isItem: true,
+    canPlay() {
+      return currentPlayer().kills >= 13;
+    },
+    apply(player) {
+      logLine(`${player.name} placed Adjusting Nicely in front of them — kills are protected on next knockout.`);
+    }
+  },
+  {
     name: "Adrenaline Rush",
     description: "Choose: double movement this turn OR +2 to a combat roll",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
@@ -155,6 +208,16 @@ const playerEventCards = [
     }
   },
   {
+    name: "Mine Field",
+    description: "Roll a die. Click a tile to remove that many zombies from its road spaces — they count as kills.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player) {
+      const roll = rollD6();
+      logLine(`${player.name} played Mine Field — rolled ${roll}. Click a tile to detonate.`);
+      state.pendingMinefield = { playerId: player.id, remaining: roll };
+    }
+  },
+  {
     name: "Much Needed Rest",
     description: "Play instead of making a movement roll. Gain 2 health.",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
@@ -171,6 +234,21 @@ const playerEventCards = [
     }
   },
   {
+    name: "Rocket Launcher",
+    description: "Play in the Armory to place in front of you. Discard to destroy an edge tile — all zombies on it count as kills, and any players on it are moved to Town Square. Cannot target the Helipad.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    isItem: true,
+    isWeapon: true,
+    requiresTile: "Armory",
+    apply(player) {
+      logLine(`${player.name} placed Rocket Launcher in front of them.`);
+    },
+    activateItem(player) {
+      state.pendingRocketLauncher = { playerId: player.id };
+      logLine(`${player.name} armed the Rocket Launcher — click an edge tile to destroy it.`);
+    }
+  },
+  {
     name: "Skateboard",
     description: "Play in the Skate Shop to place in front of you. Discard to gain +2 to all movement rolls permanently.",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
@@ -183,6 +261,49 @@ const playerEventCards = [
     activateItem(player) {
       player.movementBonus = (player.movementBonus || 0) + 2;
       logLine(`${player.name} hopped on the Skateboard (+2 to all movement rolls).`);
+    }
+  },
+  {
+    name: "I See the Helicopter",
+    description: "Play after a Helipad is placed. While in front of you, +1 to all movement rolls. Counts as a weapon.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    isItem: true,
+    isWeapon: true,
+    canPlay() {
+      return [...state.board.values()].some((t) => t.type === "helipad");
+    },
+    apply(player) {
+      logLine(`${player.name} placed I See the Helicopter in front of them — +1 to all movement rolls while in play.`);
+    }
+  },
+  {
+    name: "I Feel ALIVE!!!",
+    description: "Roll 2 dice. If both are 4+, gain 2 life (max 5).",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player) {
+      const r1 = rollD6();
+      const r2 = rollD6();
+      logLine(`${player.name} played I Feel ALIVE!!! — rolled ${r1} and ${r2}.`);
+      if (r1 >= 4 && r2 >= 4) {
+        const gained = Math.min(2, 5 - player.hearts);
+        player.hearts = Math.min(5, player.hearts + 2);
+        logLine(`${player.name} gained ${gained} life token(s) (now ${player.hearts}).`);
+      } else {
+        logLine(`${player.name} needed 4+ on both dice — no life gained.`);
+      }
+    }
+  },
+  {
+    name: "In the Zone",
+    description: "Play at start of turn. Draw a card for each natural 6 rolled this turn. Discard to 3 at end of turn.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    canPlay() {
+      return state.step === STEP.DRAW_TILE || state.step === STEP.COMBAT ||
+             state.step === STEP.DRAW_EVENTS || state.step === STEP.ROLL_MOVE;
+    },
+    apply(player) {
+      player.inTheZone = true;
+      logLine(`${player.name} played In the Zone — will draw a card for each natural 6 rolled this turn.`);
     }
   },
   {

@@ -83,6 +83,12 @@ function canStep(fromX, fromY, toX, toY) {
     return canCrossTileEdge("N", { fromX: 1, fromY: 0, toX: 1, toY: 2 });
   }
 
+  // Breakthrough: permanent cross-tile path created by the card
+  if (state.breakthroughConnections?.has(`${key(fromX, fromY)}\u2192${moveDir}`)) {
+    return isLocalWalkable(fromTile, fromLocalX, fromLocalY) &&
+           isLocalWalkable(toTile, toLocalX, toLocalY);
+  }
+
   return false;
 }
 

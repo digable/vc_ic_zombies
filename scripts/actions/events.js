@@ -1,3 +1,18 @@
+function drawOneEventCardForPlayer(player, sourceName) {
+  if (state.eventDeck.length === 0) {
+    if (state.eventDiscardPile.length === 0) {
+      logLine(`${sourceName}: no cards left to draw.`);
+      return;
+    }
+    state.eventDeck = shuffle([...state.eventDiscardPile]);
+    state.eventDiscardPile = [];
+    logLine("Event deck exhausted — discard pile shuffled back in.");
+  }
+  const card = state.eventDeck.shift();
+  player.hand.push(card);
+  logLine(`${player.name} drew ${card.name} (${sourceName} — natural 6).`);
+}
+
 function drawEventsToThree() {
   if (state.step !== STEP.DRAW_EVENTS || state.gameOver) {
     return;
@@ -83,6 +98,51 @@ function playEvent(index) {
   }
 
   player.hand.splice(index, 1);
+
+  if (player.lookinAtMePending) {
+    const lookin = player.lookinAtMePending;
+    player.lookinAtMePending = null;
+    const normalTarget = state.players[(state.players.indexOf(player) + 1) % state.players.length];
+    const altTargets = state.players.filter((p) => p.id !== player.id && p !== normalTarget);
+    if (altTargets.length === 0) {
+      logLine(`You Lookin' at Me?!? — no other legal target. ${card.name} is discarded without effect.`);
+      state.eventDiscardPile.push(card);
+      player.eventUsedThisRound = true;
+      render();
+      return;
+    }
+    if (altTargets.length === 1) {
+      state.forcedNextOpponentId = altTargets[0].id;
+      card.apply(player, buildEventDeckHelpers());
+      state.forcedNextOpponentId = null;
+    } else {
+      state.pendingEventChoice = {
+        playerId: lookin.byPlayerId,
+        cardName: `You Lookin' at Me?!? — New target for ${card.name}`,
+        options: altTargets.map((t) => ({ key: `t_${t.id}`, label: t.name })),
+        resolve(optKey) {
+          state.forcedNextOpponentId = Number(optKey.slice(2));
+          card.apply(player, buildEventDeckHelpers());
+          state.forcedNextOpponentId = null;
+          state.eventDiscardPile.push(card);
+          checkWin(player);
+        }
+      };
+      player.eventUsedThisRound = true;
+      render();
+      return;
+    }
+    state.eventDiscardPile.push(card);
+    player.eventUsedThisRound = true;
+    const pKey = key(player.x, player.y);
+    if (state.zombies.has(pKey) && !player.noCombatThisTurn) {
+      resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
+    }
+    checkWin(player);
+    render();
+    return;
+  }
+
   card.apply(player, buildEventDeckHelpers());
   state.eventDiscardPile.push(card);
   player.eventUsedThisRound = true;
@@ -152,8 +212,10 @@ function handleZombieReplaceClick(sx, sy) {
   }
 
   if (spaceKey === pzr.selectedZombieKey) {
-    pzr.selectedZombieKey = null;
-    render();
+    if (!pzr.adjacentToKey) {
+      pzr.selectedZombieKey = null;
+      render();
+    }
     return;
   }
 
@@ -163,6 +225,11 @@ function handleZombieReplaceClick(sx, sy) {
   const tileY = spaceToTileCoord(sy);
   if (!isLocalWalkable(tile, getLocalCoord(sx, tileX), getLocalCoord(sy, tileY))) return;
   if (state.zombies.has(spaceKey)) return;
+
+  if (pzr.adjacentToKey) {
+    const [ax, ay] = pzr.adjacentToKey.split(",").map(Number);
+    if (Math.abs(sx - ax) + Math.abs(sy - ay) !== 1) return;
+  }
 
   const replacedData = state.zombies.get(pzr.selectedZombieKey);
   state.zombies.delete(pzr.selectedZombieKey);
@@ -207,6 +274,161 @@ function finishZombiePlace() {
   const cardName = state.pendingZombiePlace.cardName || "Card";
   state.pendingZombiePlace = null;
   logLine(`${cardName} — done placing zombies.`);
+  render();
+}
+
+function handleRocketLauncherClick(sx, sy) {
+  const prl = state.pendingRocketLauncher;
+  if (!prl) return;
+
+  const player = state.players.find((p) => p.id === prl.playerId);
+  if (!player) { state.pendingRocketLauncher = null; render(); return; }
+
+  const tileX = spaceToTileCoord(sx);
+  const tileY = spaceToTileCoord(sy);
+  const tileKey = key(tileX, tileY);
+  const tile = state.board.get(tileKey);
+  if (!tile) return;
+
+  if (tile.type === "helipad") {
+    logLine("Rocket Launcher cannot target the Helipad.");
+    render();
+    return;
+  }
+  if (!isBoardEdgeTile(tileX, tileY)) {
+    logLine("Rocket Launcher can only target tiles on the edge of the board.");
+    render();
+    return;
+  }
+
+  let killed = 0;
+  for (let lx = 0; lx < 3; lx++) {
+    for (let ly = 0; ly < 3; ly++) {
+      const spaceKey = key(tileX * TILE_DIM + lx, tileY * TILE_DIM + ly);
+      if (state.zombies.has(spaceKey)) {
+        state.zombies.delete(spaceKey);
+        player.kills += 1;
+        killed++;
+      }
+      state.spaceTokens.delete(spaceKey);
+    }
+  }
+
+  // Remove breakthrough connections referencing this tile's spaces
+  const staleConns = [...state.breakthroughConnections].filter((conn) => {
+    const coordPart = conn.split("\u2192")[0];
+    const { x, y } = parseKey(coordPart);
+    return spaceToTileCoord(x) === tileX && spaceToTileCoord(y) === tileY;
+  });
+  staleConns.forEach((conn) => state.breakthroughConnections.delete(conn));
+
+  state.players.forEach((p) => {
+    if (spaceToTileCoord(p.x) === tileX && spaceToTileCoord(p.y) === tileY) {
+      p.x = 1;
+      p.y = 1;
+      logLine(`${p.name} was on the destroyed tile and was moved to Town Square.`);
+    }
+  });
+
+  state.board.delete(tileKey);
+  state.pendingRocketLauncher = null;
+
+  const msg = killed > 0 ? `${killed} zombie(s) killed.` : "no zombies were present.";
+  logLine(`${player.name}'s Rocket Launcher destroyed ${getTileDisplayName(tile)} — ${msg}`, killed > 0 ? "kill" : undefined);
+  checkWin(player);
+  render();
+}
+
+function finishRocketLauncher() {
+  if (!state.pendingRocketLauncher) return;
+  state.pendingRocketLauncher = null;
+  logLine("Rocket Launcher — cancelled.");
+  render();
+}
+
+function handleMinefieldClick(sx, sy) {
+  const pmf = state.pendingMinefield;
+  if (!pmf) return;
+
+  const player = state.players.find((p) => p.id === pmf.playerId);
+  if (!player) { state.pendingMinefield = null; render(); return; }
+
+  const tileX = spaceToTileCoord(sx);
+  const tileY = spaceToTileCoord(sy);
+  const tile = state.board.get(key(tileX, tileY));
+  if (!tile) return;
+
+  let killed = 0;
+  for (let lx = 0; lx < 3 && killed < pmf.remaining; lx++) {
+    for (let ly = 0; ly < 3 && killed < pmf.remaining; ly++) {
+      if (getSubTileType(tile, lx, ly) !== "road") continue;
+      const spaceKey = key(tileX * TILE_DIM + lx, tileY * TILE_DIM + ly);
+      if (!state.zombies.has(spaceKey)) continue;
+      state.zombies.delete(spaceKey);
+      player.kills += 1;
+      state.recentKillKey = spaceKey;
+      killed++;
+    }
+  }
+
+  if (killed === 0) {
+    logLine(`${player.name}: no zombies on road spaces of ${getTileDisplayName(tile)} — pick another tile.`);
+    render();
+    return;
+  }
+
+  logLine(`${player.name}'s Mine Field destroyed ${killed} zombie(s) on road spaces of ${getTileDisplayName(tile)}.`, "kill");
+  state.pendingMinefield = null;
+  checkWin(player);
+  render();
+}
+
+function finishMinefield() {
+  if (!state.pendingMinefield) return;
+  state.pendingMinefield = null;
+  logLine("Mine Field — skipped.");
+  render();
+}
+
+function handleDynamiteTargetClick(sx, sy) {
+  const pdt = state.pendingDynamiteTarget;
+  if (!pdt) return;
+
+  const player = state.players.find((p) => p.id === pdt.playerId);
+  if (!player) { state.pendingDynamiteTarget = null; render(); return; }
+
+  const dx = Math.abs(sx - player.x);
+  const dy = Math.abs(sy - player.y);
+  if (dx > 1 || dy > 1 || (dx === 0 && dy === 0)) return;
+
+  const spaceKey = key(sx, sy);
+  if (!state.zombies.has(spaceKey)) return;
+
+  state.zombies.delete(spaceKey);
+  player.kills += 1;
+  state.recentKillKey = spaceKey;
+  pdt.remaining -= 1;
+  logLine(`${player.name} killed a zombie at [${sx}, ${sy}] with Dynamite (${pdt.remaining} target(s) remaining).`, "kill");
+
+  checkWin(player);
+  if (state.gameOver) { state.pendingDynamiteTarget = null; render(); return; }
+
+  const hasAdjacentZombie = [...state.zombies.keys()].some((zk) => {
+    const [zx, zy] = zk.split(",").map(Number);
+    return Math.abs(zx - player.x) <= 1 && Math.abs(zy - player.y) <= 1 && !(zx === player.x && zy === player.y);
+  });
+
+  if (pdt.remaining <= 0 || !hasAdjacentZombie) {
+    state.pendingDynamiteTarget = null;
+    logLine("Dynamite resolved.");
+  }
+  render();
+}
+
+function finishDynamite() {
+  if (!state.pendingDynamiteTarget) return;
+  state.pendingDynamiteTarget = null;
+  logLine("Dynamite — done targeting.");
   render();
 }
 
@@ -290,10 +512,22 @@ function discardSelected() {
     state.eventDiscardPile.push(card);
     logLine(`${player.name} discarded ${card.name}.`);
   } else {
+    if (player.inTheZone && player.hand.length > 3) {
+      logLine(`${player.name} must discard down to 3 (In the Zone — select a card to discard).`);
+      render();
+      return;
+    }
     logLine(`${player.name} skipped discard.`);
   }
 
   state.selectedHandIndex = null;
+
+  if (player.inTheZone && player.hand.length > 3) {
+    logLine(`${player.name} must discard down to 3 (In the Zone — ${player.hand.length - 3} more to discard).`);
+    render();
+    return;
+  }
+
   state.step = STEP.END;
   render();
 }

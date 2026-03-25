@@ -22,6 +22,144 @@
 
 const opponentEventCards = [
   {
+    name: "I Think It's Over Here",
+    description: "Play when an opponent draws a map tile. They draw it first, then you place it instead. Cannot be used on Helipad tiles.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player, helpers) {
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played I Think It's Over Here — no valid target.`);
+        return;
+      }
+      target.tileHijackNotify = player.id;
+      logLine(`${player.name} played I Think It's Over Here on ${target.name} — ${player.name} will place ${target.name}'s next drawn tile.`);
+    }
+  },
+  {
+    name: "You Don't Need That!",
+    description: "Play when you share a space with another player. Take one weapon or item in play from them.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    canPlay() {
+      const cp = currentPlayer();
+      return state.players.some((p) => p.id !== cp.id && key(p.x, p.y) === key(cp.x, cp.y) && p.items && p.items.length > 0);
+    },
+    apply(player) {
+      const target = state.players.find((p) => p.id !== player.id && key(p.x, p.y) === key(player.x, player.y) && p.items && p.items.length > 0);
+      if (!target) {
+        logLine(`${player.name} played You Don't Need That! — no opponent at same space with items.`);
+        return;
+      }
+      if (target.items.length === 1) {
+        const [stolen] = target.items.splice(0, 1);
+        player.items.push(stolen);
+        logLine(`${player.name} took ${stolen.name} from ${target.name} (You Don't Need That!).`);
+        return;
+      }
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "You Don't Need That!",
+        options: target.items.map((item, i) => ({ key: `item_${i}`, label: item.name })),
+        resolve(optKey) {
+          const idx = Number(optKey.slice(5));
+          const stolen = target.items.splice(idx, 1)[0];
+          if (stolen) {
+            player.items.push(stolen);
+            logLine(`${player.name} took ${stolen.name} from ${target.name} (You Don't Need That!).`);
+          }
+        }
+      };
+      logLine(`${player.name} played You Don't Need That! on ${target.name} — choose an item to take.`);
+    }
+  },
+  {
+    name: "You Lookin' at Me?!?",
+    description: "Play when an opponent plays a card. They must pick a new legal target. If none exists, that card is discarded without effect.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player, helpers) {
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played You Lookin' at Me?!? — no valid target.`);
+        return;
+      }
+      target.lookinAtMePending = { byPlayerId: player.id };
+      logLine(`${player.name} played You Lookin' at Me?!? on ${target.name} — ${target.name}'s next card must target someone else.`);
+    }
+  },
+  {
+    name: "Weekend Pass: DENIED!",
+    description: "Target opponent discards their entire hand.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player, helpers) {
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played Weekend Pass: DENIED! — no valid target.`);
+        return;
+      }
+      if (target.hand.length === 0) {
+        logLine(`${player.name} played Weekend Pass: DENIED! on ${target.name} — ${target.name} has no cards to discard.`);
+        return;
+      }
+      const count = target.hand.length;
+      target.hand.forEach((c) => state.eventDiscardPile.push(c));
+      target.hand = [];
+      logLine(`${player.name} played Weekend Pass: DENIED! on ${target.name} — ${target.name} discarded all ${count} card(s).`);
+    }
+  },
+  {
+    name: "What is That Smell?!?",
+    description: "Play before target opponent's movement roll. They must move to a different tile and may not return this turn. If they cannot leave, they skip their next turn instead.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player, helpers) {
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played What is That Smell?!? — no valid target.`);
+        return;
+      }
+      const tileX = spaceToTileCoord(target.x);
+      const tileY = spaceToTileCoord(target.y);
+      target.smellEffect = { startTileKey: key(tileX, tileY), movedToNewTile: false };
+      logLine(`${player.name} played What is That Smell?!? on ${target.name} — ${target.name} must move to a different tile and cannot return this turn.`);
+    }
+  },
+  {
+    name: "No Brains Here",
+    description: "Play when target opponent shares a space with a zombie. Move that zombie to an adjacent subtile.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    canPlay() {
+      const cp = currentPlayer();
+      return state.players.some((p) => p.id !== cp.id && state.zombies.has(key(p.x, p.y)));
+    },
+    apply(player) {
+      const target = state.players.find((p) => p.id !== player.id && state.zombies.has(key(p.x, p.y)));
+      if (!target) {
+        logLine(`${player.name} played No Brains Here, but no opponent is sharing a space with a zombie.`);
+        return;
+      }
+      const zombieKey = key(target.x, target.y);
+      state.pendingZombieReplace = {
+        remaining: 1,
+        selectedZombieKey: zombieKey,
+        adjacentToKey: zombieKey,
+        cardName: "No Brains Here"
+      };
+      logLine(`${player.name} played No Brains Here — move the zombie from ${target.name}'s space to an adjacent subtile.`);
+    }
+  },
+  {
+    name: "Government Enhanced Zombies!",
+    description: "All players must roll 5+ to kill regular zombies until the end of your next turn.",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    apply(player) {
+      if (state.regularZombieEnhanced) {
+        state.regularZombieEnhanced.endTurnCount = 0;
+        state.regularZombieEnhanced.playerId = player.id;
+      } else {
+        state.regularZombieEnhanced = { playerId: player.id, endTurnCount: 0 };
+      }
+      logLine(`${player.name} played Government Enhanced Zombies! — all players need 5+ to kill regular zombies until end of ${player.name}'s next turn.`);
+    }
+  },
+  {
     name: "Bad Sense of Direction",
     description: "Discard 1 life to move target opponent back to Town Square. Your turn continues as normal.",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },

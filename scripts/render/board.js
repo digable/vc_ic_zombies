@@ -225,6 +225,15 @@ function renderBoard() {
             zombieClass = " zombie-selectable";
           } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
             zombieClass = " zombie-target";
+          } else if (state.pendingRocketLauncher && tile.type !== "helipad" && isBoardEdgeTile(x, y)) {
+            zombieClass = " zombie-target";
+          } else if (state.pendingMinefield && data.zombieType && subType === "road") {
+            zombieClass = " zombie-selectable";
+          } else if (state.pendingDynamiteTarget && data.zombieType) {
+            const dp = state.players.find((pl) => pl.id === state.pendingDynamiteTarget.playerId);
+            if (dp && Math.abs(sx - dp.x) <= 1 && Math.abs(sy - dp.y) <= 1 && !(sx === dp.x && sy === dp.y)) {
+              zombieClass = " zombie-selectable";
+            }
           } else if (state.pendingZombiePlace && isWalkable && !data.zombieType) {
             zombieClass = " zombie-target";
           } else if (pzr) {
@@ -327,6 +336,7 @@ function renderMoveStatus() {
     if (p.claustrophobiaActive)         msgs.push("Claustrophobia: cannot enter buildings. If in a building, exit by shortest route.");
     if (p.halfMovementNextTurn)         msgs.push("Your Shoe's Untied: movement roll will be halved.");
     if (p.brainCramp)                   msgs.push("Brain Cramp: an opponent will control your movement.");
+    if (state.pendingBreakthrough)      msgs.push("Breakthrough: choose a direction to attempt to break through a wall (5–6 succeeds, 4 or less loses 1 life and ends movement).");
     if (state.pendingForcedMove) {
       const target = state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId);
       const targetName = target ? target.name : "Unknown";

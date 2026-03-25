@@ -1,3 +1,11 @@
+function isBoardEdgeTile(tx, ty) {
+  if (!state.board.has(key(tx, ty))) return false;
+  return !state.board.has(key(tx - 1, ty)) ||
+         !state.board.has(key(tx + 1, ty)) ||
+         !state.board.has(key(tx, ty - 1)) ||
+         !state.board.has(key(tx, ty + 1));
+}
+
 function boardBounds() {
   let minX = Infinity;
   let maxX = -Infinity;

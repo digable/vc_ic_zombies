@@ -1,7 +1,16 @@
 function handleKnockout(player, options = {}) {
   const { endStep = true } = options;
-  const lostKills = Math.floor(player.kills / 2);
-  player.kills -= lostKills;
+  const adjIdx = player.items ? player.items.findIndex((c) => c.name === "Adjusting Nicely") : -1;
+  let lostKills;
+  if (adjIdx >= 0) {
+    const [card] = player.items.splice(adjIdx, 1);
+    state.eventDiscardPile.push(card);
+    lostKills = 0;
+    logLine(`${player.name} discarded Adjusting Nicely — no kills lost on knockout.`);
+  } else {
+    lostKills = Math.floor(player.kills / 2);
+    player.kills -= lostKills;
+  }
   player.hearts = 3;
   player.bullets = 3;
   player.x = 1;
@@ -12,7 +21,7 @@ function handleKnockout(player, options = {}) {
   if (endStep) {
     state.step = STEP.END;
   }
-  logLine(`${player.name} was knocked out, lost ${lostKills} kills, and respawned at Town Square.`, "knockout");
+  logLine(`${player.name} was knocked out, lost ${lostKills} kill(s), and respawned at Town Square.`, "knockout");
   state.knockoutBanner = { playerName: player.name, lostKills };
   setTimeout(() => {
     state.knockoutBanner = null;
@@ -245,7 +254,10 @@ function resolveCombatForPlayer(player, options = {}) {
 
   const zombieData = state.zombies.get(playerSpaceKey);
   const zombieTypeProps = ZOMBIE_TYPES[zombieData?.type] ?? ZOMBIE_TYPES[ZOMBIE_TYPE.REGULAR];
-  const killRoll = zombieTypeProps.killRoll;
+  const isRegular = !zombieData?.type || zombieData.type === ZOMBIE_TYPE.REGULAR;
+  const killRoll = (state.regularZombieEnhanced && isRegular)
+    ? Math.max(zombieTypeProps.killRoll, 5)
+    : zombieTypeProps.killRoll;
   const isEnhanced = zombieData?.type === ZOMBIE_TYPE.ENHANCED;
 
   const permanentBonus = player.attack || 0;
@@ -258,6 +270,9 @@ function resolveCombatForPlayer(player, options = {}) {
   const tileBonus = (player.tileCombatBonusTile === playerTileKey) ? (player.tileCombatBonus || 0) : 0;
 
   const roll = rollD6();
+  if (player.inTheZone && roll === 6) {
+    drawOneEventCardForPlayer(player, "In the Zone");
+  }
   const baseCombatRoll = roll + permanentBonus + tempBonus + shotgunBonus + tileBonus;
   const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
   const zombieLabel = isEnhanced ? "government-enhanced zombie" : "zombie";

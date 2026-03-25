@@ -24,6 +24,10 @@ function buildEventDeckHelpers() {
     if (state.players.length < 2) return null;
     const i = state.players.indexOf(player);
     if (i < 0) return null;
+    if (state.forcedNextOpponentId != null) {
+      const forced = state.players.find((p) => p.id === state.forcedNextOpponentId);
+      if (forced) return forced;
+    }
     return state.players[(i + 1) % state.players.length];
   };
 

@@ -12,6 +12,17 @@ function endTurn() {
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
   outgoing.noCombatThisTurn = false;
+  outgoing.inTheZone = false;
+  if (state.regularZombieEnhanced?.playerId === outgoing.id) {
+    state.regularZombieEnhanced.endTurnCount += 1;
+    if (state.regularZombieEnhanced.endTurnCount >= 2) {
+      state.regularZombieEnhanced = null;
+      logLine("Government Enhanced Zombies effect expires — regular zombies return to 4+ kill roll.");
+    }
+  }
+  outgoing.smellEffect = null;
+  outgoing.lookinAtMePending = null;
+  outgoing.tileHijackNotify = null;
   outgoing.claustrophobiaActive = false;
   if (outgoing.cannotMoveTurns > 0) {
     outgoing.cannotMoveTurns -= 1;

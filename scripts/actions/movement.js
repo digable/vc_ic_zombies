@@ -36,6 +36,19 @@ function isSpaceBuilding(sx, sy) {
   return getSubTileType(tile, lx, ly) === "building";
 }
 
+function canPlayerReachDifferentTile(player) {
+  const tileX = spaceToTileCoord(player.x);
+  const tileY = spaceToTileCoord(player.y);
+  const tile = state.board.get(key(tileX, tileY));
+  if (!tile) return false;
+  return ["N", "S", "E", "W"].some((dir) => {
+    const d = DIRS[dir];
+    const adjTile = state.board.get(key(tileX + d.x, tileY + d.y));
+    if (!adjTile) return false;
+    return hasRoad(tile, dir) && hasRoad(adjTile, DIRS[dir].opposite);
+  });
+}
+
 function rollMovement() {
   if (state.step !== STEP.ROLL_MOVE || state.gameOver) {
     return;
@@ -48,6 +61,18 @@ function rollMovement() {
     state.step = STEP.MOVE_ZOMBIES;
     autoSkipZombieMoveIfClear();
     logLine(`${player.name} is unable to move this turn.`);
+    render();
+    return;
+  }
+
+  if (player.smellEffect && !canPlayerReachDifferentTile(player)) {
+    player.smellEffect = null;
+    player.cannotMoveTurns = 2;
+    state.currentMoveRoll = 0;
+    state.movesRemaining = 0;
+    state.step = STEP.MOVE_ZOMBIES;
+    autoSkipZombieMoveIfClear();
+    logLine(`${player.name} cannot reach a different tile (What is That Smell?!?) — movement skipped and next turn forfeited.`);
     render();
     return;
   }
@@ -82,7 +107,11 @@ function rollMovement() {
 
   const roll = rollD6();
   state.currentMoveRoll = roll;
-  let move = roll + state.movementBonus + (player.movementBonus || 0);
+  if (player.inTheZone && roll === 6) {
+    drawOneEventCardForPlayer(player, "In the Zone");
+  }
+  const heliSightBonus = (player.items || []).some((c) => c.name === "I See the Helicopter") ? 1 : 0;
+  let move = roll + state.movementBonus + (player.movementBonus || 0) + heliSightBonus;
   if (state.moveFloorThisTurn > 0) {
     move = Math.max(move, state.moveFloorThisTurn);
   }
@@ -124,8 +153,123 @@ function moveToZombiePhase() {
   autoSkipZombieMoveIfClear();
 }
 
+const BREAKTHROUGH_EDGE = {
+  N: { fromX: 1, fromY: 0, toX: 1, toY: 2 },
+  S: { fromX: 1, fromY: 2, toX: 1, toY: 0 },
+  E: { fromX: 2, fromY: 1, toX: 0, toY: 1 },
+  W: { fromX: 0, fromY: 1, toX: 2, toY: 1 },
+};
+
+function handleBreakthroughAttempt(dir) {
+  const pb = state.pendingBreakthrough;
+  if (!pb) return;
+  state.pendingBreakthrough = null;
+
+  const player = state.players.find((p) => p.id === pb.playerId);
+  if (!player) { render(); return; }
+
+  const d = DIRS[dir];
+  const fromX = player.x;
+  const fromY = player.y;
+  const toX = fromX + d.x;
+  const toY = fromY + d.y;
+
+  const fromTileX = spaceToTileCoord(fromX);
+  const fromTileY = spaceToTileCoord(fromY);
+  const toTileX = spaceToTileCoord(toX);
+  const toTileY = spaceToTileCoord(toY);
+
+  const fromTile = state.board.get(key(fromTileX, fromTileY));
+  const toTile = state.board.get(key(toTileX, toTileY));
+
+  if (fromTileX === toTileX && fromTileY === toTileY) {
+    logLine(`${player.name}: Breakthrough only works across tile boundaries.`);
+    render();
+    return;
+  }
+  if (!fromTile || !toTile) {
+    logLine(`${player.name}: Breakthrough — no adjacent tile in that direction.`);
+    render();
+    return;
+  }
+  if (fromTile.type === "helipad" || toTile.type === "helipad") {
+    logLine(`${player.name}: Breakthrough cannot be used to or from the Helipad.`);
+    render();
+    return;
+  }
+
+  const fromLocalX = getLocalCoord(fromX, fromTileX);
+  const fromLocalY = getLocalCoord(fromY, fromTileY);
+  const toLocalX = getLocalCoord(toX, toTileX);
+  const toLocalY = getLocalCoord(toY, toTileY);
+  const edge = BREAKTHROUGH_EDGE[dir];
+
+  if (fromLocalX !== edge.fromX || fromLocalY !== edge.fromY || toLocalX !== edge.toX || toLocalY !== edge.toY) {
+    logLine(`${player.name}: Breakthrough — must be at the center-edge subtile to break through.`);
+    render();
+    return;
+  }
+  if (!isLocalWalkable(toTile, toLocalX, toLocalY)) {
+    logLine(`${player.name}: Breakthrough — destination is not a legal space.`);
+    render();
+    return;
+  }
+  if (canStep(fromX, fromY, toX, toY)) {
+    logLine(`${player.name}: Breakthrough — that path is already open.`);
+    render();
+    return;
+  }
+
+  const roll = rollD6();
+  logLine(`${player.name} attempts Breakthrough ${directionToArrow(dir)} — rolled ${roll}.`);
+
+  if (roll >= 5) {
+    state.breakthroughConnections.add(`${key(fromX, fromY)}\u2192${dir}`);
+    state.breakthroughConnections.add(`${key(toX, toY)}\u2192${DIRS[dir].opposite}`);
+    logLine(`${player.name} broke through! Permanent path created between ${getTileDisplayName(fromTile)} and ${getTileDisplayName(toTile)}.`);
+    player.x = toX;
+    player.y = toY;
+    state.movesRemaining -= 1;
+    state.playerTrail.push(key(player.x, player.y));
+    collectTokensAtPlayerSpace(player);
+    logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(toTile)} [space ${toX}, ${toY}].`);
+    if (checkWin(player)) { render(); return; }
+    const playerSpaceKey = key(player.x, player.y);
+    if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
+      logLine(`${player.name} encountered a zombie and must fight immediately.`);
+      resolveCombatForPlayer(player, {
+        advanceStepWhenClear: false,
+        endStepOnKnockout: true,
+        resumeStepAfterPending: state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES
+      });
+      if (state.step === STEP.END) { render(); return; }
+      if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
+        state.step = STEP.COMBAT;
+        render();
+        return;
+      }
+    }
+    if (state.movesRemaining <= 0) moveToZombiePhase();
+  } else {
+    player.hearts -= 1;
+    logLine(`${player.name} failed to break through — lost 1 life token. Movement ends.`);
+    if (player.hearts <= 0) {
+      handleKnockout(player, { endStep: true });
+    } else {
+      state.movesRemaining = 0;
+      moveToZombiePhase();
+    }
+  }
+  render();
+}
+
 function movePlayer(dir) {
   if (state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0) {
+    return;
+  }
+
+  if (state.pendingBreakthrough) {
+    handleBreakthroughAttempt(dir);
     return;
   }
 
@@ -145,6 +289,15 @@ function movePlayer(dir) {
   }
 
   const d = DIRS[dir];
+
+  if (player.smellEffect?.movedToNewTile) {
+    const destTileKey = key(spaceToTileCoord(player.x + d.x), spaceToTileCoord(player.y + d.y));
+    if (destTileKey === player.smellEffect.startTileKey) {
+      logLine(`${player.name} cannot return to their starting tile this turn (What is That Smell?!?).`);
+      render();
+      return;
+    }
+  }
 
   if (player.claustrophobiaActive) {
     if (!isSpaceBuilding(player.x, player.y)) {
@@ -167,6 +320,13 @@ function movePlayer(dir) {
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
   logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}].`);
+
+  if (player.smellEffect && !player.smellEffect.movedToNewTile) {
+    const newTileKey = key(spaceToTileCoord(player.x), spaceToTileCoord(player.y));
+    if (newTileKey !== player.smellEffect.startTileKey) {
+      player.smellEffect.movedToNewTile = true;
+    }
+  }
 
   if (wasInBuilding && !isSpaceBuilding(player.x, player.y)) {
     player.claustrophobiaActive = false;
@@ -313,7 +473,16 @@ function endMovementEarly() {
   if (state.step !== STEP.MOVE || state.gameOver) {
     return;
   }
+  if (state.pendingBreakthrough) {
+    state.pendingBreakthrough = null;
+    logLine(`${currentPlayer().name} chose not to attempt a Breakthrough.`);
+  }
   const player = currentPlayer();
+  if (player.smellEffect && !player.smellEffect.movedToNewTile) {
+    logLine(`${player.name} must move to a different tile before ending movement (What is That Smell?!?).`);
+    render();
+    return;
+  }
   if (player.claustrophobiaActive && isSpaceBuilding(player.x, player.y)) {
     logLine(`${player.name} cannot end movement while inside a building (Claustrophobia).`);
     render();

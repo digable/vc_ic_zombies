@@ -29,7 +29,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       y: 1,
       knockedOut: false,
       knockouts: 0,
-      hasJeep: false
+      hasJeep: false,
+      smellEffect: null
     });
   }
 
@@ -55,6 +56,10 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   }
   state.eventDeck = buildEventDeck(eventFilters ?? deckFilters);
   state.eventDiscardPile = [];
+  state.breakthroughConnections = new Set();
+  state.regularZombieEnhanced = null;
+  state.pendingRocketLauncher = null;
+  state.forcedNextOpponentId = null;
   state.discardPile = [];
   state.zombies = new Map();
   state.spaceTokens = new Map();
@@ -171,10 +176,21 @@ function drawAndPlaceTile(deckId = "base") {
     });
   }
 
+  const cp = currentPlayer();
+  if (cp.tileHijackNotify != null) {
+    const hijacker = state.players.find((p) => p.id === cp.tileHijackNotify);
+    cp.tileHijackNotify = null;
+    if (tile.type === "helipad") {
+      logLine(`I Think It's Over Here has no effect on Helipad tiles — ${cp.name} places it normally.`);
+    } else if (hijacker) {
+      logLine(`${hijacker.name} played I Think It's Over Here — ${hijacker.name} places this tile instead of ${cp.name}.`);
+    }
+  }
+
   const companionNote = state.pendingCompanionTiles.length > 0
     ? ` (+${state.pendingCompanionTiles.map((t) => t.name).join(", ")})`
     : "";
-  logLine(`${currentPlayer().name} drew ${drawnName}${companionNote}. Click a highlighted map space to place it.`);
+  logLine(`${cp.name} drew ${drawnName}${companionNote}. Click a highlighted map space to place it.`);
   render();
 }
 

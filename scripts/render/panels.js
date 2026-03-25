@@ -215,7 +215,9 @@ function renderHand() {
   const globallyBlocked = state.gameOver || player.eventUsedThisRound || player.cannotPlayCardTurns > 0 ||
     Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice) ||
     Boolean(state.pendingZombieReplace) || Boolean(state.pendingZombieDiceChallenge) ||
-    Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove);
+    Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove) ||
+    Boolean(state.pendingDynamiteTarget) || Boolean(state.pendingMinefield) ||
+    Boolean(state.pendingRocketLauncher);
 
   const isCardPlayable = (card) => {
     if (globallyBlocked) return false;
@@ -265,7 +267,7 @@ function renderHand() {
       el.innerHTML = `
         <strong>${card.name}</strong><br />
         <span class="small">${card.description}</span><br />
-        ${card.combatWeapon ? `<span class="small dim">Use in combat</span>` : `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">Activate &amp; Discard</button>`}
+        ${card.combatWeapon ? `<span class="small dim">Use in combat</span>` : card.activateItem ? `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">Activate &amp; Discard</button>` : `<span class="small dim">Triggers automatically</span>`}
       `;
       refs.handList.appendChild(el);
     });
@@ -408,6 +410,45 @@ function renderZombieReplacePanel() {
   const panel = refs.zombieReplacePanel;
   if (!panel) return;
 
+  const prl = state.pendingRocketLauncher;
+  if (prl) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">Rocket Launcher</div>
+      <div class="small">Click any space on an edge tile to destroy it. Cannot target the Helipad.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Cancel</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pmf = state.pendingMinefield;
+  if (pmf) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">Mine Field — Roll: ${pmf.remaining}</div>
+      <div class="small">Click any space on a tile to remove up to ${pmf.remaining} zombie(s) from its road spaces.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Skip</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pdt = state.pendingDynamiteTarget;
+  if (pdt) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">Dynamite — Target ${pdt.remaining} space(s)</div>
+      <div class="small">Click an adjacent zombie space (including diagonals) to destroy it.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Done (skip remaining)</button>
+      </div>
+    `;
+    return;
+  }
+
   const pbs = state.pendingBuildingSelect;
   if (pbs) {
     panel.classList.remove("hidden");
@@ -470,11 +511,14 @@ function renderZombieReplacePanel() {
   }
 
   panel.classList.remove("hidden");
-  const instruction = pzr.selectedZombieKey
-    ? `Zombie at ${pzr.selectedZombieKey} selected — click a destination space. Click the same zombie to deselect.`
-    : `Click a zombie on the board to select it.`;
+  const instruction = pzr.adjacentToKey
+    ? `Zombie selected — click an adjacent space to move it.`
+    : pzr.selectedZombieKey
+      ? `Zombie at ${pzr.selectedZombieKey} selected — click a destination space. Click the same zombie to deselect.`
+      : `Click a zombie on the board to select it.`;
+  const title = pzr.cardName || "This Isn't So Bad";
   panel.innerHTML = `
-    <div class="combat-decision-title">This Isn't So Bad — Move ${pzr.remaining} zombie(s)</div>
+    <div class="combat-decision-title">${title} — Move ${pzr.remaining} zombie(s)</div>
     <div class="small">${instruction}</div>
     <div class="combat-decision-actions">
       <button id="zombieReplaceDoneBtn">Done (skip remaining)</button>
