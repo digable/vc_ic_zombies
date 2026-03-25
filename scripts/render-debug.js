@@ -3,14 +3,14 @@
 
 let mapDeckDebugIdCounter = 1;
 const mapDeckDebugEdits = new Map();
-const mapDeckDebugFilters = { collection: "all", enabled: "all" };
+const mapDeckDebugFilters = { collection: "all" };
 
 function ensureMapDeckDebugTileId(tile) {
   if (tile._debugTileId) {
     return tile._debugTileId;
   }
   for (const t of state.mapDeck) {
-    if (t !== tile && t.name === tile.name && t.type === tile.type && t.count === tile.count && t._debugTileId) {
+    if (t !== tile && t.name === tile.name && t.type === tile.type && t._debugTileId) {
       tile._debugTileId = t._debugTileId;
       return tile._debugTileId;
     }
@@ -128,28 +128,23 @@ function renderMapDeckDebug() {
   const getDebugGroup = (tile) => {
     if (tile?.type === "building" || tile?.type === "named") return "Buildings";
     if (tile?.type === "road") return "Road";
-    if (tile?.type === "helipad" || tile?.type === "special" || tile?.isWinTile || tile?.isStartTile) return "Special Cards";
+    if (tile?.type === "grass") return "Grass";
     return "Special Cards";
   };
 
   const grouped = new Map([
     ["Buildings", []],
     ["Road", []],
+    ["Grass", []],
     ["Special Cards", []]
   ]);
 
   const collectionOptions = [["all", "All Collections"], ...Object.entries(COLLECTIONS).map(([k, v]) => [v, k])];
-  const enabledOptions = [["all", "All"], ["true", "Enabled"], ["false", "Disabled"]];
   const filterBar = `
     <div class="deck-debug-filters">
       <label>Collection
         <select data-debug-filter="collection">
           ${collectionOptions.map(([v, label]) => `<option value="${v}" ${mapDeckDebugFilters.collection === v ? "selected" : ""}>${label}</option>`).join("")}
-        </select>
-      </label>
-      <label>Enabled
-        <select data-debug-filter="enabled">
-          ${enabledOptions.map(([v, label]) => `<option value="${v}" ${mapDeckDebugFilters.enabled === v ? "selected" : ""}>${label}</option>`).join("")}
         </select>
       </label>
     </div>
@@ -160,7 +155,6 @@ function renderMapDeckDebug() {
     if (seenNames.has(tile.name)) return;
     seenNames.add(tile.name);
     if (mapDeckDebugFilters.collection !== "all" && !Object.keys(resolveCollectionCounts(tile)).includes(mapDeckDebugFilters.collection)) return;
-    if (mapDeckDebugFilters.enabled !== "all" && String(tile.enabled !== false) !== mapDeckDebugFilters.enabled) return;
     const group = getDebugGroup(tile);
     grouped.get(group)?.push({ tile, deckIndex: index });
   });
@@ -178,7 +172,6 @@ function renderMapDeckDebug() {
   const renderCard = ({ tile, deckIndex }) => {
     const { tileId, editedCells } = ensureMapDeckDebugEdits(tile);
 
-    // Build tileForRender from stored editedCells — never re-derive from raw tile data.
     const editableTemplate = editableCellsToTemplate(editedCells);
     const tileForRender = {
       ...tile,
@@ -186,10 +179,8 @@ function renderMapDeckDebug() {
       subTiles: buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate })
     };
 
-    // Micro grid — pass the already-resolved tileForRender.
     const microHtml = buildMicroGridHtml(tileForRender);
 
-    // Subtile editor rows — tileId is passed so all inputs get data-debug-tile-id.
     const subtileRows = [];
     for (let ly = 0; ly < 3; ly += 1) {
       for (let lx = 0; lx < 3; lx += 1) {
@@ -222,6 +213,12 @@ function renderMapDeckDebug() {
       return dirs.map(directionToArrow).join(" ");
     };
 
+    const zombieTotal = Object.values(tileForRender.zombies || {}).reduce((s, n) => s + n, 0);
+    const currentZombieType = Object.keys(tileForRender.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
+    const gwConn = tileForRender.zoneGatewayConnector || "";
+    const sc = getCollectionShortCode(tileForRender.collection);
+    const scBadge = sc ? ` <span class="coll-short-code">${sc}</span>` : "";
+
     const generatedCode = buildSubTilesTemplateCode(editedCells);
     const { _debugTileId, subTiles, ...tileForCode } = tileForRender;
     const fullTileCode = formatTileCode(tileForCode);
@@ -230,7 +227,7 @@ function renderMapDeckDebug() {
       <div class="deck-tile ${getTileClassName(tileForRender)}" data-debug-card-id="${tileId}" style="background: ${getTileBackgroundStyle(tileForRender.type)}">
         <div class="small">#${deckIndex + 1}</div>
         <div class="deck-tile-edit-line">
-          <strong>${getTileDisplayName(tileForRender)}</strong>
+          <strong>${getTileDisplayName(tileForRender)}</strong>${scBadge}
         </div>
         <div class="deck-tile-collections">
           <strong>Collections</strong>
@@ -247,6 +244,7 @@ function renderMapDeckDebug() {
             <option value="named" ${tileForRender.type === "named" ? "selected" : ""}>named</option>
             <option value="building" ${tileForRender.type === "building" ? "selected" : ""}>building</option>
             <option value="road" ${tileForRender.type === "road" ? "selected" : ""}>road</option>
+            <option value="grass" ${tileForRender.type === "grass" ? "selected" : ""}>grass</option>
             <option value="helipad" ${tileForRender.type === "helipad" ? "selected" : ""}>helipad</option>
             <option value="town" ${tileForRender.type === "town" ? "selected" : ""}>town</option>
           </select>
@@ -259,10 +257,20 @@ function renderMapDeckDebug() {
             <option value="none" ${tileForRender.zombieSpawnMode === "none" ? "selected" : ""}>none</option>
           </select>
         </div>
-        <label class="deck-tile-edit-line">
-          <strong>Enabled</strong>
-          <input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="enabled" ${tileForRender.enabled !== false ? "checked" : ""} />
-        </label>
+        <div class="deck-tile-edit-line">
+          <strong>Zombies</strong>
+          <input type="number" min="0" value="${zombieTotal}" data-debug-tile-id="${tileId}" data-debug-field="zombieCount" data-debug-dir="${currentZombieType}" class="deck-tile-count-input" />
+          <select data-debug-tile-id="${tileId}" data-debug-field="zombieType">
+            <option value="${ZOMBIE_TYPE.REGULAR}" ${currentZombieType === ZOMBIE_TYPE.REGULAR ? "selected" : ""}>regular</option>
+            <option value="${ZOMBIE_TYPE.ENHANCED}" ${currentZombieType === ZOMBIE_TYPE.ENHANCED ? "selected" : ""}>enhanced</option>
+          </select>
+        </div>
+        <div class="deck-tile-edit-line">
+          <strong>Hearts</strong>
+          <input type="number" min="0" value="${tileForRender.hearts || 0}" data-debug-tile-id="${tileId}" data-debug-field="hearts" class="deck-tile-count-input" />
+          <strong>Bullets</strong>
+          <input type="number" min="0" value="${tileForRender.bullets || 0}" data-debug-tile-id="${tileId}" data-debug-field="bullets" class="deck-tile-count-input" />
+        </div>
         <div class="deck-tile-edit-line">
           <strong>Connectors</strong>
           <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="N" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("N") ? "checked" : ""}/>N</label>
@@ -270,9 +278,25 @@ function renderMapDeckDebug() {
           <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="S" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("S") ? "checked" : ""}/>S</label>
           <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="W" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("W") ? "checked" : ""}/>W</label>
         </div>
+        <div class="deck-tile-edit-line">
+          <strong>Flags</strong>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isStartTile" ${tileForRender.isStartTile ? "checked" : ""} />isStartTile</label>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isWinTile" ${tileForRender.isWinTile ? "checked" : ""} />isWinTile</label>
+          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="firstDrawWhenSolo" ${tileForRender.firstDrawWhenSolo ? "checked" : ""} />firstDrawWhenSolo</label>
+        </div>
+        <div class="deck-tile-edit-line">
+          <strong>Zone Gateway</strong>
+          <select data-debug-tile-id="${tileId}" data-debug-field="zoneGatewayConnector">
+            <option value="" ${!gwConn ? "selected" : ""}>— none —</option>
+            <option value="N" ${gwConn === "N" ? "selected" : ""}>N</option>
+            <option value="E" ${gwConn === "E" ? "selected" : ""}>E</option>
+            <option value="S" ${gwConn === "S" ? "selected" : ""}>S</option>
+            <option value="W" ${gwConn === "W" ? "selected" : ""}>W</option>
+          </select>
+        </div>
         <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
         <div class="small">
-          Z${Object.values(tileForRender.zombies || {}).reduce((s,n)=>s+n,0)},
+          Z${zombieTotal},
           L${tileForRender.hearts || 0},
           B${tileForRender.bullets || 0}
         </div>
@@ -298,7 +322,7 @@ function renderMapDeckDebug() {
     `;
   };
 
-  const sectionOrder = ["Buildings", "Road", "Special Cards"];
+  const sectionOrder = ["Buildings", "Road", "Grass", "Special Cards"];
   const sections = sectionOrder.map((section) => {
     const entries = grouped.get(section) || [];
     if (entries.length === 0) return "";

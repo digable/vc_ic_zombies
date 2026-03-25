@@ -192,6 +192,14 @@ function getTileBackgroundStyle(type) {
   return map[type] || "#9faab4";
 }
 
+function getCollectionLabel(collection) {
+  if (!collection) return "";
+  const keys = typeof collection === "object" && !Array.isArray(collection)
+    ? Object.keys(collection)
+    : [collection];
+  return keys.map((k) => COLLECTION_META[k]?.label ?? k).join(", ");
+}
+
 function getCollectionShortCode(collection, deckKey) {
   if (!collection) return "";
   if (deckKey && COLLECTION_META[deckKey]?.shortCode) {

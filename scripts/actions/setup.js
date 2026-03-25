@@ -145,7 +145,7 @@ function drawAndPlaceTile(deckId = "base") {
   }
 
   state.pendingTile = tile;
-  state.pendingRotation = 0;
+  state.pendingRotation = options[0]?.rotation ?? 0;
   state.pendingTileOptions = options;
   state.pendingTileDeck = deckId;
   state.pendingCompanionTiles = [];
@@ -180,7 +180,12 @@ function rotatePendingTile(delta) {
   if (!state.pendingTile || state.gameOver || state.step !== STEP.DRAW_TILE) {
     return;
   }
-  const next = (state.pendingRotation + delta + 4) % 4;
+  let next = (state.pendingRotation + delta + 4) % 4;
+  // Skip rotations that have no valid placements
+  for (let i = 0; i < 3; i++) {
+    if (state.pendingTileOptions.some((o) => o.rotation === next)) break;
+    next = (next + delta + 4) % 4;
+  }
   state.pendingRotation = next;
   logLine(`${currentPlayer().name} rotated pending tile to ${next * 90} degrees.`);
   render();

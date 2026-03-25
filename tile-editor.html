@@ -36,10 +36,6 @@
               </optgroup>
             </select>
           </label>
-          <label>Collection
-            <select id="newTileCollection"><!-- populated by JS --></select>
-          </label>
-          <label>Count (per collection) <input id="newTileCount" type="number" min="1" value="1" /></label>
           <label>Zombie Spawn Mode
             <select id="newTileSpawnMode">
               <option value="by_card" selected>by_card</option>
@@ -56,7 +52,11 @@
           </label>
           <label>Hearts (L) <input id="newTileHearts" type="number" min="0" value="0" /></label>
           <label>Bullets (B) <input id="newTileBullets" type="number" min="0" value="0" /></label>
-          <label class="tile-generator-check"><input id="newTileEnabled" type="checkbox" checked /> Enabled</label>
+        </div>
+
+        <div class="tile-generator-section">
+          <strong>Collections (count per collection)</strong>
+          <div id="newTileCollectionInputs" class="tile-generator-collections"><!-- populated by JS --></div>
         </div>
 
         <div class="tile-generator-connectors">
@@ -65,6 +65,44 @@
           <label><input type="checkbox" id="newTileConnectorE" /> E</label>
           <label><input type="checkbox" id="newTileConnectorS" /> S</label>
           <label><input type="checkbox" id="newTileConnectorW" /> W</label>
+        </div>
+
+        <div class="tile-generator-section">
+          <strong>Flags</strong>
+          <div class="tile-generator-flags">
+            <label><input type="checkbox" id="newTileIsStartTile" /> isStartTile</label>
+            <label><input type="checkbox" id="newTileIsWinTile" /> isWinTile</label>
+            <label><input type="checkbox" id="newTileFirstDrawWhenSolo" /> firstDrawWhenSolo</label>
+          </div>
+        </div>
+
+        <div class="tile-generator-section">
+          <strong>Zone Gateway Connector</strong>
+          <select id="newTileZoneGateway">
+            <option value="">— none —</option>
+            <option value="N">N</option>
+            <option value="E">E</option>
+            <option value="S">S</option>
+            <option value="W">W</option>
+          </select>
+        </div>
+
+        <div class="tile-generator-section">
+          <strong>Companion Tiles</strong>
+          <div class="tile-generator-companions">
+            <label>Companion Direction
+              <select id="newTileCompanionDir">
+                <option value="">— none —</option>
+                <option value="N">N</option>
+                <option value="E">E</option>
+                <option value="S">S</option>
+                <option value="W">W</option>
+              </select>
+            </label>
+            <label>Companion Tile Names (comma-separated)
+              <input id="newTileCompanionNames" type="text" placeholder="e.g. Straight, 4-Way" />
+            </label>
+          </div>
         </div>
 
         <div class="tile-generator-block">

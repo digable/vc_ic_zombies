@@ -25,6 +25,7 @@ function attachNewTileSubtileEditorListeners() {
     refreshNewTilePreview();
   });
 }
+
 // Renders the subtile editor UI for the new tile generator
 function renderNewTileSubtileEditor() {
   const container = document.getElementById("newTileSubtileEditor");
@@ -44,41 +45,30 @@ function renderNewTileSubtileEditor() {
           renderCompassCheckboxes: window.renderCompassCheckboxes
         }));
       } else {
-        // fallback: simple display
         subtileRows.push(`<div>${coord}</div>`);
       }
     }
   }
   container.innerHTML = `<div class="deck-subtiles">${subtileRows.join("")}</div>`;
 }
+
 function copyTextToClipboard(text) {
   return navigator.clipboard.writeText(text);
 }
 
 
 function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
-  // Handle tile-level type change
+  const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
+
+  // Tile-level fields
   if (field === "tileType") {
-    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
     if (!tile) return;
-    const newType = typeof value === "string" ? value.trim().toLowerCase() : tile.type;
-    tile.type = newType;
+    tile.type = typeof value === "string" ? value.trim().toLowerCase() : tile.type;
     renderMapDeckDebug();
     return;
   }
 
-  // Handle enabled (tile-level)
-  if (field === "enabled") {
-    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
-    if (!tile) return;
-    tile.enabled = Boolean(value);
-    renderMapDeckDebug();
-    return;
-  }
-
-  // Handle collectionCount (tile-level) — dir holds the collection key
   if (field === "collectionCount") {
-    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
     if (!tile) return;
     const colCounts = resolveCollectionCounts(tile);
     const n = Math.max(0, parseInt(value, 10) || 0);
@@ -88,31 +78,73 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     return;
   }
 
-  // Handle zombieSpawnMode (tile-level)
   if (field === "zombieSpawnMode") {
-    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
     if (!tile) return;
     tile.zombieSpawnMode = typeof value === "string" ? value.trim() : tile.zombieSpawnMode;
     renderMapDeckDebug();
     return;
   }
 
-  // Handle connectors (tile-level)
+  if (field === "zombieCount") {
+    if (!tile) return;
+    const zombieType = dir || ZOMBIE_TYPE.REGULAR;
+    const n = Math.max(0, parseInt(value, 10) || 0);
+    if (!tile.zombies) tile.zombies = {};
+    if (n === 0) { delete tile.zombies[zombieType]; } else { tile.zombies[zombieType] = n; }
+    if (Object.keys(tile.zombies).length === 0) delete tile.zombies;
+    renderMapDeckDebug();
+    return;
+  }
+
+  if (field === "zombieType") {
+    if (!tile) return;
+    // Remap the current zombie count to the new type
+    const currentZombies = tile.zombies || {};
+    const total = Object.values(currentZombies).reduce((s, n) => s + n, 0);
+    tile.zombies = total > 0 ? { [value]: total } : {};
+    if (Object.keys(tile.zombies).length === 0) delete tile.zombies;
+    renderMapDeckDebug();
+    return;
+  }
+
+  if (field === "hearts") {
+    if (!tile) return;
+    tile.hearts = Math.max(0, parseInt(value, 10) || 0);
+    renderMapDeckDebug();
+    return;
+  }
+
+  if (field === "bullets") {
+    if (!tile) return;
+    tile.bullets = Math.max(0, parseInt(value, 10) || 0);
+    renderMapDeckDebug();
+    return;
+  }
+
   if (field === "connectors") {
-    const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
     if (!tile) return;
     const set = new Set(Array.isArray(tile.connectors) ? tile.connectors : []);
-    if (value) {
-      set.add(dir);
-    } else {
-      set.delete(dir);
-    }
-    // Update connectors and force re-render with new reference
+    if (value) { set.add(dir); } else { set.delete(dir); }
     tile.connectors = ["N", "E", "S", "W"].filter((d) => set.has(d));
     renderMapDeckDebug();
     return;
   }
 
+  if (field === "isStartTile" || field === "isWinTile" || field === "firstDrawWhenSolo") {
+    if (!tile) return;
+    if (value) { tile[field] = true; } else { delete tile[field]; }
+    renderMapDeckDebug();
+    return;
+  }
+
+  if (field === "zoneGatewayConnector") {
+    if (!tile) return;
+    if (value) { tile.zoneGatewayConnector = value; } else { delete tile.zoneGatewayConnector; }
+    renderMapDeckDebug();
+    return;
+  }
+
+  // Subtile-level fields
   const editedCells = mapDeckDebugEdits.get(tileId);
   if (!editedCells || (coord && !editedCells[coord])) {
     return;
@@ -124,11 +156,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     editedCells[coord].type = typeof value === "string" ? value.trim().toLowerCase() : "";
   } else if ((field === "walls" || field === "doors") && dir) {
     const set = new Set(editedCells[coord][field] || []);
-    if (value) {
-      set.add(dir);
-    } else {
-      set.delete(dir);
-    }
+    if (value) { set.add(dir); } else { set.delete(dir); }
     editedCells[coord][field] = ["N", "E", "S", "W"].filter((d) => set.has(d));
   }
 
@@ -139,34 +167,56 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
 function extractTileInputValues() {
   const name = (document.getElementById("newTileName")?.value || "New Tile").trim();
   const type = (document.getElementById("newTileType")?.value || "named").trim();
-  const count = Number(document.getElementById("newTileCount")?.value || 1);
   const zombieSpawnMode = (document.getElementById("newTileSpawnMode")?.value || "by_card").trim();
   const zombieCount = Number(document.getElementById("newTileZombieCount")?.value || 0);
   const zombieType = (document.getElementById("newTileZombieType")?.value || ZOMBIE_TYPE.REGULAR);
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
-  const enabled = Boolean(document.getElementById("newTileEnabled")?.checked);
-  const collectionKey = (document.getElementById("newTileCollection")?.value || getBaseCollection());
-  const connectors = ["N", "E", "S", "W"].filter((dir) => {
-    const el = document.getElementById(`newTileConnector${dir}`);
-    return Boolean(el?.checked);
+  const zoneGateway = document.getElementById("newTileZoneGateway")?.value || "";
+  const companionDir = document.getElementById("newTileCompanionDir")?.value || "";
+  const companionNamesRaw = (document.getElementById("newTileCompanionNames")?.value || "").trim();
+  const companionNames = companionNamesRaw
+    ? companionNamesRaw.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  // Per-collection counts
+  const collection = {};
+  Object.values(COLLECTIONS).forEach((collKey) => {
+    const el = document.getElementById(`newTileCollCount_${collKey}`);
+    const n = Math.max(0, parseInt(el?.value || "0", 10) || 0);
+    if (n > 0) collection[collKey] = n;
   });
-  return {
+
+  const connectors = ["N", "E", "S", "W"].filter((dir) => {
+    return Boolean(document.getElementById(`newTileConnector${dir}`)?.checked);
+  });
+
+  const result = {
     name, type,
-    collection: { [collectionKey]: count },
+    collection: Object.keys(collection).length > 0 ? collection : { [getBaseCollection()]: 1 },
     connectors, zombieSpawnMode,
     zombies: zombieCount > 0 ? { [zombieType]: zombieCount } : {},
-    hearts, bullets, enabled,
+    hearts, bullets,
   };
+
+  if (document.getElementById("newTileIsStartTile")?.checked) result.isStartTile = true;
+  if (document.getElementById("newTileIsWinTile")?.checked) result.isWinTile = true;
+  if (document.getElementById("newTileFirstDrawWhenSolo")?.checked) result.firstDrawWhenSolo = true;
+  if (zoneGateway) result.zoneGatewayConnector = zoneGateway;
+  if (companionDir) result.companionDir = companionDir;
+  if (companionNames.length > 0) result.companionTiles = companionNames.map((n) => ({ name: n }));
+
+  return result;
 }
 
-function populateNewTileCollectionSelect() {
-  const sel = document.getElementById("newTileCollection");
-  if (!sel) return;
-  sel.innerHTML = Object.entries(COLLECTIONS).map(([key, val]) => {
-    const meta = COLLECTION_META[val];
-    const label = meta?.requiresBase === null ? `${key} (base)` : `${key} (expansion)`;
-    return `<option value="${val}">${label}</option>`;
+function renderNewTileCollectionInputs() {
+  const container = document.getElementById("newTileCollectionInputs");
+  if (!container) return;
+  container.innerHTML = Object.entries(COLLECTIONS).map(([enumKey, collKey]) => {
+    const meta = COLLECTION_META[collKey];
+    const label = meta?.label || enumKey;
+    const sc = meta?.shortCode ? ` <span class="coll-short-code">${meta.shortCode}</span>` : "";
+    return `<label>${label}${sc} <input id="newTileCollCount_${collKey}" type="number" min="0" value="0" style="width:3.5rem" /></label>`;
   }).join("");
 }
 
@@ -205,8 +255,10 @@ function refreshNewTilePreview() {
       subTilesTemplate: editableTemplate,
       subTiles: typeof buildSubTilesForTile !== 'undefined' ? buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate }) : {}
     };
+    const sc = getCollectionShortCode(tileForRender.collection);
+    const scBadge = sc ? ` <span class="coll-short-code">${sc}</span>` : "";
     previewEl.innerHTML = `
-      <div><strong>${tileForRender.name || "New Tile"}</strong></div>
+      <div><strong>${tileForRender.name || "New Tile"}</strong>${scBadge}</div>
       <div class="small">
         Z${Object.values(tileForRender.zombies || {}).reduce((s,n)=>s+n,0)},
         L${tileForRender.hearts || 0},
@@ -224,8 +276,6 @@ function attachNewTileGenerator() {
   if (!(copyBtn instanceof HTMLButtonElement) || !(outputEl instanceof HTMLElement) || !(statusEl instanceof HTMLElement)) {
     return;
   }
-
-  // Removed generateBtn click handler as code updates on change
 
   const container = document.getElementById("newTileGenerator");
   container?.addEventListener("change", refreshNewTilePreview);
@@ -322,20 +372,36 @@ function attachTileDebugListeners() {
       updateMapDeckDebugEdit(tileId, null, field, target.value, null);
       return;
     }
-    if (field === "collection" && target instanceof HTMLSelectElement) {
-      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
-      return;
-    }
     if (field === "zombieSpawnMode" && target instanceof HTMLSelectElement) {
       updateMapDeckDebugEdit(tileId, null, field, target.value, null);
       return;
     }
-    if (field === "enabled" && target instanceof HTMLInputElement && target.type === "checkbox") {
-      updateMapDeckDebugEdit(tileId, null, field, target.checked, null);
+    if (field === "zombieCount" && target instanceof HTMLInputElement && target.type === "number") {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, dir);
+      return;
+    }
+    if (field === "zombieType" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "hearts" && target instanceof HTMLInputElement && target.type === "number") {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "bullets" && target instanceof HTMLInputElement && target.type === "number") {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
       return;
     }
     if (field === "connectors" && target instanceof HTMLInputElement && target.type === "checkbox") {
       updateMapDeckDebugEdit(tileId, null, field, target.checked, dir);
+      return;
+    }
+    if ((field === "isStartTile" || field === "isWinTile" || field === "firstDrawWhenSolo") && target instanceof HTMLInputElement && target.type === "checkbox") {
+      updateMapDeckDebugEdit(tileId, null, field, target.checked, null);
+      return;
+    }
+    if (field === "zoneGatewayConnector" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
       return;
     }
     if (!coord) {
@@ -358,7 +424,7 @@ refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
 state.mapDeck = buildMapDeck(null);
 state.mapDeck.push(buildTownSquareTile());
-populateNewTileCollectionSelect();
+renderNewTileCollectionInputs();
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();
 attachNewTileGenerator();

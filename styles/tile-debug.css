@@ -136,6 +136,49 @@
   gap: 0.35rem;
 }
 
+.tile-generator-section {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.tile-generator-collections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.tile-generator-collections label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.tile-generator-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+}
+
+.tile-generator-flags label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.tile-generator-companions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.tile-generator-companions label {
+  display: grid;
+  gap: 0.15rem;
+}
+
 .tile-generator-connectors {
   margin-top: 0.5rem;
   display: flex;

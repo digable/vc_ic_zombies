@@ -20,7 +20,6 @@
 //                                        e.g. zombies: { [ZOMBIE_TYPE.REGULAR]: 3 }
 //                                             zombies: { [ZOMBIE_TYPE.ENHANCED]: 6 }
 //                                             zombies: { [ZOMBIE_TYPE.REGULAR]: 2, [ZOMBIE_TYPE.ENHANCED]: 1 }
-//   zombieType     {ZOMBIE_TYPE.*}       Type of zombie spawned for by_exits (default: REGULAR)
 //   hearts         {number}              Heart tokens placed on tile when drawn
 //   bullets        {number}              Bullet tokens placed on tile when drawn
 //   isStartTile    {true}                Placed at (0,0) to start the game; one per standalone collection

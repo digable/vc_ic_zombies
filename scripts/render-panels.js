@@ -5,16 +5,8 @@ function renderDeckInfo(previewDeck) {
   const box = document.getElementById("deckInfoBox");
   if (!box) return;
 
-  function collectionLabel(collection) {
-    if (!collection) return "";
-    const keys = typeof collection === "object" && !Array.isArray(collection)
-      ? Object.keys(collection)
-      : [collection];
-    return keys.map((k) => COLLECTION_META[k]?.label ?? k).join(", ");
-  }
-
   function tileRow(t, posStr, played, copyStr) {
-    const coll = collectionLabel(t.collection);
+    const coll = getCollectionLabel(t.collection);
     const copy = copyStr ? ` <span class="deck-info-copy">${copyStr}</span>` : "";
     return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
       + `<span class="deck-info-name">${t.name} <em class="deck-info-type">(${t.type})</em>${coll ? ` <em class="deck-info-collection">${coll}</em>` : ""}${copy}</span>`
@@ -131,16 +123,8 @@ function renderEventDeckInfo(previewDeck) {
   const box = document.getElementById("eventDeckInfoBox");
   if (!box) return;
 
-  function collectionLabel(collection) {
-    if (!collection) return "";
-    const keys = typeof collection === "object" && !Array.isArray(collection)
-      ? Object.keys(collection)
-      : [collection];
-    return keys.map((k) => COLLECTION_META[k]?.label ?? k).join(", ");
-  }
-
   function cardRow(c, label, played) {
-    const coll = collectionLabel(c.collection);
+    const coll = getCollectionLabel(c.collection);
     return `<div class="deck-info-row${played ? " deck-info-row--played" : ""}">`
       + `<span class="deck-info-name">${c.name}${coll ? ` <em class="deck-info-collection">${coll}</em>` : ""}</span>`
       + `<span class="deck-info-pos">${label}</span>`

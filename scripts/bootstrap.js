@@ -284,7 +284,7 @@ function readCurrentFilters() {
   document.querySelectorAll("[data-deck-coll]").forEach((el) => {
     const col = el.getAttribute("data-deck-coll");
     const st = el.getAttribute("data-deck-state");
-    if (!filters[col]) filters[col] = { enabled: false, disabled: false };
+    if (!filters[col]) filters[col] = { enabled: false };
     if (el.checked) filters[col][st] = true;
   });
   return filters;
@@ -295,7 +295,7 @@ function readCurrentEventFilters() {
   document.querySelectorAll("[data-event-coll]").forEach((el) => {
     const col = el.getAttribute("data-event-coll");
     const st = el.getAttribute("data-event-state");
-    if (!filters[col]) filters[col] = { enabled: false, disabled: false };
+    if (!filters[col]) filters[col] = { enabled: false };
     if (el.checked) filters[col][st] = true;
   });
   return filters;
