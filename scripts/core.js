@@ -522,6 +522,13 @@ function buildSubTilesForTile(tile) {
         if (doorDirs.length > 0) {
           cell.doors = doorDirs;
         }
+
+        // Pass through any non-movement custom properties (e.g. jeepDoor).
+        const knownKeys = new Set(["walkable", "type", "walls", "wall", "doors", "door",
+          "sides", "open", "enterFrom", "enter", "exitTo", "exit"]);
+        Object.entries(custom).forEach(([k, v]) => {
+          if (!knownKeys.has(k)) cell[k] = v;
+        });
       }
     }
   }

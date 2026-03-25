@@ -28,6 +28,8 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   }
 
   if (resumeStepAfterPending && !state.zombies.has(playerSpaceKey)) {
+    checkJeepDoorOffer(player);
+
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
       state.step = STEP.MOVE_ZOMBIES;
       if (!state.pendingZombieMovement) {

@@ -1,3 +1,33 @@
+// Checks whether the player is standing on a Motor Pool jeep-door subtile and,
+// if so, presents the jeep acquisition offer. Safe to call after combat clears.
+function checkJeepDoorOffer(player) {
+  if (player.hasJeep || state.pendingEventChoice || state.pendingCombatDecision) return;
+  const tile = getTileAtSpace(player.x, player.y);
+  if (!tile || tile.name !== "Motor Pool") return;
+  const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
+  const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+  const sub = tile.subTiles?.[key(lx, ly)];
+  if (!sub || !sub.jeepDoor) return;
+  logLine(`${player.name} found a jeep at the Motor Pool!`);
+  state.pendingEventChoice = {
+    playerId: player.id,
+    title: "Motor Pool — Jeep Available",
+    cardName: "Motor Pool",
+    options: [
+      { key: "acquire", label: "Take the Jeep" },
+      { key: "pass", label: "Leave it" }
+    ],
+    resolve(choice) {
+      if (choice === "acquire") {
+        player.hasJeep = true;
+        logLine(`${player.name} acquired a jeep! Movement doubles while on roads.`);
+      } else {
+        logLine(`${player.name} left the jeep behind.`);
+      }
+    }
+  };
+}
+
 function isSpaceBuilding(sx, sy) {
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return false;
@@ -200,34 +230,7 @@ function movePlayer(dir) {
   }
 
   // Offer jeep when player enters the Motor Pool door subtile and doesn't already have one.
-  if (!player.hasJeep && !state.pendingEventChoice && !state.pendingCombatDecision) {
-    const jeepTile = getTileAtSpace(player.x, player.y);
-    if (jeepTile && jeepTile.name === "Motor Pool") {
-      const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-      const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
-      const sub = jeepTile.subTiles?.[key(lx, ly)];
-      if (sub && sub.jeepDoor) {
-        logLine(`${player.name} found a jeep at the Motor Pool!`);
-        state.pendingEventChoice = {
-          playerId: player.id,
-          title: "Motor Pool — Jeep Available",
-          cardName: "Motor Pool",
-          options: [
-            { key: "acquire", label: "Take the Jeep" },
-            { key: "pass", label: "Leave it" }
-          ],
-          resolve(choice) {
-            if (choice === "acquire") {
-              player.hasJeep = true;
-              logLine(`${player.name} acquired a jeep! Movement doubles while on roads.`);
-            } else {
-              logLine(`${player.name} left the jeep behind.`);
-            }
-          }
-        };
-      }
-    }
-  }
+  checkJeepDoorOffer(player);
 
   render();
 }
