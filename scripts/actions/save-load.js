@@ -1,0 +1,235 @@
+// ---------------------------------------------------------------------------
+// Save / Load — localStorage-based, 5 slots
+// ---------------------------------------------------------------------------
+// Tiles are plain data (no functions) so they serialize directly.
+// Event cards have functions; we save card names and look up live objects on load.
+// Save is blocked while any pending state is active (those have closures).
+// ---------------------------------------------------------------------------
+
+const SAVE_SLOTS = 5;
+const SAVE_KEY  = (slot) => `vc_ic_save_${slot}`;
+const META_KEY  = (slot) => `vc_ic_meta_${slot}`;
+
+function getAllEventCardDefs() {
+  const all = [];
+  if (typeof playerEventCards   !== "undefined") all.push(...playerEventCards);
+  if (typeof opponentEventCards !== "undefined") all.push(...opponentEventCards);
+  if (typeof zombieEventCards   !== "undefined") all.push(...zombieEventCards);
+  return all;
+}
+
+function hasPendingState() {
+  return !!(
+    state.pendingCombatDecision  || state.pendingEventChoice     ||
+    state.pendingZombieReplace   || state.pendingZombieDiceChallenge ||
+    state.pendingZombiePlace     || state.pendingZombieMovement   ||
+    state.pendingForcedMove      || state.pendingBuildingSelect   ||
+    state.pendingDynamiteTarget  || state.pendingMinefield        ||
+    state.pendingRocketLauncher  || state.pendingTile             ||
+    state.pendingBreakthrough
+  );
+}
+
+function serializeState() {
+  const serializePlayer = (p) => ({
+    ...p,
+    hand:  p.hand.map((c) => c.name),
+    items: p.items.map((c) => c.name)
+  });
+
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+
+    // Scalar / plain fields
+    currentPlayerIndex:      state.currentPlayerIndex,
+    step:                    state.step,
+    movesRemaining:          state.movesRemaining,
+    currentMoveRoll:         state.currentMoveRoll,
+    turnNumber:              state.turnNumber,
+    gameOver:                state.gameOver,
+    winInfo:                 state.winInfo,
+    zombieMoveFreezeCount:   state.zombieMoveFreezeCount,
+    movementBonus:           state.movementBonus,
+    moveFloorThisTurn:       state.moveFloorThisTurn,
+    doubleMovementThisTurn:  state.doubleMovementThisTurn,
+    regularZombieEnhanced:   state.regularZombieEnhanced,
+    forcedNextOpponentId:    state.forcedNextOpponentId,
+    deckFilters:             state.deckFilters,
+    deckStartCounts:         state.deckStartCounts,
+    deckStartTotal:          state.deckStartTotal,
+    baseMapDeckStartCount:   state.baseMapDeckStartCount,
+    eventDeckStartTotal:     state.eventDeckStartTotal,
+    playerTrail:             state.playerTrail || [],
+    logs:                    state.logs || [],
+
+    // Players — hand/items stored as card names
+    players: state.players.map(serializePlayer),
+
+    // Tile collections — plain data, no functions
+    board:          [...state.board.entries()],
+    mapDeck:        state.mapDeck,
+    standaloneDecks: state.standaloneDecks,
+    discardPile:    state.discardPile,
+
+    // Sets / Maps
+    activeStandaloneDecks:  [...state.activeStandaloneDecks],
+    breakthroughConnections: [...state.breakthroughConnections],
+    zombies:     [...state.zombies.entries()],
+    spaceTokens: [...state.spaceTokens.entries()],
+
+    // Event card collections — name references only (live objects looked up on load)
+    eventDeck:        state.eventDeck.map((c) => c.name),
+    eventDiscardPile: state.eventDiscardPile.map((c) => c.name)
+  };
+}
+
+function deserializeState(data) {
+  const nameToCard = Object.fromEntries(
+    getAllEventCardDefs().map((c) => [c.name, c])
+  );
+  const restoreCards = (names) => names.map((n) => nameToCard[n]).filter(Boolean);
+
+  // Players
+  state.players = data.players.map((p) => ({
+    ...p,
+    hand:  restoreCards(p.hand),
+    items: restoreCards(p.items)
+  }));
+
+  state.currentPlayerIndex = data.currentPlayerIndex;
+
+  // Tile data (plain objects, no reconstruction needed)
+  state.board          = new Map(data.board);
+  state.mapDeck        = data.mapDeck;
+  state.standaloneDecks = data.standaloneDecks;
+  state.discardPile    = data.discardPile;
+
+  // Sets
+  state.activeStandaloneDecks  = new Set(data.activeStandaloneDecks);
+  state.breakthroughConnections = new Set(data.breakthroughConnections);
+
+  // Maps
+  state.zombies     = new Map(data.zombies);
+  state.spaceTokens = new Map(data.spaceTokens);
+
+  // Event cards
+  state.eventDeck        = restoreCards(data.eventDeck);
+  state.eventDiscardPile = restoreCards(data.eventDiscardPile);
+
+  // Scalars
+  state.step                   = data.step;
+  state.movesRemaining         = data.movesRemaining;
+  state.currentMoveRoll        = data.currentMoveRoll;
+  state.turnNumber             = data.turnNumber;
+  state.gameOver               = data.gameOver;
+  state.winInfo                = data.winInfo;
+  state.zombieMoveFreezeCount  = data.zombieMoveFreezeCount;
+  state.movementBonus          = data.movementBonus;
+  state.moveFloorThisTurn      = data.moveFloorThisTurn;
+  state.doubleMovementThisTurn = data.doubleMovementThisTurn;
+  state.regularZombieEnhanced  = data.regularZombieEnhanced;
+  state.forcedNextOpponentId   = data.forcedNextOpponentId ?? null;
+  state.deckFilters            = data.deckFilters;
+  state.deckStartCounts        = data.deckStartCounts;
+  state.deckStartTotal         = data.deckStartTotal;
+  state.baseMapDeckStartCount  = data.baseMapDeckStartCount;
+  state.eventDeckStartTotal    = data.eventDeckStartTotal;
+  state.playerTrail            = data.playerTrail || [];
+  state.logs                   = data.logs || [];
+
+  // Clear all pending / ephemeral state (save only possible when none were active)
+  state.pendingCombatDecision    = null;
+  state.pendingEventChoice       = null;
+  state.pendingZombieReplace     = null;
+  state.pendingZombieDiceChallenge = null;
+  state.pendingZombiePlace       = null;
+  state.pendingZombieMovement    = null;
+  state.pendingForcedMove        = null;
+  state.pendingBuildingSelect    = null;
+  state.pendingDynamiteTarget    = null;
+  state.pendingMinefield         = null;
+  state.pendingRocketLauncher    = null;
+  state.pendingTile              = null;
+  state.pendingRotation          = 0;
+  state.pendingTileOptions       = [];
+  state.pendingCompanionTiles    = [];
+  state.pendingTileDeck          = "base";
+  state.pendingBreakthrough      = null;
+  state.selectedHandIndex        = null;
+  state.lastCombatResult         = null;
+  state.recentKillKey            = null;
+  state.knockoutBanner           = null;
+  state.currentZombieRoll        = null;
+}
+
+function saveGame(slot) {
+  if (state.players.length === 0) return;
+  if (hasPendingState()) {
+    logLine("Cannot save during a pending action — resolve it first.");
+    render();
+    return;
+  }
+  try {
+    const data = serializeState();
+    localStorage.setItem(SAVE_KEY(slot), JSON.stringify(data));
+    localStorage.setItem(META_KEY(slot), JSON.stringify({
+      turnNumber:  state.turnNumber,
+      playerCount: state.players.length,
+      step:        state.step,
+      savedAt:     data.savedAt
+    }));
+    logLine(`Game saved to Slot ${slot + 1}.`);
+  } catch (e) {
+    logLine(`Save to Slot ${slot + 1} failed: ${e.message}`);
+  }
+  render();
+}
+
+function syncSetupUiToState() {
+  const pcInput = document.getElementById("playerCount");
+  if (pcInput) pcInput.value = state.players.length;
+
+  document.querySelectorAll("[data-deck-coll]").forEach((el) => {
+    const col = el.getAttribute("data-deck-coll");
+    const st  = el.getAttribute("data-deck-state");
+    el.checked = !!(state.deckFilters?.[col]?.[st]);
+  });
+
+  document.querySelectorAll("[data-event-coll]").forEach((el) => {
+    const col = el.getAttribute("data-event-coll");
+    const st  = el.getAttribute("data-event-state");
+    el.checked = !!(state.deckFilters?.[col]?.[st]);
+  });
+
+  if (typeof updateDeckPreviewCounts === "function") {
+    updateDeckPreviewCounts();
+    // Loading a game is not a "filter changed" state — don't highlight Start Game.
+    if (refs && refs.newGameBtn) refs.newGameBtn.classList.remove("needs-restart");
+  }
+}
+
+function loadGame(slot) {
+  const raw = localStorage.getItem(SAVE_KEY(slot));
+  if (!raw) return;
+  try {
+    deserializeState(JSON.parse(raw));
+    syncSetupUiToState();
+    logLine(`Game loaded from Slot ${slot + 1}.`);
+  } catch (e) {
+    logLine(`Load from Slot ${slot + 1} failed: ${e.message}`);
+  }
+  render();
+}
+
+function deleteSave(slot) {
+  localStorage.removeItem(SAVE_KEY(slot));
+  localStorage.removeItem(META_KEY(slot));
+  render();
+}
+
+function getSlotMeta(slot) {
+  const raw = localStorage.getItem(META_KEY(slot));
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}

@@ -72,4 +72,5 @@ function render() {
   renderMoveStatus();
   renderGameOver();
   renderKnockoutBanner();
+  renderSaveLoadPanel();
 }

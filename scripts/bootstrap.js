@@ -377,5 +377,6 @@ attachListeners();
 populateCollectionCounts();
 applyCollectionTooltips();
 updateDeckPreviewCounts();
+renderSaveLoadPanel();
 const _baseFilter = { [getBaseCollection()]: { enabled: true, disabled: false } };
 setupGame(2, _baseFilter, _baseFilter);
