@@ -547,7 +547,7 @@ const namedTiles = [
       "1,0": { walkable: true, type: "building", walls: ["N"] },
       "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
       "0,1": { walkable: true, type: "building", walls: ["W"] },
-      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"], jeepDoor: true },
       "2,1": { walkable: true, type: "building", walls: ["E"] },
       "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
       "1,2": { walkable: true, type: "road", walls: ["E", "W"] },

@@ -65,6 +65,17 @@ function rollMovement() {
     player.halfMovementNextTurn = false;
     logLine(`${player.name}'s movement is halved (Your Shoe's Untied) — ${move} space(s).`);
   }
+  if (player.hasJeep) {
+    const jeepTile = getTileAtSpace(player.x, player.y);
+    const onMotorPool = jeepTile && jeepTile.name === "Motor Pool";
+    if (!onMotorPool && isSpaceBuilding(player.x, player.y)) {
+      player.hasJeep = false;
+      logLine(`${player.name} lost their jeep — they're inside a building.`);
+    } else {
+      move *= 2;
+      logLine(`${player.name} uses the jeep — movement doubled to ${move} space(s).`);
+    }
+  }
   if (state.doubleMovementThisTurn) {
     move *= 2;
     state.doubleMovementThisTurn = false;
@@ -186,6 +197,36 @@ function movePlayer(dir) {
 
   if (state.movesRemaining <= 0) {
     moveToZombiePhase();
+  }
+
+  // Offer jeep when player enters the Motor Pool door subtile and doesn't already have one.
+  if (!player.hasJeep && !state.pendingEventChoice && !state.pendingCombatDecision) {
+    const jeepTile = getTileAtSpace(player.x, player.y);
+    if (jeepTile && jeepTile.name === "Motor Pool") {
+      const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
+      const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+      const sub = jeepTile.subTiles?.[key(lx, ly)];
+      if (sub && sub.jeepDoor) {
+        logLine(`${player.name} found a jeep at the Motor Pool!`);
+        state.pendingEventChoice = {
+          playerId: player.id,
+          title: "Motor Pool — Jeep Available",
+          cardName: "Motor Pool",
+          options: [
+            { key: "acquire", label: "Take the Jeep" },
+            { key: "pass", label: "Leave it" }
+          ],
+          resolve(choice) {
+            if (choice === "acquire") {
+              player.hasJeep = true;
+              logLine(`${player.name} acquired a jeep! Movement doubles while on roads.`);
+            } else {
+              logLine(`${player.name} left the jeep behind.`);
+            }
+          }
+        };
+      }
+    }
   }
 
   render();

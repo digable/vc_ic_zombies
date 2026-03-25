@@ -28,7 +28,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       x: 1,
       y: 1,
       knockedOut: false,
-      knockouts: 0
+      knockouts: 0,
+      hasJeep: false
     });
   }
 

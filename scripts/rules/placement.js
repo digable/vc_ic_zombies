@@ -25,7 +25,7 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
   return false;
 }
 
-function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs) {
+function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false) {
   const here = key(x, y);
   if (state.board.has(here)) return false;
 
@@ -37,8 +37,8 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs) {
     touching += 1;
     const meHas = connectors.includes(dir);
     const themHas = hasRoad(neighbor, def.opposite);
-    // Road-to-wall mismatch is never valid
-    if (meHas !== themHas) return false;
+    // Road-to-wall mismatch: never valid unless this is a win tile (helipad can abut any edge)
+    if (!lenientMismatch && meHas !== themHas) return false;
     // Road-to-road: check zone and count
     if (meHas && themHas) {
       if (tileDeck !== undefined && !isZoneCompatible(neighbor, def.opposite, tileDeck, dir, incomingGatewayDirs)) return false;
@@ -61,6 +61,7 @@ function getPlacementOptions(tile, tileDeck = "base") {
     });
   });
 
+  const lenient = !!tile.isWinTile;
   const options = [];
   frontier.forEach((k) => {
     const { x, y } = parseKey(k);
@@ -69,7 +70,7 @@ function getPlacementOptions(tile, tileDeck = "base") {
       const gwDirs = tile.zoneGatewayConnector
         ? new Set([rotateDir(tile.zoneGatewayConnector, r)])
         : null;
-      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs)) {
+      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient)) {
         options.push({ x, y, connectors, rotation: r });
       }
     }
