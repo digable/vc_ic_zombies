@@ -556,7 +556,7 @@ const namedTiles = [
   },
 
   // --- Iowa City (custom expansion) ----------------------------------------
-  {
+  /*{
     name: "The Deadwood",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
@@ -597,7 +597,7 @@ const namedTiles = [
       "1,2": { walkable: true, type: "building", walls: ["S"] },
       "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
     }
-  },
+  },*/
   {
     name: "Ped Mall",
     type: "named",
@@ -619,7 +619,7 @@ const namedTiles = [
       "2,2": { walkable: true, type: "grass", walls: ["E", "S"] }
     }
   },
-  {
+  /*{
     name: "Old Capitol",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
@@ -702,7 +702,7 @@ const namedTiles = [
       "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
       "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
     }
-  },
+  },*/
   {
     name: "City Park",
     type: "named",
@@ -724,7 +724,7 @@ const namedTiles = [
       "2,2": { walkable: true, type: "parking" }
     }
   },
-  {
+  /*{
     name: "Sanctuary",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
@@ -765,7 +765,7 @@ const namedTiles = [
       "1,2": { walkable: false },
       "2,2": { walkable: false }
     }
-  },
+  },*/
   {
     name: "FilmScene",
     type: "named",
@@ -794,7 +794,7 @@ const namedTiles = [
     connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
-    hearts: 5,
+    hearts: 6,
     bullets: 0,
     subTilesTemplate: {
       "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
@@ -808,7 +808,7 @@ const namedTiles = [
       "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
     }
   },
-  {
+  /*{
     name: "IMU",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
@@ -849,7 +849,7 @@ const namedTiles = [
       "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
       "2,2": { walkable: false }
     }
-  }
+  }*/
 ];
 
 // --- Special Tiles ----------------------------------------------------------
