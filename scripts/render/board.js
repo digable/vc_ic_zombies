@@ -127,52 +127,11 @@ function renderBoard() {
       if (getRoadLineDirs(tile, 1, 0, getAdjacentTile).includes("N")) cell.classList.add("connects-n");
       if (getRoadLineDirs(tile, 1, 2, getAdjacentTile).includes("S")) cell.classList.add("connects-s");
 
-      const occupantMap = new Map();
-      const ensureCell = (lx, ly) => {
-        const k = key(lx, ly);
-        if (!occupantMap.has(k)) {
-          occupantMap.set(k, { players: [], zombieType: null, hearts: 0, bullets: 0 });
-        }
-        return occupantMap.get(k);
-      };
-
-      state.players.forEach((p) => {
-        const ptx = spaceToTileCoord(p.x);
-        const pty = spaceToTileCoord(p.y);
-        if (ptx === x && pty === y) {
-          const lx = getLocalCoord(p.x, ptx);
-          const ly = getLocalCoord(p.y, pty);
-          ensureCell(lx, ly).players.push(`P${p.id}`);
-        }
-      });
-
-      state.zombies.forEach((zdata, zk) => {
-        const z = parseKey(zk);
-        const ztx = spaceToTileCoord(z.x);
-        const zty = spaceToTileCoord(z.y);
-        if (ztx === x && zty === y) {
-          const lx = getLocalCoord(z.x, ztx);
-          const ly = getLocalCoord(z.y, zty);
-          ensureCell(lx, ly).zombieType = zdata.type;
-        }
-      });
-
-      state.spaceTokens.forEach((tokens, tk) => {
-        const t = parseKey(tk);
-        const ttx = spaceToTileCoord(t.x);
-        const tty = spaceToTileCoord(t.y);
-        if (ttx === x && tty === y) {
-          const lx = getLocalCoord(t.x, ttx);
-          const ly = getLocalCoord(t.y, tty);
-          const cellData = ensureCell(lx, ly);
-          cellData.hearts += tokens.hearts || 0;
-          cellData.bullets += tokens.bullets || 0;
-        }
-      });
+      const occupantMap = buildOccupantMapForTile(x, y);
 
       const micro = [];
-      for (let ly = 0; ly < 3; ly += 1) {
-        for (let lx = 0; lx < 3; lx += 1) {
+      for (let ly = 0; ly < TILE_DIM; ly += 1) {
+        for (let lx = 0; lx < TILE_DIM; lx += 1) {
           const isWalkable = isLocalWalkable(tile, lx, ly);
           const data = occupantMap.get(key(lx, ly)) || { players: [], zombieType: null, hearts: 0, bullets: 0 };
           const parts = [];
@@ -231,7 +190,7 @@ function renderBoard() {
             zombieClass = " zombie-selectable";
           } else if (state.pendingDynamiteTarget && data.zombieType) {
             const dp = state.players.find((pl) => pl.id === state.pendingDynamiteTarget.playerId);
-            if (dp && Math.abs(sx - dp.x) <= 1 && Math.abs(sy - dp.y) <= 1 && !(sx === dp.x && sy === dp.y)) {
+            if (dp && manhattanDist(sx, sy, dp.x, dp.y) <= 1 && !(sx === dp.x && sy === dp.y)) {
               zombieClass = " zombie-selectable";
             }
           } else if (state.pendingZombiePlace && isWalkable && !data.zombieType) {
@@ -277,6 +236,46 @@ function renderBoard() {
       }
     }, 700);
   }
+}
+
+function buildOccupantMapForTile(tileX, tileY) {
+  const occupantMap = new Map();
+  const ensureCell = (lx, ly) => {
+    const k = key(lx, ly);
+    if (!occupantMap.has(k)) {
+      occupantMap.set(k, { players: [], zombieType: null, hearts: 0, bullets: 0 });
+    }
+    return occupantMap.get(k);
+  };
+
+  state.players.forEach((p) => {
+    const ptx = spaceToTileCoord(p.x);
+    const pty = spaceToTileCoord(p.y);
+    if (ptx === tileX && pty === tileY) {
+      const { lx, ly } = getSpaceLocalCoords(p.x, p.y);
+      ensureCell(lx, ly).players.push(`P${p.id}`);
+    }
+  });
+
+  state.zombies.forEach((zdata, zk) => {
+    const { x: zx, y: zy } = parseKey(zk);
+    if (spaceToTileCoord(zx) === tileX && spaceToTileCoord(zy) === tileY) {
+      const { lx, ly } = getSpaceLocalCoords(zx, zy);
+      ensureCell(lx, ly).zombieType = zdata.type;
+    }
+  });
+
+  state.spaceTokens.forEach((tokens, tk) => {
+    const { x: tx, y: ty } = parseKey(tk);
+    if (spaceToTileCoord(tx) === tileX && spaceToTileCoord(ty) === tileY) {
+      const { lx, ly } = getSpaceLocalCoords(tx, ty);
+      const cellData = ensureCell(lx, ly);
+      cellData.hearts += tokens.hearts || 0;
+      cellData.bullets += tokens.bullets || 0;
+    }
+  });
+
+  return occupantMap;
 }
 
 function renderPlayerTrailSvg() {

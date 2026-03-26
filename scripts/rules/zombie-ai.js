@@ -5,7 +5,7 @@
 function nearestEntityDistance(x, y, positions) {
   let best = Infinity;
   positions.forEach((p) => {
-    const dist = Math.abs(p.x - x) + Math.abs(p.y - y);
+    const dist = manhattanDist(p.x, p.y, x, y);
     if (dist < best) best = dist;
   });
   return best;
@@ -19,7 +19,7 @@ function closestPlayersTo(x, y) {
   const chosen = [];
   let best = Infinity;
   state.players.forEach((p) => {
-    const dist = Math.abs(p.x - x) + Math.abs(p.y - y);
+    const dist = manhattanDist(p.x, p.y, x, y);
     if (dist < best) {
       best = dist;
       chosen.length = 0;
@@ -52,7 +52,7 @@ function moveZombieOneStep(zKey, options = {}) {
     const toKey = key(nx, ny);
     if (!canStep(x, y, nx, ny)) return;
     if (state.zombies.has(toKey)) return;
-    moveOptions.push({ toKey, dist: Math.abs(target.x - nx) + Math.abs(target.y - ny) });
+    moveOptions.push({ toKey, dist: manhattanDist(target.x, target.y, nx, ny) });
   });
 
   if (moveOptions.length === 0) return zKey;

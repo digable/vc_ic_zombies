@@ -53,6 +53,18 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Play one card per turn cycle (resets at the start of your next turn)
 - Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves
 - Event card collections are configured independently from map tile collections at setup — you can mix any combination
+- **Opponent disruption cards** include multi-step interactions: forced movement (Brain Cramp), tile placement hijacking (I Think It's Over Here), item theft (You Don't Need That!), card redirect (You Lookin' at Me?!?), hand wipe (Weekend Pass: DENIED!), and forced tile restriction (What is That Smell?!?)
+
+### 💾 Save / Load
+- 5 save slots stored in `localStorage` — no account or server required
+- Accessible via the collapsible **Save / Load** panel in Game Controls
+- Saves the full game state: board layout, all player stats, decks, zombies, tokens, event hand, and turn number
+- On load, the setup UI (collection checkboxes, player count, deck preview) syncs to match the loaded game's configuration
+- Saving is blocked while any pending action (combat choice, zombie placement, etc.) is in progress
+
+### 🃏 Deck Management
+- **"Show cards"** dropdown in Map Deck Info and Event Deck Info panels lists every card in the remaining deck
+- Cards in both panels support **drag-and-drop reordering** — grab any row and drop it to a new position to manually arrange the draw order
 
 ### 🏆 Win Conditions
 - **Escape** — reach the center square of the Helipad tile

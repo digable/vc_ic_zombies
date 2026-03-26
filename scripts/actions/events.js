@@ -4,9 +4,7 @@ function drawOneEventCardForPlayer(player, sourceName) {
       logLine(`${sourceName}: no cards left to draw.`);
       return;
     }
-    state.eventDeck = shuffle([...state.eventDiscardPile]);
-    state.eventDiscardPile = [];
-    logLine("Event deck exhausted — discard pile shuffled back in.");
+    reshuffleEventDeckIfEmpty();
   }
   const card = state.eventDeck.shift();
   player.hand.push(card);
@@ -22,9 +20,7 @@ function drawEventsToThree() {
   while (player.hand.length < 3) {
     if (state.eventDeck.length === 0) {
       if (state.eventDiscardPile.length === 0) break;
-      state.eventDeck = shuffle([...state.eventDiscardPile]);
-      state.eventDiscardPile = [];
-      logLine("Event deck exhausted — discard pile shuffled back in.");
+      reshuffleEventDeckIfEmpty();
     }
     player.hand.push(state.eventDeck.shift());
   }
@@ -227,7 +223,7 @@ function handleZombieReplaceClick(sx, sy) {
   if (state.zombies.has(spaceKey)) return;
 
   if (pzr.adjacentToKey) {
-    const [ax, ay] = pzr.adjacentToKey.split(",").map(Number);
+    const { x: ax, y: ay } = parseKey(pzr.adjacentToKey);
     if (Math.abs(sx - ax) + Math.abs(sy - ay) !== 1) return;
   }
 
@@ -302,8 +298,8 @@ function handleRocketLauncherClick(sx, sy) {
   }
 
   let killed = 0;
-  for (let lx = 0; lx < 3; lx++) {
-    for (let ly = 0; ly < 3; ly++) {
+  for (let lx = 0; lx < TILE_DIM; lx++) {
+    for (let ly = 0; ly < TILE_DIM; ly++) {
       const spaceKey = key(tileX * TILE_DIM + lx, tileY * TILE_DIM + ly);
       if (state.zombies.has(spaceKey)) {
         state.zombies.delete(spaceKey);
@@ -316,7 +312,7 @@ function handleRocketLauncherClick(sx, sy) {
 
   // Remove breakthrough connections referencing this tile's spaces
   const staleConns = [...state.breakthroughConnections].filter((conn) => {
-    const coordPart = conn.split("\u2192")[0];
+    const coordPart = conn.split(BREAKTHROUGH_SEP)[0];
     const { x, y } = parseKey(coordPart);
     return spaceToTileCoord(x) === tileX && spaceToTileCoord(y) === tileY;
   });

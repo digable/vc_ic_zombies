@@ -4,8 +4,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
     state.players.push({
       id: i + 1,
       name: `Shotgun Guy ${i + 1}`,
-      hearts: 3,
-      bullets: 3,
+      hearts: INITIAL_HEARTS,
+      bullets: INITIAL_BULLETS,
       kills: 0,
       attack: 0,
       hand: [],
@@ -36,6 +36,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
 
   state.currentPlayerIndex = 0;
   state.deckFilters = deckFilters || {};
+  state.eventDeckFilters = eventFilters ?? deckFilters ?? {};
   state.board = new Map();
   state.mapDeck = buildMapDeck(deckFilters);
   // Build standalone decks for enabled standalone collections

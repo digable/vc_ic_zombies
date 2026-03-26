@@ -56,6 +56,7 @@ function serializeState() {
     regularZombieEnhanced:   state.regularZombieEnhanced,
     forcedNextOpponentId:    state.forcedNextOpponentId,
     deckFilters:             state.deckFilters,
+    eventDeckFilters:        state.eventDeckFilters ?? state.deckFilters,
     deckStartCounts:         state.deckStartCounts,
     deckStartTotal:          state.deckStartTotal,
     baseMapDeckStartCount:   state.baseMapDeckStartCount,
@@ -131,6 +132,7 @@ function deserializeState(data) {
   state.regularZombieEnhanced  = data.regularZombieEnhanced;
   state.forcedNextOpponentId   = data.forcedNextOpponentId ?? null;
   state.deckFilters            = data.deckFilters;
+  state.eventDeckFilters       = data.eventDeckFilters ?? data.deckFilters ?? {};
   state.deckStartCounts        = data.deckStartCounts;
   state.deckStartTotal         = data.deckStartTotal;
   state.baseMapDeckStartCount  = data.baseMapDeckStartCount;
@@ -199,7 +201,7 @@ function syncSetupUiToState() {
   document.querySelectorAll("[data-event-coll]").forEach((el) => {
     const col = el.getAttribute("data-event-coll");
     const st  = el.getAttribute("data-event-state");
-    el.checked = !!(state.deckFilters?.[col]?.[st]);
+    el.checked = !!(state.eventDeckFilters?.[col]?.[st]);
   });
 
   if (typeof updateDeckPreviewCounts === "function") {

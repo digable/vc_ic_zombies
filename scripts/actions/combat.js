@@ -11,8 +11,8 @@ function handleKnockout(player, options = {}) {
     lostKills = Math.floor(player.kills / 2);
     player.kills -= lostKills;
   }
-  player.hearts = 3;
-  player.bullets = 3;
+  player.hearts = INITIAL_HEARTS;
+  player.bullets = INITIAL_BULLETS;
   player.x = 1;
   player.y = 1;
   player.knockedOut = true;

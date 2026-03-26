@@ -224,8 +224,8 @@ function handleBreakthroughAttempt(dir) {
   logLine(`${player.name} attempts Breakthrough ${directionToArrow(dir)} — rolled ${roll}.`);
 
   if (roll >= 5) {
-    state.breakthroughConnections.add(`${key(fromX, fromY)}\u2192${dir}`);
-    state.breakthroughConnections.add(`${key(toX, toY)}\u2192${DIRS[dir].opposite}`);
+    state.breakthroughConnections.add(`${key(fromX, fromY)}${BREAKTHROUGH_SEP}${dir}`);
+    state.breakthroughConnections.add(`${key(toX, toY)}${BREAKTHROUGH_SEP}${DIRS[dir].opposite}`);
     logLine(`${player.name} broke through! Permanent path created between ${getTileDisplayName(fromTile)} and ${getTileDisplayName(toTile)}.`);
     player.x = toX;
     player.y = toY;

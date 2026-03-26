@@ -4,10 +4,10 @@ function endTurn() {
   }
 
   const outgoing = currentPlayer();
-  while (outgoing.hand.length > 3) {
+  while (outgoing.hand.length > MAX_HAND_SIZE) {
     const card = outgoing.hand.pop();
     state.discardPile.push(card);
-    logLine(`${outgoing.name} discarded ${card.name} to meet hand limit 3.`);
+    logLine(`${outgoing.name} discarded ${card.name} to meet hand limit ${MAX_HAND_SIZE}.`);
   }
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;

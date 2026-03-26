@@ -203,6 +203,16 @@ function getLocalCoord(v, tileCoord) {
   return v - tileCoord * TILE_DIM;
 }
 
+function getSpaceLocalCoords(sx, sy) {
+  const tx = spaceToTileCoord(sx);
+  const ty = spaceToTileCoord(sy);
+  return { lx: getLocalCoord(sx, tx), ly: getLocalCoord(sy, ty) };
+}
+
+function manhattanDist(x1, y1, x2, y2) {
+  return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+}
+
 function getTileAtSpace(x, y) {
   const tx = spaceToTileCoord(x);
   const ty = spaceToTileCoord(y);
@@ -253,7 +263,7 @@ function rotateLocalCoord(lx, ly, rotation) {
   let x = lx;
   let y = ly;
   for (let i = 0; i < rotation; i += 1) {
-    const nextX = 2 - y;
+    const nextX = TILE_DIM - 1 - y;
     const nextY = x;
     x = nextX;
     y = nextY;
@@ -317,9 +327,9 @@ function getRotatedSubTiles(subTiles, rotation = 0) {
       !Number.isInteger(lx) ||
       !Number.isInteger(ly) ||
       lx < 0 ||
-      lx > 2 ||
+      lx > TILE_DIM - 1 ||
       ly < 0 ||
-      ly > 2
+      ly > TILE_DIM - 1
     ) {
       return;
     }
@@ -361,39 +371,30 @@ function getTileSubTileMap(tile) {
   return tile.subTiles || tile.subTilesTemplate || null;
 }
 
-function buildSubTilesForTile(tile) {
+// Pass 1: build the walkability/type/wall skeleton for every subtile.
+function buildInitialSubTileGrid(tile, customSubTiles) {
   const subTiles = {};
-  const customSubTiles = getTileSubTileMap(tile);
 
   const getCustomSubTileType = (cell) => {
-    if (!cell) {
-      return null;
-    }
+    if (!cell) return null;
     const raw = cell.type ?? null;
-    if (typeof raw !== "string") {
-      return null;
-    }
+    if (typeof raw !== "string") return null;
     const normalized = raw.trim().toLowerCase();
     return normalized.length > 0 ? normalized : null;
   };
 
   const baseWalkable = (lx, ly) => {
-    if (lx === 1 && ly === 1) {
-      return true;
-    }
+    if (lx === 1 && ly === 1) return true;
     return (tile.connectors || []).some((dir) => {
       const d = DOOR_LOCAL[dir];
       return d.x === lx && d.y === ly;
     });
   };
 
-  for (let ly = 0; ly < 3; ly += 1) {
-    for (let lx = 0; lx < 3; lx += 1) {
+  for (let ly = 0; ly < TILE_DIM; ly += 1) {
+    for (let lx = 0; lx < TILE_DIM; lx += 1) {
       const custom = customSubTiles?.[key(lx, ly)];
-      const walkable =
-        typeof custom?.walkable === "boolean"
-          ? custom.walkable
-          : baseWalkable(lx, ly);
+      const walkable = typeof custom?.walkable === "boolean" ? custom.walkable : baseWalkable(lx, ly);
       const subTileType = getCustomSubTileType(custom);
       subTiles[key(lx, ly)] = {
         walkable,
@@ -404,109 +405,67 @@ function buildSubTilesForTile(tile) {
       };
     }
   }
+  return subTiles;
+}
 
-  for (let ly = 0; ly < 3; ly += 1) {
-    for (let lx = 0; lx < 3; lx += 1) {
+// Pass 2: fill in connectivity (enterFrom/exitTo) and apply any custom overrides.
+function applySubTileConnectivity(subTiles, tile, customSubTiles) {
+  for (let ly = 0; ly < TILE_DIM; ly += 1) {
+    for (let lx = 0; lx < TILE_DIM; lx += 1) {
       const cell = subTiles[key(lx, ly)];
-      if (!cell.walkable) {
-        continue;
-      }
+      if (!cell.walkable) continue;
 
       Object.entries(DIRS).forEach(([dir, d]) => {
         const srcX = lx + d.x;
         const srcY = ly + d.y;
-        if (srcX < 0 || srcX > 2 || srcY < 0 || srcY > 2) {
-          return;
-        }
+        if (srcX < 0 || srcX > TILE_DIM - 1 || srcY < 0 || srcY > TILE_DIM - 1) return;
         const neighborWalkable = Boolean(subTiles[key(srcX, srcY)]?.walkable);
         cell.enterFrom[dir] = neighborWalkable;
         cell.exitTo[dir] = neighborWalkable;
       });
 
       // Edge exit cells can be entered from outside the tile if a connector exists.
-      if (lx === 1 && ly === 0 && (tile.connectors || []).includes("N")) {
-        cell.enterFrom.N = true;
-        cell.exitTo.N = true;
-      }
-      if (lx === 2 && ly === 1 && (tile.connectors || []).includes("E")) {
-        cell.enterFrom.E = true;
-        cell.exitTo.E = true;
-      }
-      if (lx === 1 && ly === 2 && (tile.connectors || []).includes("S")) {
-        cell.enterFrom.S = true;
-        cell.exitTo.S = true;
-      }
-      if (lx === 0 && ly === 1 && (tile.connectors || []).includes("W")) {
-        cell.enterFrom.W = true;
-        cell.exitTo.W = true;
-      }
+      if (lx === 1 && ly === 0 && (tile.connectors || []).includes("N")) { cell.enterFrom.N = true; cell.exitTo.N = true; }
+      if (lx === 2 && ly === 1 && (tile.connectors || []).includes("E")) { cell.enterFrom.E = true; cell.exitTo.E = true; }
+      if (lx === 1 && ly === 2 && (tile.connectors || []).includes("S")) { cell.enterFrom.S = true; cell.exitTo.S = true; }
+      if (lx === 0 && ly === 1 && (tile.connectors || []).includes("W")) { cell.enterFrom.W = true; cell.exitTo.W = true; }
 
       const custom = customSubTiles?.[key(lx, ly)];
       if (custom) {
-        const hasSides = custom.sides !== undefined || custom.open !== undefined;
-        const sideMap = hasSides ? toDirectionMap(custom.sides ?? custom.open) : null;
-        const hasEnterMap = custom.enterFrom !== undefined || custom.enter !== undefined;
-        const hasExitMap = custom.exitTo !== undefined || custom.exit !== undefined;
-        const enterMap = hasEnterMap
-          ? toDirectionMap(custom.enterFrom ?? custom.enter)
-          : sideMap;
-        const exitMap = hasExitMap
-          ? toDirectionMap(custom.exitTo ?? custom.exit)
-          : sideMap;
-        const wallsMap = toDirectionMap(custom.walls || custom.wall);
-        const doorsMap = toDirectionMap(custom.doors || custom.door);
-        const wallDirs = Object.keys(wallsMap).filter((dir) => wallsMap[dir]);
-        const doorDirs = Object.keys(doorsMap).filter((dir) => doorsMap[dir]);
+        const hasSides  = custom.sides !== undefined || custom.open !== undefined;
+        const sideMap   = hasSides ? toDirectionMap(custom.sides ?? custom.open) : null;
+        const enterMap  = (custom.enterFrom !== undefined || custom.enter !== undefined)
+          ? toDirectionMap(custom.enterFrom ?? custom.enter) : sideMap;
+        const exitMap   = (custom.exitTo !== undefined || custom.exit !== undefined)
+          ? toDirectionMap(custom.exitTo ?? custom.exit) : sideMap;
+        const wallsMap  = toDirectionMap(custom.walls || custom.wall);
+        const doorsMap  = toDirectionMap(custom.doors || custom.door);
+        const wallDirs  = Object.keys(wallsMap).filter((dir) => wallsMap[dir]);
+        const doorDirs  = Object.keys(doorsMap).filter((dir) => doorsMap[dir]);
 
-        if (enterMap) {
-          Object.entries(enterMap).forEach(([dir, allowed]) => {
-            if (dir in cell.enterFrom) {
-              cell.enterFrom[dir] = Boolean(allowed);
-            }
-          });
-        }
+        if (enterMap) Object.entries(enterMap).forEach(([dir, allowed]) => { if (dir in cell.enterFrom) cell.enterFrom[dir] = Boolean(allowed); });
+        if (exitMap)  Object.entries(exitMap).forEach(([dir, allowed])  => { if (dir in cell.exitTo)   cell.exitTo[dir]   = Boolean(allowed); });
 
-        if (exitMap) {
-          Object.entries(exitMap).forEach(([dir, allowed]) => {
-            if (dir in cell.exitTo) {
-              cell.exitTo[dir] = Boolean(allowed);
-            }
-          });
-        }
+        // Walls close movement; doors open it.
+        Object.entries(wallsMap).forEach(([dir, blocked]) => { if (blocked && dir in cell.enterFrom) { cell.enterFrom[dir] = false; cell.exitTo[dir] = false; } });
+        Object.entries(doorsMap).forEach(([dir, open])    => { if (open   && dir in cell.enterFrom) { cell.enterFrom[dir] = true;  cell.exitTo[dir] = true;  } });
 
-        // Walls always close movement on that edge for both entering and exiting.
-        Object.entries(wallsMap).forEach(([dir, blocked]) => {
-          if (blocked && dir in cell.enterFrom) {
-            cell.enterFrom[dir] = false;
-            cell.exitTo[dir] = false;
-          }
-        });
+        if (wallDirs.length > 0) cell.walls = wallDirs;
+        if (doorDirs.length > 0) cell.doors = doorDirs;
 
-        // Doors always open movement on that edge for both entering and exiting.
-        Object.entries(doorsMap).forEach(([dir, open]) => {
-          if (open && dir in cell.enterFrom) {
-            cell.enterFrom[dir] = true;
-            cell.exitTo[dir] = true;
-          }
-        });
-
-        if (wallDirs.length > 0) {
-          cell.walls = wallDirs;
-        }
-        if (doorDirs.length > 0) {
-          cell.doors = doorDirs;
-        }
-
-        // Pass through any non-movement custom properties (e.g. jeepDoor).
+        // Pass through non-movement custom properties (e.g. jeepDoor).
         const knownKeys = new Set(["walkable", "type", "walls", "wall", "doors", "door",
           "sides", "open", "enterFrom", "enter", "exitTo", "exit"]);
-        Object.entries(custom).forEach(([k, v]) => {
-          if (!knownKeys.has(k)) cell[k] = v;
-        });
+        Object.entries(custom).forEach(([k, v]) => { if (!knownKeys.has(k)) cell[k] = v; });
       }
     }
   }
+}
 
+function buildSubTilesForTile(tile) {
+  const customSubTiles = getTileSubTileMap(tile);
+  const subTiles = buildInitialSubTileGrid(tile, customSubTiles);
+  applySubTileConnectivity(subTiles, tile, customSubTiles);
   return subTiles;
 }
 
@@ -533,7 +492,7 @@ function isLocalWalkable(tile, lx, ly) {
   if (!tile) {
     return false;
   }
-  if (lx < 0 || lx > 2 || ly < 0 || ly > 2) {
+  if (lx < 0 || lx > TILE_DIM - 1 || ly < 0 || ly > TILE_DIM - 1) {
     return false;
   }
 
@@ -664,8 +623,8 @@ function placeBuildingTokens(tx, ty, hearts, bullets) {
 
   const building = [];
   const others = [];
-  for (let ly = 0; ly < 3; ly += 1) {
-    for (let lx = 0; lx < 3; lx += 1) {
+  for (let ly = 0; ly < TILE_DIM; ly += 1) {
+    for (let lx = 0; lx < TILE_DIM; lx += 1) {
       if (!isLocalWalkable(tile, lx, ly)) continue;
       if (isBuildingSubtileOpen(tile, lx, ly)) {
         building.push([lx, ly]);
@@ -745,6 +704,14 @@ function logLine(text, type) {
   if (state.logs.length > MAX_LOG_ENTRIES) {
     state.logs.pop();
   }
+}
+
+function reshuffleEventDeckIfEmpty() {
+  if (state.eventDeck.length > 0) return;
+  if (state.eventDiscardPile.length === 0) return;
+  state.eventDeck = shuffle([...state.eventDiscardPile]);
+  state.eventDiscardPile = [];
+  logLine("Event deck exhausted — discard pile shuffled back in.");
 }
 
 function addTile(x, y, tile) {
