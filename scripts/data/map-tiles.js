@@ -556,48 +556,48 @@ const namedTiles = [
   },
 
   // --- Iowa City (custom expansion) ----------------------------------------
-  /*{
+  {
     name: "The Deadwood",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["S", "W"],
+    connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 4 },
     hearts: 2,
-    bullets: 1,
+    bullets: 2,
     subTilesTemplate: {
       "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
-      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "1,0": { walkable: true, type: "building", doors: ["N"] },
       "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
-      "0,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["W"] },
-      "1,1": { walkable: true, type: "road" },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
       "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
-      "0,2": { walkable: false },
-      "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
-      "2,2": { walkable: false }
-    }
+      "0,2": { walkable: true, type: "road" },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "road" }
+  }
   },
   {
     name: "Hamburg Inn",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "W"],
+    connectors: ["S", "W"],
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 3,
     bullets: 0,
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
-      "1,0": { walkable: true, type: "road", walls: ["E", "W"], doors: ["N"] },
+      "0,0": { walkable: true, type: "building", walls: ["N"], doors: ["W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
       "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
-      "0,1": { walkable: true, type: "road", walls: ["S"], doors: ["W"] },
-      "1,1": { walkable: true, type: "road" },
-      "2,1": { walkable: true, type: "building", walls: ["E"] },
-      "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
-      "1,2": { walkable: true, type: "building", walls: ["S"] },
-      "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
-    }
-  },*/
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", walls: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E"], doors: ["S"] },
+      "0,2": { walkable: true, type: "road" },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "road" }
+  }
+  },
   {
     name: "Ped Mall",
     type: "named",
@@ -607,6 +607,7 @@ const namedTiles = [
     zombies: { [ZOMBIE_TYPE.REGULAR]: 5 },
     hearts: 2,
     bullets: 2,
+    firstDrawWhenSolo: true,
     subTilesTemplate: {
       "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "road", doors: ["N"] },
@@ -724,28 +725,28 @@ const namedTiles = [
       "2,2": { walkable: true, type: "parking" }
     }
   },
-  /*{
+  {
     name: "Sanctuary",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["S", "E"],
+    connectors: ["S"],
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 1,
     subTilesTemplate: {
-      "0,0": { walkable: false },
-      "1,0": { walkable: false },
-      "2,0": { walkable: false },
-      "0,1": { walkable: false },
-      "1,1": { walkable: true, type: "building", walls: ["N", "W"] },
-      "2,1": { walkable: true, type: "road", walls: ["N", "S"], doors: ["E"] },
-      "0,2": { walkable: false },
-      "1,2": { walkable: true, type: "road", walls: ["E", "W"], doors: ["S"] },
-      "2,2": { walkable: false }
-    }
+      "0,0": { walkable: true, type: "building", walls: ["N", "E", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"], doors: ["E"] },
+      "1,1": { walkable: true, type: "building", walls: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E"], doors: ["S"] },
+      "0,2": { walkable: true, type: "road" },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "road" }
+  }
   },
-  {
+  /*{
     name: "Prairie Lights",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
