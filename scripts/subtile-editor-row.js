@@ -3,8 +3,9 @@
 //   coord, lx, ly, cell, prefix, tileId, typeOptions, renderCompassCheckboxes
 // })
 function renderSubtileEditorRow({
-  coord, lx, ly, cell, prefix, tileId = '', typeOptions = ["road", "building", "grass", "parking"], renderCompassCheckboxes
+  coord, lx, ly, cell, prefix, tileId = '', typeOptions = null, renderCompassCheckboxes
 }) {
+  const opts = typeOptions ?? Object.values(SUBTILE_TYPE);
   const tileAttr = tileId ? ` ${prefix}tile-id="${tileId}"` : '';
   return `
     <div class="deck-subtile-row">
@@ -19,7 +20,7 @@ function renderSubtileEditorRow({
         <strong>Type</strong>
         <select${tileAttr} ${prefix}coord="${coord}" ${prefix}field="type">
           <option value="" ${!cell.type ? "selected" : ""}>-</option>
-          ${typeOptions.map(opt => `<option value="${opt}" ${cell.type === opt ? "selected" : ""}>${opt}</option>`).join("")}
+          ${opts.map(opt => `<option value="${opt}" ${cell.type === opt ? "selected" : ""}>${opt}</option>`).join("")}
         </select>
       </label>
       <div class="deck-subtile-edit-dirs-row side-by-side">

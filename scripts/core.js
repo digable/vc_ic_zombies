@@ -15,6 +15,7 @@ const DOOR_LOCAL = {
 const COLLECTIONS = {
   DIRECTORS_CUT: "directors_cut",
   ZOMBIE_CORPS_E_: "zombie_corps_e_",
+  MALL_WALKERS: "mall_walkers",
   IOWA_CITY: "iowa_city"
 };
 
@@ -31,16 +32,6 @@ const COLLECTION_META = {
     description: "The core tile set. Standalone — no other collection required.",
     creator: "Based on the Twilight Creations Zombies!!! by Todd A. Breitenstein"
   },
-  [COLLECTIONS.IOWA_CITY]: {
-    label: "Iowa City",
-    shortCode: "IC",
-    requiresBase: COLLECTIONS.DIRECTORS_CUT,
-    year: 2026,
-    type: "Expansion",
-    version: "0.1.0",
-    description: "Iowa City themed locations. Requires Director's Cut to play.",
-    creator: "digable"
-  },
   [COLLECTIONS.ZOMBIE_CORPS_E_]: {
     label: "Zombie Corps(e)",
     shortCode: "Z2",
@@ -51,6 +42,27 @@ const COLLECTION_META = {
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein",
     standaloneDeck: true
+  },
+  [COLLECTIONS.MALL_WALKERS]: {
+    label: "Mall Walkers",
+    shortCode: "Z3",
+    requiresBase: null,
+    year: 2007,
+    type: "Standalone / Expansion",
+    version: "1.0.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein",
+    standaloneDeck: true
+  },
+  [COLLECTIONS.IOWA_CITY]: {
+    label: "Iowa City",
+    shortCode: "IC",
+    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    year: 2026,
+    type: "Expansion",
+    version: "0.1.0",
+    description: "Iowa City themed locations. Requires Director's Cut to play.",
+    creator: "digable"
   }
 };
 

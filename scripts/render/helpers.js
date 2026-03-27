@@ -172,24 +172,23 @@ function isRoadStyledSubtile(tileLike, lx, ly, isWalkable) {
 }
 
 function getTileClassName(tile) {
-  if (tile?.type === "town") return "tile-town";
-  if (tile?.type === "building") return "tile-building";
-  if (tile?.type === "grass") return "tile-grass";
-  if (tile?.type === "named") return "tile-named";
-  if (tile?.type === "helipad") return "tile-helipad";
-  return "tile-road";
+  if (!tile?.type) return "tile-road";
+  return "tile-" + tile.type.replaceAll(" ", "-");
 }
 
 function getTileBackgroundStyle(type) {
   const map = {
-    named: "#8f6b40",
-    building: "#c59f6a",
-    road: "#9faab4",
-    helipad: "#2f9e44",
-    town: "linear-gradient(135deg, #f7c88f 0%, #ebb36e 100%)",
-    grass: "linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%)",
+    named:          "#8f6b40",
+    building:       "#c59f6a",
+    road:           "#d6d6d6",
+    helipad:        "#2f9e44",
+    town:           "linear-gradient(135deg, #f7c88f 0%, #ebb36e 100%)",
+    grass:          "linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%)",
+    "mall hallway": "#b0b8c1",
+    "mall store":   "#d4b896",
+    escalator:      "#7eafc9",
   };
-  return map[type] || "#9faab4";
+  return map[type] || "#d6d6d6";
 }
 
 function getCollectionLabel(collection) {
@@ -252,8 +251,9 @@ function buildMicroGridHtml(tileForRender) {
         const door = DOOR_LOCAL[dir];
         return door && door.x === lx && door.y === ly;
       });
+      const subTypeClass = subType ? ` ${subType.replaceAll(" ", "-")}-subtile` : "";
       micro.push(
-        `<span class="micro-cell${subType ? ` ${subType}-subtile` : ""}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+        `<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
       );
     }
   }

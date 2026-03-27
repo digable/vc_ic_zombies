@@ -24,11 +24,26 @@ const INITIAL_BULLETS   = 3;   // starting bullets for a new/respawned player
 const MAX_HAND_SIZE     = 3;   // maximum event cards in hand at end of turn
 const BREAKTHROUGH_SEP  = "\u2192"; // separator used in breakthrough connection keys
 
+// Tile-level types — used on the tile object itself (tile.type)
 const TILE_TYPE = {
-  TOWN:     "town",
-  NAMED:    "named",
-  BUILDING: "building",
-  ROAD:     "road",
-  GRASS:    "grass",
-  HELIPAD:  "helipad",
+  TOWN:         "town",
+  NAMED:        "named",
+  BUILDING:     "building",
+  ROAD:         "road",
+  GRASS:        "grass",
+  MALL_HALLWAY: "mall hallway",
+  MALL_STORE:   "mall store",
+  ESCALATOR:    "escalator",
+  HELIPAD:      "helipad",
+};
+
+// Subtile types — used on individual subtiles within a tile's 3×3 grid (subtile.type)
+const SUBTILE_TYPE = {
+  ROAD:         "road",
+  BUILDING:     "building",
+  GRASS:        "grass",
+  PARKING:      "parking",
+  MALL_HALLWAY: "mall hallway",
+  MALL_STORE:   "mall store",
+  ESCALATOR:    "escalator",
 };

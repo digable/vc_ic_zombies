@@ -241,12 +241,7 @@ function renderMapDeckDebug() {
         <div class="deck-tile-edit-line">
           <strong>Type</strong>
           <select data-debug-tile-id="${tileId}" data-debug-field="tileType">
-            <option value="named" ${tileForRender.type === "named" ? "selected" : ""}>named</option>
-            <option value="building" ${tileForRender.type === "building" ? "selected" : ""}>building</option>
-            <option value="road" ${tileForRender.type === "road" ? "selected" : ""}>road</option>
-            <option value="grass" ${tileForRender.type === "grass" ? "selected" : ""}>grass</option>
-            <option value="helipad" ${tileForRender.type === "helipad" ? "selected" : ""}>helipad</option>
-            <option value="town" ${tileForRender.type === "town" ? "selected" : ""}>town</option>
+            ${Object.values(TILE_TYPE).map((v) => `<option value="${v}" ${tileForRender.type === v ? "selected" : ""}>${v}</option>`).join("")}
           </select>
         </div>
         <div class="deck-tile-edit-line">

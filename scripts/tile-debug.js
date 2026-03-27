@@ -1,3 +1,12 @@
+// Populate the tile type dropdown from TILE_TYPE constant
+function populateTileTypeDropdown() {
+  const sel = document.getElementById("newTileType");
+  if (!sel) return;
+  sel.innerHTML = Object.values(TILE_TYPE)
+    .map((v) => `<option value="${v}"${v === TILE_TYPE.NAMED ? " selected" : ""}>${v}</option>`)
+    .join("");
+}
+
 // Attach event listeners for subtile editor controls
 function attachNewTileSubtileEditorListeners() {
   const container = document.getElementById("newTileSubtileEditor");
@@ -248,8 +257,7 @@ function refreshNewTilePreview() {
     statusEl.textContent = "";
   }
   if (previewEl instanceof HTMLElement) {
-    const editedCells = typeof createEditableSubtileCells !== 'undefined' ? createEditableSubtileCells(tile) : {};
-    const editableTemplate = typeof editableCellsToTemplate !== 'undefined' ? editableCellsToTemplate(editedCells) : {};
+    const editableTemplate = typeof editableCellsToTemplate !== 'undefined' ? editableCellsToTemplate(newTileGeneratorCells) : {};
     const tileForRender = {
       ...tile,
       subTilesTemplate: editableTemplate,
@@ -424,6 +432,7 @@ refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
 state.mapDeck = buildMapDeck(null);
 state.mapDeck.push(buildTownSquareTile());
+populateTileTypeDropdown();
 renderNewTileCollectionInputs();
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();

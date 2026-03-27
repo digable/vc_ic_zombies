@@ -126,6 +126,7 @@
   box-shadow: 0 2px 8px 0 rgba(60, 120, 60, 0.10);
 }
 
+
 .badges {
   position: absolute;
   left: 4px;
@@ -189,6 +190,10 @@
   background: var(--subtile-blocked);
 }
 
+.micro-cell.building-subtile {
+  background: var(--building);
+}
+
 .micro-cell.parking-subtile {
   background: var(--subtile-parking);
 }
@@ -206,6 +211,18 @@
   background: var(--subtile-grass);
   box-shadow: 0 0 0 2px var(--subtile-grass-border) inset, 0 2px 8px 0 rgba(60, 120, 60, 0.08);
   position: relative;
+}
+
+.micro-cell.mall-hallway-subtile {
+  background: #b0b8c1;
+}
+
+.micro-cell.mall-store-subtile {
+  background: #d4b896;
+}
+
+.micro-cell.escalator-subtile {
+  background: #7eafc9;
 }
 
 .micro-cell.grass-subtile::after {
