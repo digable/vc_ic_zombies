@@ -257,7 +257,7 @@ function attachListeners() {
       if (forcedAction === "end") { endForcedMovement(); return; }
       const zmAction = event.target.getAttribute("data-zombie-move-action");
       if (zmAction === "auto") { autoFinishZombieMovement(); return; }
-      if (zmAction === "done") { autoFinishZombieMovement(); return; }
+      if (zmAction === "done") { flushZombieMovement(); return; }
       if (event.target.id === "zombieReplaceDoneBtn") {
         if (state.pendingRocketLauncher) finishRocketLauncher();
         else if (state.pendingZombieFlood) finishZombieFlood();

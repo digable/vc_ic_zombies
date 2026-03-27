@@ -33,6 +33,11 @@ function endTurn() {
   }
   state.playerTrail = [];
   state.lastCombatResult = null;
+  state.zombieMovedSpaces = new Set();
+  if (state.zombieAnimationTimer !== null) {
+    clearTimeout(state.zombieAnimationTimer);
+    state.zombieAnimationTimer = null;
+  }
 
   state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
   if (state.currentPlayerIndex === 0) {

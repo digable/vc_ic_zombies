@@ -139,6 +139,8 @@ const state = {
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
   knockoutBanner: null, // { playerName, lostKills } — shown briefly after knockout
   recentKillKey: null,
+  zombieMovedSpaces: new Set(), // space keys where zombies arrived this turn — cleared at turn end
+  zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
   logs: []
 };
 

@@ -173,6 +173,7 @@ function moveZombieAllSteps(startKey, pzm) {
     const zdata = state.zombies.get(currentKey);
     state.zombies.delete(currentKey);
     state.zombies.set(next, zdata);
+    state.zombieMovedSpaces.add(next);
     if (!movedAtLeastOnce) pzm.movedKeys.add(startKey);
     pzm.movedKeys.add(next);
     pzm.stuckKeys.clear();
@@ -186,41 +187,80 @@ function moveZombieAllSteps(startKey, pzm) {
   return { finalKey: currentKey, moved: movedAtLeastOnce, combatPending };
 }
 
-function autoFinishZombieMovement() {
+const ZOMBIE_ANIM_DELAY_MS = 350;
+
+function finalizeZombieAutoMove(combatPending) {
+  state.zombieAnimationTimer = null;
   const pzm = state.pendingZombieMovement;
-  if (!pzm) return;
-
-  let movedCount = 0;
-  let combatDecisionPending = false;
-
-  while (pzm.remaining > 0) {
-    const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
-    if (available.length === 0) break;
-
-    const chosen = pickNearestZombieToMove(available);
-    const { finalKey, moved, combatPending } = moveZombieAllSteps(chosen, pzm);
-
-    if (!moved) {
-      pzm.stuckKeys.add(chosen);
-      continue;
-    }
-
-    pzm.remaining -= 1;
-    movedCount += 1;
-    combatDecisionPending = combatPending;
-    if (combatDecisionPending) break;
-  }
-
-  if (combatDecisionPending) {
-    if (pzm.remaining <= 0) state.pendingZombieMovement = null;
-    logLine(`${currentPlayer().name} must resolve combat. ${movedCount} zombie(s) moved.`);
+  if (combatPending) {
+    if (pzm && pzm.remaining <= 0) state.pendingZombieMovement = null;
+    logLine(`${currentPlayer().name} must resolve combat.`);
     state.step = STEP.COMBAT;
   } else {
     state.pendingZombieMovement = null;
-    logLine(`Zombie auto-movement complete. ${movedCount} zombie(s) moved.`);
+    logLine(`Zombie auto-movement complete.`);
     state.step = STEP.DISCARD;
   }
   render();
+}
+
+// Stepped (animated) auto-move — moves one zombie per tick.
+function autoMoveOneZombie() {
+  state.zombieAnimationTimer = null;
+  const pzm = state.pendingZombieMovement;
+  if (!pzm || pzm.remaining <= 0) { finalizeZombieAutoMove(false); return; }
+
+  const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+  if (available.length === 0) { finalizeZombieAutoMove(false); return; }
+
+  const chosen = pickNearestZombieToMove(available);
+  const { moved, combatPending } = moveZombieAllSteps(chosen, pzm);
+
+  if (!moved) {
+    pzm.stuckKeys.add(chosen);
+    render();
+    state.zombieAnimationTimer = setTimeout(autoMoveOneZombie, ZOMBIE_ANIM_DELAY_MS);
+    return;
+  }
+
+  pzm.remaining -= 1;
+  render();
+
+  if (combatPending || pzm.remaining <= 0) {
+    finalizeZombieAutoMove(combatPending);
+    return;
+  }
+
+  state.zombieAnimationTimer = setTimeout(autoMoveOneZombie, ZOMBIE_ANIM_DELAY_MS);
+}
+
+// Entry point for the "Auto-move remaining" button — starts the animation.
+function autoFinishZombieMovement() {
+  if (!state.pendingZombieMovement) return;
+  autoMoveOneZombie();
+}
+
+// Flush all remaining moves instantly (skip/cancel animation).
+function flushZombieMovement() {
+  if (state.zombieAnimationTimer !== null) {
+    clearTimeout(state.zombieAnimationTimer);
+    state.zombieAnimationTimer = null;
+  }
+  const pzm = state.pendingZombieMovement;
+  if (!pzm) return;
+
+  let combatDecisionPending = false;
+  while (pzm.remaining > 0) {
+    const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    if (available.length === 0) break;
+    const chosen = pickNearestZombieToMove(available);
+    const { moved, combatPending } = moveZombieAllSteps(chosen, pzm);
+    if (!moved) { pzm.stuckKeys.add(chosen); continue; }
+    pzm.remaining -= 1;
+    combatDecisionPending = combatPending;
+    if (combatDecisionPending) break;
+  }
+  finalizeZombieAutoMove(combatDecisionPending);
 }
 
 function manualMoveZombie(zKey) {

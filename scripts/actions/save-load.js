@@ -169,6 +169,11 @@ function deserializeState(data) {
   state.recentKillKey            = null;
   state.knockoutBanner           = null;
   state.currentZombieRoll        = null;
+  state.zombieMovedSpaces        = new Set();
+  if (state.zombieAnimationTimer !== null) {
+    clearTimeout(state.zombieAnimationTimer);
+    state.zombieAnimationTimer   = null;
+  }
 }
 
 function saveGame(slot) {

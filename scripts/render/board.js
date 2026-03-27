@@ -205,7 +205,8 @@ function renderBoard() {
             }
           }
           const subTypeClass = subType ? ` ${subType.replaceAll(" ", "-")}-subtile` : "";
-          micro.push(`<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}${zombieClass}" data-sx="${sx}" data-sy="${sy}">${lanes}${walls}${parts.join("")}</span>`);
+          const movedClass = state.zombieMovedSpaces.has(spaceKey) ? " zombie-moved" : "";
+          micro.push(`<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}${zombieClass}${movedClass}" data-sx="${sx}" data-sy="${sy}">${lanes}${walls}${parts.join("")}</span>`);
         }
       }
 

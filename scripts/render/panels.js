@@ -487,14 +487,15 @@ function renderZombieReplacePanel() {
 
   const pzm = state.pendingZombieMovement;
   if (pzm) {
+    const animating = Boolean(state.zombieAnimationTimer);
     const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
     panel.classList.remove("hidden");
     panel.innerHTML = `
       <div class="combat-decision-title">Zombie Movement — ${pzm.remaining} move(s) remaining</div>
-      <div class="small">Click a zombie on the board to move it, or auto-move the rest.</div>
+      <div class="small">${animating ? "Auto-moving…" : "Click a zombie on the board to move it, or auto-move the rest."}</div>
       <div class="combat-decision-actions">
-        <button data-zombie-move-action="auto" ${available.length === 0 ? "disabled" : ""}>Auto-move remaining</button>
-        <button data-zombie-move-action="done">Skip remaining</button>
+        <button data-zombie-move-action="auto" ${animating || available.length === 0 ? "disabled" : ""}>Auto-move remaining</button>
+        <button data-zombie-move-action="done">${animating ? "Skip animation" : "Skip remaining"}</button>
       </div>
     `;
     return;

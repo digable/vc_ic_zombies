@@ -493,6 +493,15 @@
   animation: zombie-kill-burst 0.7s ease-out forwards;
 }
 
+@keyframes zombie-moved-pulse {
+  0%, 100% { outline: 2px solid rgba(220, 50, 50, 0.85); }
+  50%       { outline: 2px solid rgba(220, 50, 50, 0.2);  }
+}
+
+.micro-cell.zombie-moved {
+  animation: zombie-moved-pulse 1.2s ease-in-out infinite;
+}
+
 .event-choice {
   border: 1px solid var(--panel-event-border);
   background: var(--panel-event-bg);
