@@ -522,6 +522,27 @@ function isLocalWalkable(tile, lx, ly) {
   });
 }
 
+// Returns true when a zombie can legally be placed on (lx,ly): the subtile is
+// walkable AND has at least one open exit so the zombie is not permanently trapped.
+// Checks both the subtile's own exitTo AND the neighbor's enterFrom (walls can
+// exist on either side of a boundary).
+function isSubtileZombieViable(tile, lx, ly) {
+  if (!isLocalWalkable(tile, lx, ly)) return false;
+  const sub = tile?.subTiles?.[key(lx, ly)];
+  if (!sub) return true; // simple tile with no custom subTile data — assume open
+  for (const [dir, d] of Object.entries(DIRS)) {
+    if (!sub.exitTo[dir]) continue; // this cell blocks exit in this direction
+    const nx = lx + d.x;
+    const ny = ly + d.y;
+    if (nx < 0 || nx >= TILE_DIM || ny < 0 || ny >= TILE_DIM) {
+      return true; // edge exit toward another tile — assume traversable
+    }
+    const neighbor = tile.subTiles?.[key(nx, ny)];
+    if (!neighbor || neighbor.enterFrom[d.opposite]) return true; // neighbor allows entry
+  }
+  return false;
+}
+
 function isBuildingSubtileOpen(tile, lx, ly) {
   if (getSubTileType(tile, lx, ly) !== "building") return false;
   const walls = tile.subTiles?.[key(lx, ly)]?.walls;
@@ -538,8 +559,8 @@ function findSpawnSpaceOnTile(tx, ty) {
     [1, 1], [1, 0], [2, 1], [1, 2], [0, 1], [0, 0], [2, 0], [0, 2], [2, 2]
   ];
 
-  const building = allOffsets.filter(([lx, ly]) => isLocalWalkable(tile, lx, ly) && isBuildingSubtileOpen(tile, lx, ly));
-  const others = allOffsets.filter(([lx, ly]) => isLocalWalkable(tile, lx, ly) && !isBuildingSubtileOpen(tile, lx, ly));
+  const building = allOffsets.filter(([lx, ly]) => isSubtileZombieViable(tile, lx, ly) && isBuildingSubtileOpen(tile, lx, ly));
+  const others = allOffsets.filter(([lx, ly]) => isSubtileZombieViable(tile, lx, ly) && !isBuildingSubtileOpen(tile, lx, ly));
 
   for (const [lx, ly] of [...building, ...others]) {
     const sk = key(tx * TILE_DIM + lx, ty * TILE_DIM + ly);

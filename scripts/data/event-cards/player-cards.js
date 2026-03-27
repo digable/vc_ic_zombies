@@ -489,7 +489,7 @@ const playerEventCards = [
           if (!neighborTile) continue;
           const nlx = getLocalCoord(nx, ntx);
           const nly = getLocalCoord(ny, nty);
-          if (!isLocalWalkable(neighborTile, nlx, nly)) continue;
+          if (!isSubtileZombieViable(neighborTile, nlx, nly)) continue;
           const nsub = neighborTile.subTiles?.[key(nlx, nly)];
           if (!nsub || !OUTSIDE_TYPES.has(nsub.type)) continue;
           outsideSpaces.add(nsk);
@@ -553,7 +553,10 @@ const playerEventCards = [
       let placed = 0;
       state.players.forEach((p) => {
         const spaceKey = key(p.x, p.y);
-        if (!state.zombies.has(spaceKey)) {
+        const ptile = getTileAtSpace(p.x, p.y);
+        const plx = getLocalCoord(p.x, spaceToTileCoord(p.x));
+        const ply = getLocalCoord(p.y, spaceToTileCoord(p.y));
+        if (!state.zombies.has(spaceKey) && isSubtileZombieViable(ptile, plx, ply)) {
           state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
           placed += 1;
         }

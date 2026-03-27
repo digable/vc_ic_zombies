@@ -26,6 +26,8 @@ function endTurn() {
   outgoing.lookinAtMePending = null;
   outgoing.tileHijackNotify = null;
   outgoing.claustrophobiaActive = false;
+  outgoing.halfMovementNextTurn = false;
+  outgoing.brainCramp = null;
   if (outgoing.cannotMoveTurns > 0) {
     outgoing.cannotMoveTurns -= 1;
   }

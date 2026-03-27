@@ -336,6 +336,7 @@ function renderMoveStatus() {
     if (p.claustrophobiaActive)         msgs.push("Claustrophobia: cannot enter buildings. If in a building, exit by shortest route.");
     if (p.halfMovementNextTurn)         msgs.push("Your Shoe's Untied: movement roll will be halved.");
     if (p.brainCramp)                   msgs.push("Brain Cramp: an opponent will control your movement.");
+    if (p.dieRollPenalty > 0)           msgs.push(`Abandon All Hope: -${p.dieRollPenalty} to all die rolls this turn.`);
     if (state.pendingBreakthrough)      msgs.push("Breakthrough: choose a direction to attempt to break through a wall (5–6 succeeds, 4 or less loses 1 life and ends movement).");
     if (state.pendingForcedMove) {
       const target = state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId);

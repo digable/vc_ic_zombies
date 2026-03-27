@@ -248,7 +248,7 @@ function handleZombiePlaceClick(sx, sy) {
 
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return;
-  if (!isLocalWalkable(tile, getLocalCoord(sx, spaceToTileCoord(sx)), getLocalCoord(sy, spaceToTileCoord(sy)))) return;
+  if (!isSubtileZombieViable(tile, getLocalCoord(sx, spaceToTileCoord(sx)), getLocalCoord(sy, spaceToTileCoord(sy)))) return;
   const spaceKey = key(sx, sy);
   if (state.zombies.has(spaceKey)) return;
   if (state.players.some((p) => key(p.x, p.y) === spaceKey)) return;
@@ -408,7 +408,7 @@ function handleZombieFloodClick(sx, sy) {
   let placed = 0;
   for (let lx = 0; lx < TILE_DIM; lx += 1) {
     for (let ly = 0; ly < TILE_DIM; ly += 1) {
-      if (!isLocalWalkable(tile, lx, ly)) continue;
+      if (!isSubtileZombieViable(tile, lx, ly)) continue;
       const spaceKey = key(tileX * TILE_DIM + lx, tileY * TILE_DIM + ly);
       if (state.zombies.has(spaceKey)) continue;
       state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
@@ -488,7 +488,7 @@ function handleBuildingSelectClick(sx, sy) {
   for (let dlx = 0; dlx < 3; dlx++) {
     for (let dly = 0; dly < 3; dly++) {
       if (getSubTileType(tile, dlx, dly) !== "building") continue;
-      if (!isLocalWalkable(tile, dlx, dly)) continue;
+      if (!isSubtileZombieViable(tile, dlx, dly)) continue;
       const spaceKey = key(tx * TILE_DIM + dlx, ty * TILE_DIM + dly);
       if (state.zombies.has(spaceKey)) {
         existingZombies++;
