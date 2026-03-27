@@ -26,6 +26,7 @@ function hasPendingState() {
     state.pendingForcedMove      || state.pendingBuildingSelect   ||
     state.pendingDynamiteTarget  || state.pendingMinefield        ||
     state.pendingRocketLauncher  || state.pendingTile             ||
+    state.pendingZombieFlood     ||
     state.pendingBreakthrough
   );
 }
@@ -77,6 +78,7 @@ function serializeState() {
     activeStandaloneDecks:  [...state.activeStandaloneDecks],
     breakthroughConnections: [...state.breakthroughConnections],
     floor2Tiles:            [...(state.floor2Tiles || [])],
+    noZombieTiles:          [...(state.noZombieTiles || [])],
     zombies:     [...state.zombies.entries()],
     spaceTokens: [...state.spaceTokens.entries()],
 
@@ -111,6 +113,7 @@ function deserializeState(data) {
   state.activeStandaloneDecks   = new Set(data.activeStandaloneDecks);
   state.breakthroughConnections = new Set(data.breakthroughConnections);
   state.floor2Tiles             = new Set(data.floor2Tiles || []);
+  state.noZombieTiles           = new Set(data.noZombieTiles || []);
 
   // Maps
   state.zombies     = new Map(data.zombies);
@@ -154,6 +157,7 @@ function deserializeState(data) {
   state.pendingDynamiteTarget    = null;
   state.pendingMinefield         = null;
   state.pendingRocketLauncher    = null;
+  state.pendingZombieFlood       = null;
   state.pendingTile              = null;
   state.pendingRotation          = 0;
   state.pendingTileOptions       = [];

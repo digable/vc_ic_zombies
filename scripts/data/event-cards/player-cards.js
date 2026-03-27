@@ -8,13 +8,47 @@
 //   apply(player, helpers)       Called when the card is played from hand
 //
 // Item card extras (isItem: true cards sit in front of you until activated):
-//   isItem      {true}           Card stays in play; discarded on activation
-//   isWeapon    {true}           Can be targeted by "Butter Fingers"
-//   combatWeapon {true}          Selectable during combat (discarded after use)
-//   combatBoost {number}         One-time combat roll bonus when used as combatWeapon
-//   permanentAttackBoost {number} Permanently adds to player.attackBonus on use
-//   requiresTile {string|string[]} Tile name(s) the player must be on to play
-//   activateItem(player, helpers) Called when the player discards the item
+//   isItem               {true}           Card stays in play; discarded on activation
+//   isWeapon             {true}           Can be targeted by "Butter Fingers"
+//   combatWeapon         {true}           Selectable during combat (discarded after use)
+//   combatBoost          {number}         One-time combat roll bonus when used as combatWeapon
+//   turnCombatBoost      {number}         +N to this combat AND all remaining combats this turn (discarded after use)
+//   oncePerTurnCombatBoost {number}       +N to one combat roll per turn — card stays in play, not discarded
+//   permanentAttackBoost {number}         Permanently adds to player.attack on use
+//   requiresTile         {string|string[]} Tile name(s) the player must be on to play
+//   activateItem(player, helpers)         Called when the player discards the item
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Shared helpers — used by multiple cards below
+// ---------------------------------------------------------------------------
+
+// canPlay() check: true when the current player is on a building, named, or mall store tile.
+function isOnBuildingOrStoreTile() {
+  const tile = getTileAtSpace(currentPlayer().x, currentPlayer().y);
+  return !!(tile && (
+    tile.type === TILE_TYPE.BUILDING ||
+    tile.type === TILE_TYPE.NAMED    ||
+    tile.type === TILE_TYPE.MALL_STORE
+  ));
+}
+
+// Iterate every subtile of the tile at (tx, ty).
+// fn(lx, ly, spaceKey) — lx/ly are local 0-2 coords; spaceKey is the global space key.
+function forEachTileSpace(tx, ty, fn) {
+  for (let lx = 0; lx < TILE_DIM; lx += 1) {
+    for (let ly = 0; ly < TILE_DIM; ly += 1) {
+      fn(lx, ly, key(tx * TILE_DIM + lx, ty * TILE_DIM + ly));
+    }
+  }
+}
+
+// Reduce target.hearts by amount; trigger knockout if hearts drop to 0 or below.
+function damagePlayer(target, amount, knockoutOptions) {
+  target.hearts -= amount;
+  if (target.hearts <= 0) handleKnockout(target, knockoutOptions);
+}
+
 // ---------------------------------------------------------------------------
 
 const playerEventCards = [
@@ -38,11 +72,8 @@ const playerEventCards = [
         state.pendingDynamiteTarget = { playerId: player.id, remaining: 3 };
         logLine(`${player.name}'s Dynamite succeeded! Select up to 3 adjacent zombie spaces to destroy.`);
       } else {
-        player.hearts -= 2;
         logLine(`${player.name}'s Dynamite fizzled — loses 2 life tokens.`);
-        if (player.hearts <= 0) {
-          handleKnockout(player, { endStep: true });
-        }
+        damagePlayer(player, 2, { endStep: true });
       }
     }
   },
@@ -124,6 +155,24 @@ const playerEventCards = [
     }
   },
   {
+    name: "You Want Fries with That?",
+    description: "Play in the Food Court to place in front of you. Discard to permanently mark this tile — no zombies may move onto it for the rest of the game.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    isItem: true,
+    requiresTile: "Food Court",
+    apply(player) {
+      logLine(`${player.name} placed You Want Fries with That? in front of them.`);
+    },
+    activateItem(player) {
+      if (!state.noZombieTiles) state.noZombieTiles = new Set();
+      const tileKey = key(spaceToTileCoord(player.x), spaceToTileCoord(player.y));
+      state.noZombieTiles.add(tileKey);
+      const tile = getTileAtSpace(player.x, player.y);
+      const tileName = tile ? getTileDisplayName(tile) : "current tile";
+      logLine(`${player.name} discarded You Want Fries with That? — no zombies may move onto ${tileName} for the rest of the game.`);
+    }
+  },
+  {
     name: "Chainsaw",
     description: "Play in the Lawn & Garden Store to place in front of you. Select in combat to gain +2 to all combat rolls for the rest of your turn (discarded after use).",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
@@ -133,7 +182,7 @@ const playerEventCards = [
     turnCombatBoost: 2,
     requiresTile: "Lawn & Garden Store",
     apply(player) {
-      logLine(`${player.name} placed Chainsaw in front of them.`);
+      logLine(`${player.name} placed ${this.name} in front of them.`);
     }
   },
   {
@@ -146,7 +195,7 @@ const playerEventCards = [
     permanentAttackBoost: 1,
     requiresTile: "Fire Station",
     apply(player) {
-      logLine(`${player.name} placed Fire Axe in front of them.`);
+      logLine(`${player.name} placed ${this.name} in front of them.`);
     }
   },
   {
@@ -156,7 +205,7 @@ const playerEventCards = [
     isItem: true,
     requiresTile: ["Hospital", "Drug Store"],
     apply(player) {
-      logLine(`${player.name} placed First Aid Kit in front of them.`);
+      logLine(`${player.name} placed ${this.name} in front of them.`);
     },
     activateItem(player) {
       logLine(`${player.name} used the First Aid Kit.`);
@@ -200,7 +249,7 @@ const playerEventCards = [
     isItem: true,
     requiresTile: "Sporting Goods Store",
     apply(player) {
-      logLine(`${player.name} placed Lots Of Ammo in front of them.`);
+      logLine(`${player.name} placed ${this.name} in front of them.`);
     },
     activateItem(player) {
       player.bullets += 3;
@@ -241,7 +290,7 @@ const playerEventCards = [
     isWeapon: true,
     requiresTile: "Armory",
     apply(player) {
-      logLine(`${player.name} placed Rocket Launcher in front of them.`);
+      logLine(`${player.name} placed ${this.name} in front of them.`);
     },
     activateItem(player) {
       state.pendingRocketLauncher = { playerId: player.id };
@@ -256,7 +305,7 @@ const playerEventCards = [
     isWeapon: true, // allows Butter Fingers to target it even though it's a movement item
     requiresTile: "Skate Shop",
     apply(player) {
-      logLine(`${player.name} placed Skateboard in front of them.`);
+      logLine(`${player.name} placed ${this.name} in front of them.`);
     },
     activateItem(player) {
       player.movementBonus = (player.movementBonus || 0) + 2;
@@ -317,6 +366,226 @@ const playerEventCards = [
       }
       state.pendingZombieReplace = { remaining: Math.min(2, state.zombies.size), selectedZombieKey: null };
       logLine(`${player.name} played This Isn't So Bad — select up to 2 zombies to relocate.`);
+    }
+  },
+  {
+    name: "Crossbow",
+    description: "Play in the Outfitter to place in front of you. While in play, add +1 to one combat roll per turn.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    isItem: true,
+    isWeapon: true,
+    combatWeapon: true,
+    oncePerTurnCombatBoost: 1,
+    requiresTile: "Outfitter",
+    apply(player) {
+      logLine(`${player.name} placed ${this.name} in front of them.`);
+    }
+  },
+  {
+    name: "Clearance Sale",
+    description: "Remove all zombies from mall hallway spaces on your current tile. Each counts as a kill.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    apply(player) {
+      const tile = getTileAtSpace(player.x, player.y);
+      if (!tile?.subTiles) {
+        logLine(`${player.name} played Clearance Sale — no subtile data on this tile.`);
+        return;
+      }
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      let killed = 0;
+      forEachTileSpace(tx, ty, (lx, ly, sk) => {
+        if (tile.subTiles[key(lx, ly)]?.type === "mall hallway" && state.zombies.has(sk)) {
+          state.zombies.delete(sk);
+          killed += 1;
+        }
+      });
+      player.kills += killed;
+      if (killed === 0) {
+        logLine(`${player.name} played Clearance Sale — no zombies on mall hallway spaces.`);
+      } else {
+        logLine(`${player.name} played Clearance Sale — cleared ${killed} zombie(s) from mall hallway spaces (+${killed} kills).`);
+      }
+    }
+  },
+  {
+    name: "Clean up in Aisle 5",
+    description: "Play in a building or store. Remove all zombies from the tile and distribute them one at a time clockwise to all players — each counts as a kill.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    canPlay: isOnBuildingOrStoreTile,
+    apply(player) {
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      const zombieKeys = [];
+      forEachTileSpace(tx, ty, (_lx, _ly, sk) => {
+        if (state.zombies.has(sk)) zombieKeys.push(sk);
+      });
+      if (zombieKeys.length === 0) {
+        logLine(`${player.name} played Clean up in Aisle 5 — no zombies on this tile.`);
+        return;
+      }
+      zombieKeys.forEach((sk) => state.zombies.delete(sk));
+      const n = state.players.length;
+      const startIdx = state.currentPlayerIndex;
+      const counts = {};
+      zombieKeys.forEach((_, i) => {
+        const recipient = state.players[(startIdx + i) % n];
+        recipient.kills += 1;
+        counts[recipient.id] = (counts[recipient.id] || 0) + 1;
+      });
+      const summary = state.players
+        .filter((p) => counts[p.id])
+        .map((p) => `${p.name} +${counts[p.id]}`)
+        .join(", ");
+      logLine(`${player.name} played Clean up in Aisle 5 — ${zombieKeys.length} zombie(s) distributed: ${summary}.`);
+    }
+  },
+  {
+    name: "Barricade the Door",
+    description: "Play in a building or store. Remove all zombies from building/store subtiles and place them on adjacent walkway, street, grass, or parking spaces.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    canPlay: isOnBuildingOrStoreTile,
+    apply(player) {
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      const tile = state.board.get(key(tx, ty));
+
+      const BUILDING_TYPES = new Set(["building", "mall store"]);
+      const OUTSIDE_TYPES  = new Set(["road", "grass", "parking", "mall hallway"]);
+      const ORTHO = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+      // Collect zombies from building/store subtiles only
+      const removed = [];
+      const buildingSpaces = new Set();
+      forEachTileSpace(tx, ty, (lx, ly, sk) => {
+        const sub = tile?.subTiles?.[key(lx, ly)];
+        if (!sub || !BUILDING_TYPES.has(sub.type)) return;
+        buildingSpaces.add(sk);
+        if (state.zombies.has(sk)) {
+          removed.push(state.zombies.get(sk));
+          state.zombies.delete(sk);
+        }
+      });
+
+      if (removed.length === 0) {
+        logLine(`${player.name} played Barricade the Door — no zombies in building or store spaces.`);
+        return;
+      }
+
+      // Find adjacent spaces with road/grass/parking/hallway subtile type
+      const outsideSpaces = new Set();
+      for (const bsk of buildingSpaces) {
+        const { x: bx, y: by } = parseKey(bsk);
+        for (const [dx, dy] of ORTHO) {
+          const nx = bx + dx;
+          const ny = by + dy;
+          const nsk = key(nx, ny);
+          if (buildingSpaces.has(nsk)) continue; // still a building space
+          if (state.zombies.has(nsk)) continue;
+          const ntx = spaceToTileCoord(nx);
+          const nty = spaceToTileCoord(ny);
+          if (state.noZombieTiles?.has(key(ntx, nty))) continue;
+          const neighborTile = state.board.get(key(ntx, nty));
+          if (!neighborTile) continue;
+          const nlx = getLocalCoord(nx, ntx);
+          const nly = getLocalCoord(ny, nty);
+          if (!isLocalWalkable(neighborTile, nlx, nly)) continue;
+          const nsub = neighborTile.subTiles?.[key(nlx, nly)];
+          if (!nsub || !OUTSIDE_TYPES.has(nsub.type)) continue;
+          outsideSpaces.add(nsk);
+        }
+      }
+
+      const targets = [...outsideSpaces];
+      let placed = 0;
+      for (let i = 0; i < removed.length && i < targets.length; i += 1) {
+        state.zombies.set(targets[i], removed[i]);
+        placed += 1;
+      }
+      const lost = removed.length - placed;
+      let msg = `${player.name} played Barricade the Door — ${removed.length} zombie(s) pushed out of building spaces, ${placed} placed on walkways/streets.`;
+      if (lost > 0) msg += ` ${lost} had nowhere to go.`;
+      logLine(msg);
+    }
+  },
+  {
+    name: "We're all gonna die!",
+    description: "Click a tile to place 1 zombie on every legal walkable space on it.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 1 },
+    apply(player) {
+      state.pendingZombieFlood = { playerId: player.id };
+      logLine(`${player.name} played We're all gonna die! — click a tile to flood it with zombies.`);
+    }
+  },
+  {
+    name: "Abandon All Hope",
+    description: "Target another player. They suffer -1 to all die rolls during their next turn.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    canPlay() {
+      return state.players.length > 1;
+    },
+    apply(player) {
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 1) {
+        others[0].nextTurnDieRollPenalty = (others[0].nextTurnDieRollPenalty || 0) + 1;
+        logLine(`${player.name} played Abandon All Hope — ${others[0].name} suffers -1 to all die rolls next turn.`);
+        return;
+      }
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "Abandon All Hope",
+        options: others.map((p) => ({ key: String(p.id), label: p.name })),
+        resolve(optionKey) {
+          const target = state.players.find((p) => String(p.id) === optionKey);
+          if (!target) return;
+          target.nextTurnDieRollPenalty = (target.nextTurnDieRollPenalty || 0) + 1;
+          logLine(`${player.name} played Abandon All Hope — ${target.name} suffers -1 to all die rolls next turn.`);
+        }
+      };
+      logLine(`${player.name} played Abandon All Hope — choose a target.`);
+    }
+  },
+  {
+    name: "Hello, may I help you?",
+    description: "Place a zombie on every player's current space, including your own.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    apply(player) {
+      let placed = 0;
+      state.players.forEach((p) => {
+        const spaceKey = key(p.x, p.y);
+        if (!state.zombies.has(spaceKey)) {
+          state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
+          placed += 1;
+        }
+      });
+      logLine(`${player.name} played Hello, may I help you? — ${placed} zombie(s) placed on player spaces.`);
+    }
+  },
+  {
+    name: "I Will Survive! (You. on the other hand may not...)",
+    description: "Play when on the same space as another player. Both roll 1 die (+1 for you). Lowest roll loses 1 heart — you win ties. No bullets may be spent.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    canPlay() {
+      const cp = currentPlayer();
+      return state.players.some((p) => p.id !== cp.id && p.x === cp.x && p.y === cp.y);
+    },
+    apply(player) {
+      const opponent = state.players.find((p) => p.id !== player.id && p.x === player.x && p.y === player.y);
+      if (!opponent) {
+        logLine(`${player.name} played I Will Survive! but no other player is here.`);
+        return;
+      }
+      const myRoll = rollD6();
+      const theirRoll = rollD6();
+      const myTotal = myRoll + 1;
+      logLine(`${player.name} played I Will Survive! — ${player.name} rolled ${myRoll}+1=${myTotal}, ${opponent.name} rolled ${theirRoll}.`);
+      if (myTotal >= theirRoll) {
+        logLine(`${player.name} wins — ${opponent.name} loses 1 heart (now ${opponent.hearts - 1}).`);
+        damagePlayer(opponent, 1, { endStep: false });
+      } else {
+        logLine(`${opponent.name} wins — ${player.name} loses 1 heart (now ${player.hearts - 1}).`);
+        damagePlayer(player, 1, { endStep: false });
+      }
     }
   }
 ];

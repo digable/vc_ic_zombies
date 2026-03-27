@@ -170,28 +170,39 @@ function resolvePendingCombatDecision(actionCode) {
       render();
       return;
     }
-    if (pending.weaponUsed) {
-      logLine(`${player.name} already used a weapon in this fight.`);
-      render();
-      return;
-    }
     const [weapon] = player.items.splice(weaponIndex, 1);
-    state.eventDiscardPile.push(weapon);
-    pending.weaponUsed = true;
 
-    if (weapon.combatBoost) {
-      pending.modifiedRoll += weapon.combatBoost;
-      logLine(`${player.name} used the ${weapon.name} (+${weapon.combatBoost}). Combat roll is now ${pending.modifiedRoll}.`);
-    }
-    if (weapon.turnCombatBoost) {
-      pending.modifiedRoll += weapon.turnCombatBoost;
-      player.tempCombatBonus = (player.tempCombatBonus || 0) + weapon.turnCombatBoost;
-      logLine(`${player.name} used the ${weapon.name} (+${weapon.turnCombatBoost} this combat and all remaining combats this turn). Combat roll is now ${pending.modifiedRoll}.`);
-    }
-    if (weapon.permanentAttackBoost) {
-      player.attack += weapon.permanentAttackBoost;
-      pending.modifiedRoll += weapon.permanentAttackBoost;
-      logLine(`${player.name} used the ${weapon.name} (+${weapon.permanentAttackBoost} permanent attack). Combat roll is now ${pending.modifiedRoll}.`);
+    if (weapon.oncePerTurnCombatBoost) {
+      // Not discarded — stays in play, usable once per turn
+      player.items.push(weapon);
+      if (!player.itemsUsedThisTurn) player.itemsUsedThisTurn = [];
+      player.itemsUsedThisTurn.push(weapon.name);
+      pending.modifiedRoll += weapon.oncePerTurnCombatBoost;
+      logLine(`${player.name} used the ${weapon.name} (+${weapon.oncePerTurnCombatBoost} once this turn). Combat roll is now ${pending.modifiedRoll}.`);
+    } else {
+      if (pending.weaponUsed) {
+        player.items.splice(weaponIndex, 0, weapon); // put back
+        logLine(`${player.name} already used a weapon in this fight.`);
+        render();
+        return;
+      }
+      state.eventDiscardPile.push(weapon);
+      pending.weaponUsed = true;
+
+      if (weapon.combatBoost) {
+        pending.modifiedRoll += weapon.combatBoost;
+        logLine(`${player.name} used the ${weapon.name} (+${weapon.combatBoost}). Combat roll is now ${pending.modifiedRoll}.`);
+      }
+      if (weapon.turnCombatBoost) {
+        pending.modifiedRoll += weapon.turnCombatBoost;
+        player.tempCombatBonus = (player.tempCombatBonus || 0) + weapon.turnCombatBoost;
+        logLine(`${player.name} used the ${weapon.name} (+${weapon.turnCombatBoost} this combat and all remaining combats this turn). Combat roll is now ${pending.modifiedRoll}.`);
+      }
+      if (weapon.permanentAttackBoost) {
+        player.attack += weapon.permanentAttackBoost;
+        pending.modifiedRoll += weapon.permanentAttackBoost;
+        logLine(`${player.name} used the ${weapon.name} (+${weapon.permanentAttackBoost} permanent attack). Combat roll is now ${pending.modifiedRoll}.`);
+      }
     }
 
     if (pending.modifiedRoll >= pending.killRoll) {
@@ -273,8 +284,9 @@ function resolveCombatForPlayer(player, options = {}) {
   if (player.inTheZone && roll === 6) {
     drawOneEventCardForPlayer(player, "In the Zone");
   }
-  const baseCombatRoll = roll + permanentBonus + tempBonus + shotgunBonus + tileBonus;
-  const bonusText = ` (d6 ${roll} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
+  const diePenalty = player.dieRollPenalty || 0;
+  const baseCombatRoll = roll - diePenalty + permanentBonus + tempBonus + shotgunBonus + tileBonus;
+  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
   const zombieLabel = isEnhanced ? "government-enhanced zombie" : "zombie";
 
   if (baseCombatRoll >= killRoll) {

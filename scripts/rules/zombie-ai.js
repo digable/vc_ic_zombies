@@ -52,6 +52,7 @@ function moveZombieOneStep(zKey, options = {}) {
     const toKey = key(nx, ny);
     if (!canStep(x, y, nx, ny)) return;
     if (state.zombies.has(toKey)) return;
+    if (state.noZombieTiles && state.noZombieTiles.has(key(spaceToTileCoord(nx), spaceToTileCoord(ny)))) return;
     moveOptions.push({ toKey, dist: manhattanDist(target.x, target.y, nx, ny) });
   });
 

@@ -11,6 +11,8 @@ function endTurn() {
   }
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
+  outgoing.itemsUsedThisTurn = [];
+  outgoing.dieRollPenalty = 0;
   outgoing.noCombatThisTurn = false;
   outgoing.inTheZone = false;
   if (state.regularZombieEnhanced?.playerId === outgoing.id) {
@@ -38,6 +40,11 @@ function endTurn() {
   const player = currentPlayer();
   player.knockedOut = false;
   player.eventUsedThisRound = false;
+  player.dieRollPenalty = player.nextTurnDieRollPenalty || 0;
+  player.nextTurnDieRollPenalty = 0;
+  if (player.dieRollPenalty > 0) {
+    logLine(`${player.name} is penalized -${player.dieRollPenalty} to all die rolls this turn (Abandon All Hope).`);
+  }
   if (player.cannotPlayCardTurns > 0) {
     player.cannotPlayCardTurns -= 1;
   }

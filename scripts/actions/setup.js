@@ -30,7 +30,10 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       knockedOut: false,
       knockouts: 0,
       hasJeep: false,
-      smellEffect: null
+      smellEffect: null,
+      itemsUsedThisTurn: [],
+      dieRollPenalty: 0,
+      nextTurnDieRollPenalty: 0
     });
   }
 
@@ -59,6 +62,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.eventDiscardPile = [];
   state.breakthroughConnections = new Set();
   state.floor2Tiles = new Set();
+  state.noZombieTiles = new Set();
   state.regularZombieEnhanced = null;
   state.pendingRocketLauncher = null;
   state.forcedNextOpponentId = null;

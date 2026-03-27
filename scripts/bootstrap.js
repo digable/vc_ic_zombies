@@ -183,6 +183,14 @@ function attachListeners() {
       return;
     }
 
+    if (state.pendingZombieFlood) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleZombieFloodClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
     if (state.pendingMinefield) {
       const mc = target.closest(".micro-cell");
       if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
@@ -252,6 +260,7 @@ function attachListeners() {
       if (zmAction === "done") { autoFinishZombieMovement(); return; }
       if (event.target.id === "zombieReplaceDoneBtn") {
         if (state.pendingRocketLauncher) finishRocketLauncher();
+        else if (state.pendingZombieFlood) finishZombieFlood();
         else if (state.pendingMinefield) finishMinefield();
         else if (state.pendingDynamiteTarget) finishDynamite();
         else if (state.pendingZombiePlace) finishZombiePlace();

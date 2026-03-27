@@ -341,16 +341,20 @@ function renderCombatDecision() {
 
   const weaponBtns = player.items
     ? player.items.filter((c) => c.combatWeapon).map((c) => {
-        const boost = c.combatBoost || c.turnCombatBoost || c.permanentAttackBoost;
+        const boost = c.combatBoost || c.turnCombatBoost || c.permanentAttackBoost || c.oncePerTurnCombatBoost;
         const newTotal = roll + boost;
+        const isOncePer = Boolean(c.oncePerTurnCombatBoost);
         const isTurnBoost = Boolean(c.turnCombatBoost);
-        const turnNote = isTurnBoost ? ` (+${boost} all combats this turn)` : "";
+        const turnNote = isOncePer ? " (once this turn)" : isTurnBoost ? ` (+${boost} all combats this turn)` : "";
         const wHint = newTotal >= WIN
           ? `kills the zombie!${turnNote}`
           : `→ total: ${newTotal}${turnNote}`;
         const wClass = newTotal >= WIN ? "good" : "muted";
+        const isDisabled = isOncePer
+          ? (player.itemsUsedThisTurn || []).includes(c.name)
+          : pending.weaponUsed;
         return actionWrap(
-          `<button data-combat-action="W:${c.name}" ${pending.weaponUsed ? "disabled" : ""}>${c.name} (+${boost})</button>`,
+          `<button data-combat-action="W:${c.name}" ${isDisabled ? "disabled" : ""}>${c.name} (+${boost})</button>`,
           wHint, wClass
         );
       }).join("")

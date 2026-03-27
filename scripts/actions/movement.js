@@ -106,12 +106,14 @@ function rollMovement() {
   }
 
   const roll = rollD6();
-  state.currentMoveRoll = roll;
+  const dieRollPenalty = player.dieRollPenalty || 0;
+  const penalizedRoll = roll - dieRollPenalty;
+  state.currentMoveRoll = penalizedRoll;
   if (player.inTheZone && roll === 6) {
     drawOneEventCardForPlayer(player, "In the Zone");
   }
   const heliSightBonus = (player.items || []).some((c) => c.name === "I See the Helicopter") ? 1 : 0;
-  let move = roll + state.movementBonus + (player.movementBonus || 0) + heliSightBonus;
+  let move = penalizedRoll + state.movementBonus + (player.movementBonus || 0) + heliSightBonus;
   if (state.moveFloorThisTurn > 0) {
     move = Math.max(move, state.moveFloorThisTurn);
   }

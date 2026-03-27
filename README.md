@@ -198,6 +198,7 @@ Current collections:
 | `DIRECTORS_CUT` | `"directors_cut"` | Base game — can be played standalone |
 | `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
 | `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Standalone or expansion — playable alone or alongside Director's Cut; tiles form an isolated zone when mixed |
+| `MALL_WALKERS` | `"mall_walkers"` | Standalone or expansion — mall-themed tiles with 2-floor mechanics; includes Escalator (bridges floors) and a mall Helipad that must be placed on the 2nd floor |
 
 Map tile and event card collections are configured **independently** in the setup panel. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`):
 
@@ -221,7 +222,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 | Property | Description |
 |----------|-------------|
 | `name` | Display name |
-| `type` | `"road"`, `"named"`, `"helipad"`, `"special"`, `"grass"` |
+| `type` | `"road"`, `"named"`, `"helipad"`, `"special"`, `"grass"`, `"mall hallway"`, `"mall store"`, `"escalator"` |
 | `collection` | Object keyed by `COLLECTIONS.*` with per-collection copy counts, e.g. `{ [COLLECTIONS.DIRECTORS_CUT]: 2 }` |
 | `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
 | `zombieSpawnMode` | `"by_card"` uses `zombies` counts; `"by_exits"` spawns one per connector |
@@ -234,6 +235,8 @@ If a collection with `requiresBase` set is selected without its required base ga
 | `companionTiles` | Array of `{ name }` objects — tiles pulled from the deck and auto-placed in a chain when this tile is drawn. e.g. `[{ name: "Straight" }, { name: "4-Way" }]` |
 | `companionDir` | Which connector side companions chain from in the tile's unrotated orientation (default `"S"`). The opposite side is treated as the map-connection side. The engine auto-detects if the tile is placed reversed and flips the chain accordingly. |
 | `zoneGatewayConnector` | The connector (unrotated) that may touch base-zone tiles. All other connectors on this tile are zone-isolated. Only meaningful on standalone-deck tiles. |
+| `floor1Connectors` | Connectors on this tile that belong to floor 1. Used by the Escalator tile to separate the two floor zones. |
+| `floor2Connectors` | Connectors on this tile that lead to floor 2 after traversal. Companions placed via these connectors are treated as floor 2 tiles. |
 
 ---
 

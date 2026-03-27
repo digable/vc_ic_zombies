@@ -386,6 +386,48 @@ function finishMinefield() {
   render();
 }
 
+function handleZombieFloodClick(sx, sy) {
+  const pzf = state.pendingZombieFlood;
+  if (!pzf) return;
+
+  const player = state.players.find((p) => p.id === pzf.playerId);
+  if (!player) { state.pendingZombieFlood = null; render(); return; }
+
+  const tileX = spaceToTileCoord(sx);
+  const tileY = spaceToTileCoord(sy);
+  const tileKey = key(tileX, tileY);
+  const tile = state.board.get(tileKey);
+  if (!tile) return;
+
+  if (state.noZombieTiles?.has(tileKey)) {
+    logLine("That tile is marked as a no-zombie zone — pick another.");
+    render();
+    return;
+  }
+
+  let placed = 0;
+  for (let lx = 0; lx < TILE_DIM; lx += 1) {
+    for (let ly = 0; ly < TILE_DIM; ly += 1) {
+      if (!isLocalWalkable(tile, lx, ly)) continue;
+      const spaceKey = key(tileX * TILE_DIM + lx, tileY * TILE_DIM + ly);
+      if (state.zombies.has(spaceKey)) continue;
+      state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
+      placed += 1;
+    }
+  }
+
+  logLine(`${player.name}'s We're all gonna die! — ${placed} zombie(s) placed on ${getTileDisplayName(tile)}.`);
+  state.pendingZombieFlood = null;
+  render();
+}
+
+function finishZombieFlood() {
+  if (!state.pendingZombieFlood) return;
+  state.pendingZombieFlood = null;
+  logLine("We're all gonna die! — cancelled.");
+  render();
+}
+
 function handleDynamiteTargetClick(sx, sy) {
   const pdt = state.pendingDynamiteTarget;
   if (!pdt) return;
