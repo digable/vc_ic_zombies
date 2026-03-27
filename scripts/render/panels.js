@@ -223,7 +223,8 @@ function renderHand() {
     Boolean(state.pendingZombieReplace) || Boolean(state.pendingZombieDiceChallenge) ||
     Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove) ||
     Boolean(state.pendingDynamiteTarget) || Boolean(state.pendingMinefield) ||
-    Boolean(state.pendingRocketLauncher);
+    Boolean(state.pendingRocketLauncher) || Boolean(state.pendingZombieFlood) ||
+    Boolean(state.pendingBuildingSelect);
 
   const isCardPlayable = (card) => {
     if (globallyBlocked) return false;
@@ -454,6 +455,19 @@ function renderZombieReplacePanel() {
       <div class="small">Click an adjacent zombie space (including diagonals) to destroy it.</div>
       <div class="combat-decision-actions">
         <button id="zombieReplaceDoneBtn">Done (skip remaining)</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pzf = state.pendingZombieFlood;
+  if (pzf) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">${pzf.cardName || "Zombie Flood"}</div>
+      <div class="small">Click a tile to flood it with zombies.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Cancel</button>
       </div>
     `;
     return;

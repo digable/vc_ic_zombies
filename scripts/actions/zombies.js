@@ -204,13 +204,17 @@ function finalizeZombieAutoMove(combatPending) {
   render();
 }
 
+function availableZombiesForMove(pzm) {
+  return [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+}
+
 // Stepped (animated) auto-move — moves one zombie per tick.
 function autoMoveOneZombie() {
   state.zombieAnimationTimer = null;
   const pzm = state.pendingZombieMovement;
   if (!pzm || pzm.remaining <= 0) { finalizeZombieAutoMove(false); return; }
 
-  const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+  const available = availableZombiesForMove(pzm);
   if (available.length === 0) { finalizeZombieAutoMove(false); return; }
 
   const chosen = pickNearestZombieToMove(available);
@@ -251,7 +255,7 @@ function flushZombieMovement() {
 
   let combatDecisionPending = false;
   while (pzm.remaining > 0) {
-    const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    const available = availableZombiesForMove(pzm);
     if (available.length === 0) break;
     const chosen = pickNearestZombieToMove(available);
     const { moved, combatPending } = moveZombieAllSteps(chosen, pzm);
@@ -273,7 +277,7 @@ function manualMoveZombie(zKey) {
   if (!moved) {
     pzm.stuckKeys.add(zKey);
     logLine(`Zombie at ${zKey} is stuck and cannot move.`);
-    const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    const available = availableZombiesForMove(pzm);
     if (available.length === 0) {
       state.pendingZombieMovement = null;
       state.step = STEP.DISCARD;

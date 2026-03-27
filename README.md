@@ -253,6 +253,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 - Hearts are capped at 5
 - One event card may be played per turn cycle; some cards have timing restrictions (e.g. Much Needed Rest must be played before rolling movement)
 - Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot
+- Zombie auto-move plays out one zombie per tick (350 ms delay); spaces where zombies landed pulse red until the player ends their turn — a **Skip animation** button flushes the remaining moves instantly
 - Win by reaching the **center square** of the Helipad or reaching 25 kills
 
 ---

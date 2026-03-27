@@ -2,7 +2,7 @@
 // All rendering helpers live in render-helpers.js, render-board.js, render-panels.js, render-debug.js.
 
 function updateButtons() {
-  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget || state.pendingMinefield || state.pendingRocketLauncher) {
+  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget || state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood || state.pendingBreakthrough) {
     refs.drawTileBtn.disabled = true;
     document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
     refs.rotateLeftBtn.disabled = true;
