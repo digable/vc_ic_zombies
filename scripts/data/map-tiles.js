@@ -705,6 +705,9 @@ const namedTiles = [
   {
     name: "Escalator",
     type: "named",
+    // S connector is floor 1 (placement side); N/E/W connectors lead to floor 2 after placement
+    floor1Connectors: ["S"],
+    floor2Connectors: ["N", "E", "W"],
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
@@ -718,8 +721,8 @@ const namedTiles = [
       "1,0": { walkable: true, type: "mall hallway", walls: ["E", "W"] },
       "2,0": { walkable: false },
       "0,1": { walkable: true, type: "mall hallway", walls: ["N", "S"] },
-      "1,1": { walkable: true, type: "building" },
-      "2,1": { walkable: true, type: "escalator", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "escalator" },
+      "2,1": { walkable: true, type: "mall hallway", walls: ["N", "S"] },
       "0,2": { walkable: false },
       "1,2": { walkable: true, type: "escalator", walls: ["E", "W"] },
       "2,2": { walkable: false }

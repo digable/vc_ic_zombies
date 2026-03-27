@@ -2,6 +2,37 @@ function hasRoad(tile, dir) {
   return tile.connectors.includes(dir);
 }
 
+// Returns 1 or 2: the floor a tile placed at (x, y) with the given connectors would occupy.
+// A tile is floor 2 if it road-connects to:
+//   - the Escalator via one of its floor2Connectors (rotated), or
+//   - an existing floor-2 tile.
+function getFloorForPlacement(x, y, connectors) {
+  if (!state.floor2Tiles) return 1;
+  for (const [dir, def] of Object.entries(DIRS)) {
+    if (!connectors.includes(dir)) continue;
+    const nk = key(x + def.x, y + def.y);
+    const neighbor = state.board.get(nk);
+    if (!neighbor || !neighbor.connectors.includes(def.opposite)) continue;
+    if (neighbor.name === "Escalator" && neighbor.floor2Connectors) {
+      const rotatedFloor2 = neighbor.floor2Connectors.map(d => rotateDir(d, neighbor.placedRotation || 0));
+      if (rotatedFloor2.includes(def.opposite)) return 2;
+    } else if (state.floor2Tiles.has(nk)) {
+      return 2;
+    }
+  }
+  return 1;
+}
+
+// Returns true if the tile must be placed on floor 2.
+// Only applies to the mall helipad (Mall Walkers collection active + Escalator on the board).
+function mustBeFloor2(tile) {
+  if (!tile.isWinTile || tile.type !== "helipad") return false;
+  if (!state.deckFilters?.[COLLECTIONS.MALL_WALKERS]?.enabled) return false;
+  let hasEscalator = false;
+  state.board.forEach((t) => { if (t.name === "Escalator") hasEscalator = true; });
+  return hasEscalator;
+}
+
 // Returns true if the tile being placed (with tileDeck) may connect to neighborTile
 // via the neighbor's connector in direction neighborConnDir.
 // Zone rules: tiles must share the same placedDeck, except at a gateway connector.
@@ -25,7 +56,7 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
   return false;
 }
 
-function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false) {
+function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false, requiresFloor2 = false, floor1OnlyDirs = null) {
   const here = key(x, y);
   if (state.board.has(here)) return false;
 
@@ -41,14 +72,32 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
     if (!lenientMismatch && meHas !== themHas) return false;
     // Road-to-road: check zone and count
     if (meHas && themHas) {
+      if (floor1OnlyDirs && !floor1OnlyDirs.has(dir)) return false;
       if (tileDeck !== undefined && !isZoneCompatible(neighbor, def.opposite, tileDeck, dir, incomingGatewayDirs)) return false;
       roadMatches += 1;
     }
     // Wall-to-wall: allowed as long as a road match exists somewhere
   }
 
-  // Must touch at least one tile and have at least one road-to-road connection
-  return touching > 0 && roadMatches > 0;
+  if (touching === 0 || roadMatches === 0) return false;
+
+  // Floor isolation: floor-1 and floor-2 tiles may not road-connect except through the Escalator.
+  // The mall helipad (win tile) must be placed on floor 2 when the Escalator is on the board.
+  if (requiresFloor2 || (state.floor2Tiles && state.floor2Tiles.size > 0)) {
+    const incomingFloor = getFloorForPlacement(x, y, connectors);
+    if (requiresFloor2 && incomingFloor !== 2) return false;
+    for (const [dir, def] of Object.entries(DIRS)) {
+      if (!connectors.includes(dir)) continue;
+      const nk = key(x + def.x, y + def.y);
+      const neighbor = state.board.get(nk);
+      if (!neighbor || !hasRoad(neighbor, def.opposite)) continue;
+      if (neighbor.name === "Escalator") continue; // escalator bridges both floors
+      const neighborFloor = state.floor2Tiles.has(nk) ? 2 : 1;
+      if (incomingFloor !== neighborFloor) return false;
+    }
+  }
+
+  return true;
 }
 
 function getPlacementOptions(tile, tileDeck = "base") {
@@ -62,6 +111,7 @@ function getPlacementOptions(tile, tileDeck = "base") {
   });
 
   const lenient = !!tile.isWinTile;
+  const requiresFloor2 = mustBeFloor2(tile);
   const options = [];
   frontier.forEach((k) => {
     const { x, y } = parseKey(k);
@@ -70,7 +120,10 @@ function getPlacementOptions(tile, tileDeck = "base") {
       const gwDirs = tile.zoneGatewayConnector
         ? new Set([rotateDir(tile.zoneGatewayConnector, r)])
         : null;
-      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient)) {
+      const floor1Dirs = tile.floor1Connectors
+        ? new Set(tile.floor1Connectors.map(d => rotateDir(d, r)))
+        : null;
+      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient, requiresFloor2, floor1Dirs)) {
         options.push({ x, y, connectors, rotation: r });
       }
     }

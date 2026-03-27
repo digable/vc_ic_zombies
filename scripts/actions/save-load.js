@@ -76,6 +76,7 @@ function serializeState() {
     // Sets / Maps
     activeStandaloneDecks:  [...state.activeStandaloneDecks],
     breakthroughConnections: [...state.breakthroughConnections],
+    floor2Tiles:            [...(state.floor2Tiles || [])],
     zombies:     [...state.zombies.entries()],
     spaceTokens: [...state.spaceTokens.entries()],
 
@@ -107,8 +108,9 @@ function deserializeState(data) {
   state.discardPile    = data.discardPile;
 
   // Sets
-  state.activeStandaloneDecks  = new Set(data.activeStandaloneDecks);
+  state.activeStandaloneDecks   = new Set(data.activeStandaloneDecks);
   state.breakthroughConnections = new Set(data.breakthroughConnections);
+  state.floor2Tiles             = new Set(data.floor2Tiles || []);
 
   // Maps
   state.zombies     = new Map(data.zombies);

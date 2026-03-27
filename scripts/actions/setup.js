@@ -58,6 +58,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.eventDeck = buildEventDeck(eventFilters ?? deckFilters);
   state.eventDiscardPile = [];
   state.breakthroughConnections = new Set();
+  state.floor2Tiles = new Set();
   state.regularZombieEnhanced = null;
   state.pendingRocketLauncher = null;
   state.forcedNextOpponentId = null;
@@ -255,6 +256,7 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
       placedRotation: tileRotation,
       ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
     });
+    stampFloorForPlacedTile(cx, cy);
 
     const spawnCount = getZombieSpawnCountForPlacedTile(companion, rotatedConnectors);
     if (companion.zombieSpawnMode === "by_exits") {
@@ -266,6 +268,49 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
     state.discardPile.push(companion);
     logLine(`${companion.name} auto-placed at (${cx}, ${cy}) as part of ${mainTile.name}.`);
   });
+}
+
+// BFS from the escalator's floor-2 connector sides, marking all reachable tiles as floor 2.
+// Called once after the Escalator is placed, in case tiles were already adjacent on that side.
+function markFloor2FromEscalator(escX, escY, escTile) {
+  const floor2Dirs = (escTile.floor2Connectors || []).map(d => rotateDir(d, escTile.placedRotation || 0));
+  const queue = [];
+  for (const dir of floor2Dirs) {
+    const nk = key(escX + DIRS[dir].x, escY + DIRS[dir].y);
+    const neighbor = state.board.get(nk);
+    if (neighbor && !state.floor2Tiles.has(nk)) {
+      state.floor2Tiles.add(nk);
+      queue.push(nk);
+    }
+  }
+  while (queue.length > 0) {
+    const cur = queue.shift();
+    const { x, y } = parseKey(cur);
+    const tile = state.board.get(cur);
+    if (!tile || tile.name === "Escalator") continue;
+    for (const [dir, def] of Object.entries(DIRS)) {
+      if (!tile.connectors.includes(dir)) continue;
+      const nk = key(x + def.x, y + def.y);
+      const neighbor = state.board.get(nk);
+      if (!neighbor || state.floor2Tiles.has(nk) || neighbor.name === "Escalator") continue;
+      if (!neighbor.connectors.includes(def.opposite)) continue;
+      state.floor2Tiles.add(nk);
+      queue.push(nk);
+    }
+  }
+}
+
+// Stamp floor on a newly placed tile and trigger escalator propagation if needed.
+function stampFloorForPlacedTile(x, y) {
+  if (!state.floor2Tiles) state.floor2Tiles = new Set();
+  const placedTile = state.board.get(key(x, y));
+  if (!placedTile) return;
+  if (placedTile.name === "Escalator") {
+    markFloor2FromEscalator(x, y, placedTile);
+    return;
+  }
+  const floor = getFloorForPlacement(x, y, placedTile.connectors || []);
+  if (floor === 2) state.floor2Tiles.add(key(x, y));
 }
 
 function placePendingTileAt(x, y) {
@@ -292,6 +337,7 @@ function placePendingTileAt(x, y) {
     placedRotation: placement.rotation,
     ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
   });
+  stampFloorForPlacedTile(placement.x, placement.y);
 
   const placedName = getTileDisplayName(tile);
   logLine(`${currentPlayer().name} placed ${placedName} at (${placement.x}, ${placement.y}).`);

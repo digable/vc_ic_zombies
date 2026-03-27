@@ -6,6 +6,17 @@
 // resolveCollectionCounts() lives in core.js and is shared with event-deck.js.
 // ---------------------------------------------------------------------------
 
+// Ensures the Escalator is always drawn before the Helipad in Mall Walkers games.
+// If the Helipad lands at or before the Escalator after shuffling, move it to just after.
+function ensureEscalatorBeforeHelipad(deck) {
+  const helIdx = deck.findIndex((t) => t.name === "Helipad");
+  const escIdx = deck.findIndex((t) => t.name === "Escalator");
+  if (escIdx === -1 || helIdx === -1 || escIdx < helIdx) return;
+  const [helipad] = deck.splice(helIdx, 1);
+  const newEscIdx = deck.findIndex((t) => t.name === "Escalator");
+  deck.splice(newEscIdx + 1, 0, helipad);
+}
+
 function buildMapDeck(filters = null) {
   const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
 
@@ -84,6 +95,7 @@ function buildMapDeck(filters = null) {
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
     cards.splice(pos, 0, wt);
   });
+  ensureEscalatorBeforeHelipad(cards);
   return cards;
 }
 
@@ -135,6 +147,7 @@ function buildStandaloneDeck(collKey, filters = null) {
     const pos = start + Math.floor(Math.random() * (cards.length - start + 1));
     cards.splice(pos, 0, wt);
   });
+  ensureEscalatorBeforeHelipad(cards);
   return cards;
 }
 
