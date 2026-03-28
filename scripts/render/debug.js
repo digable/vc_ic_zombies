@@ -65,7 +65,7 @@ function editableCellsToTemplate(editedCells) {
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
       const coord = key(lx, ly);
-      const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [] };
+      const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [], airDucts: [] };
       if (!cell.walkable) {
         template[coord] = { walkable: false };
       } else {
@@ -78,6 +78,9 @@ function editableCellsToTemplate(editedCells) {
         }
         if (cell.doors?.length) {
           row.doors = [...cell.doors];
+        }
+        if (cell.airDucts?.length) {
+          row.airDucts = [...cell.airDucts];
         }
         template[coord] = row;
       }
@@ -106,6 +109,9 @@ function buildSubTilesTemplateCode(editedCells) {
         }
         if (row.doors?.length) {
           parts.push(`doors: [${row.doors.map((dir) => `"${dir}"`).join(", ")}]`);
+        }
+        if (row.airDucts?.length) {
+          parts.push(`airDucts: [${row.airDucts.map((dir) => `"${dir}"`).join(", ")}]`);
         }
       }
       entries.push(`  "${coord}": { ${parts.join(", ")} }`);
@@ -185,7 +191,7 @@ function renderMapDeckDebug() {
     for (let ly = 0; ly < 3; ly += 1) {
       for (let lx = 0; lx < 3; lx += 1) {
         const coord = key(lx, ly);
-        const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [] };
+        const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [], airDucts: [] };
         if (window.renderSubtileEditorRow && window.renderCompassCheckboxes) {
           subtileRows.push(window.renderSubtileEditorRow({
             prefix: "data-debug-",

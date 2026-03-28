@@ -150,6 +150,20 @@ function getSubTileWallDirs(tileLike, lx, ly) {
   });
 }
 
+function getSubTileSideDirs(tileLike, lx, ly, field) {
+  const sub = tileLike?.subTiles?.[key(lx, ly)];
+  if (!sub) return [];
+  return normalizeDirList(sub[field]);
+}
+
+function getSubTileDoorDirs(tileLike, lx, ly) {
+  return getSubTileSideDirs(tileLike, lx, ly, "doors");
+}
+
+function getSubTileAirDuctDirs(tileLike, lx, ly) {
+  return getSubTileSideDirs(tileLike, lx, ly, "airDucts");
+}
+
 function getSubTileType(tileLike, lx, ly) {
   const sub = tileLike?.subTiles?.[key(lx, ly)];
   if (!sub) {
@@ -251,9 +265,13 @@ function buildMicroGridHtml(tileForRender) {
         const door = DOOR_LOCAL[dir];
         return door && door.x === lx && door.y === ly;
       });
+      const doorDirs = getSubTileDoorDirs(tileForRender, lx, ly);
+      const ductDirs = getSubTileAirDuctDirs(tileForRender, lx, ly);
+      const doorLabels = doorDirs.map((dir) => `<span class="side-label side-label-${dir.toLowerCase()} door-side">D</span>`).join("");
+      const ductLabels = ductDirs.map((dir) => `<span class="side-label side-label-${dir.toLowerCase()} duct-side">AD</span>`).join("");
       const subTypeClass = subType ? ` ${subType.replaceAll(" ", "-")}-subtile` : "";
       micro.push(
-        `<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
+        `<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${doorLabels}${ductLabels}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
       );
     }
   }

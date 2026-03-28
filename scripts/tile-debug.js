@@ -22,7 +22,7 @@ function attachNewTileSubtileEditorListeners() {
       newTileGeneratorCells[coord].walkable = target.checked;
     } else if (field === "type" && target instanceof HTMLSelectElement) {
       newTileGeneratorCells[coord].type = target.value;
-    } else if ((field === "walls" || field === "doors") && dir && target instanceof HTMLInputElement) {
+    } else if ((field === "walls" || field === "doors" || field === "airDucts") && dir && target instanceof HTMLInputElement) {
       const set = new Set(newTileGeneratorCells[coord][field] || []);
       if (target.checked) {
         set.add(dir);
@@ -163,7 +163,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     editedCells[coord].walkable = Boolean(value);
   } else if (field === "type") {
     editedCells[coord].type = typeof value === "string" ? value.trim().toLowerCase() : "";
-  } else if ((field === "walls" || field === "doors") && dir) {
+  } else if ((field === "walls" || field === "doors" || field === "airDucts") && dir) {
     const set = new Set(editedCells[coord][field] || []);
     if (value) { set.add(dir); } else { set.delete(dir); }
     editedCells[coord][field] = ["N", "E", "S", "W"].filter((d) => set.has(d));
@@ -237,7 +237,7 @@ const newTileGeneratorCells = {};
 (function () {
   for (let ly = 0; ly < 3; ly += 1) {
     for (let lx = 0; lx < 3; lx += 1) {
-      newTileGeneratorCells[key(lx, ly)] = { walkable: lx === 1 && ly === 1, type: "", walls: [], doors: [] };
+      newTileGeneratorCells[key(lx, ly)] = { walkable: lx === 1 && ly === 1, type: "", walls: [], doors: [], airDucts: [] };
     }
   }
 })();

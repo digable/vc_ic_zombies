@@ -32,6 +32,10 @@ function renderSubtileEditorRow({
           <strong>Doors</strong>
           ${renderCompassCheckboxes({ prefix, coord, field: 'doors', checkedDirs: cell.doors, tileId })}
         </div>
+        <div class="deck-subtile-edit-dirs">
+          <strong>Air Ducts</strong>
+          ${renderCompassCheckboxes({ prefix, coord, field: 'airDucts', checkedDirs: cell.airDucts, tileId })}
+        </div>
       </div>
     </div>
   `;

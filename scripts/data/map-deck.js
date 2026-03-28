@@ -172,15 +172,15 @@ function buildStartTile(filters = null) {
 
 // Returns { collectionKey: tileCount } — count per collection when only that collection is enabled.
 function getMapTileCountsByCollection() {
+  const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
   const counts = {};
   Object.values(COLLECTIONS).forEach((col) => {
-    if (COLLECTION_META[col]?.standaloneDeck) {
-      const tiles = buildStandaloneDeck(col, { [col]: { enabled: true, disabled: false } });
-      if (tiles.length > 0) counts[col] = tiles.length;
-    } else {
-      const tiles = buildMapDeck({ [col]: { enabled: true, disabled: false } });
-      if (tiles.length > 0) counts[col] = tiles.length;
-    }
+    let total = 0;
+    allTiles.forEach((t) => {
+      const colCounts = resolveCollectionCounts(t);
+      total += colCounts[col] || 0;
+    });
+    if (total > 0) counts[col] = total;
   });
   return counts;
 }

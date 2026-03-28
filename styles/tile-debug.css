@@ -32,18 +32,16 @@
   max-width: 120px;
 }
 .deck-subtile-edit-dirs-row.side-by-side {
-  display: flex;
-  flex-direction: row;
-  gap: 1.2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
   align-items: flex-start;
   margin-bottom: 0.2rem;
   width: 100%;
   box-sizing: border-box;
 }
 .deck-subtile-edit-dirs-row.side-by-side .deck-subtile-edit-dirs {
-  flex: 1 1 0;
   min-width: 0;
-  max-width: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;

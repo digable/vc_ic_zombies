@@ -8,7 +8,8 @@
       "Bash(do wc:*)",
       "Bash(done)",
       "Bash(wc -l /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/data/event-cards/*.js)",
-      "Bash(grep -n \"\\\\.map\\(.*=>.*\\\\.push\\\\|\\\\.forEach.*push\\\\|\\\\.forEach.*\\\\.filter\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)"
+      "Bash(grep -n \"\\\\.map\\(.*=>.*\\\\.push\\\\|\\\\.forEach.*push\\\\|\\\\.forEach.*\\\\.filter\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)",
+      "Bash(xargs wc:*)"
     ]
   }
 }

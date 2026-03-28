@@ -330,6 +330,65 @@
   width: 3px;
 }
 
+.micro-cell .side-label {
+  position: absolute;
+  font-size: 0.44rem;
+  font-weight: bold;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.micro-cell .side-label-n {
+  top: 1px;
+  left: 30%;
+  transform: translateX(-50%);
+}
+
+.micro-cell .side-label-n.duct-side {
+  left: 70%;
+}
+
+.micro-cell .side-label-s {
+  bottom: 1px;
+  left: 30%;
+  transform: translateX(-50%);
+}
+
+.micro-cell .side-label-s.duct-side {
+  left: 70%;
+}
+
+.micro-cell .side-label-w {
+  left: 1px;
+  top: 30%;
+  transform: translateY(-50%);
+}
+
+.micro-cell .side-label-w.duct-side {
+  top: 70%;
+}
+
+.micro-cell .side-label-e {
+  right: 1px;
+  top: 30%;
+  transform: translateY(-50%);
+}
+
+.micro-cell .side-label-e.duct-side {
+  top: 70%;
+}
+
+.micro-cell .door-side {
+  color: #e6c74a;
+  text-shadow: 0 0 2px rgba(0,0,0,0.8);
+}
+
+.micro-cell .duct-side {
+  color: #5bc8d4;
+  text-shadow: 0 0 2px rgba(0,0,0,0.8);
+}
+
 .micro-cell:nth-child(3n) {
   border-right: 0;
 }
