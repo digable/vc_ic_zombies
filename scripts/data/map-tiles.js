@@ -911,16 +911,16 @@ const namedTiles = [
     hearts: 3,
     bullets: 0,
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "building", walls: ["N"], doors: ["W"] },
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "building", walls: ["N"] },
       "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
-      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "0,1": { walkable: true, type: "building", walls: ["S"], doors: ["W"] },
       "1,1": { walkable: true, type: "building", walls: ["S"] },
       "2,1": { walkable: true, type: "building", walls: ["E"], doors: ["S"] },
       "0,2": { walkable: true, type: "road" },
       "1,2": { walkable: true, type: "road" },
       "2,2": { walkable: true, type: "road" }
-  }
+    }
   },
   {
     name: "College Street",
