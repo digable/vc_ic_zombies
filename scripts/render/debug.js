@@ -4,6 +4,10 @@
 let mapDeckDebugIdCounter = 1;
 const mapDeckDebugEdits = new Map();
 const mapDeckDebugFilters = { collection: "all" };
+const mapDeckExpandedTiles = new Set();   // tileIds with subtile editor open
+const mapDeckOpenGroups = new Set();      // group names that are expanded (default: all collapsed)
+const _pendingRerenderIds = new Set();
+let _renderDebounceTimer = null;
 
 function ensureMapDeckDebugTileId(tile) {
   if (tile._debugTileId) {
@@ -120,6 +124,171 @@ function buildSubTilesTemplateCode(editedCells) {
   return `subTilesTemplate: {\n${entries.join(",\n")}\n}`;
 }
 
+function formatDirs(value) {
+  if (!value) return "-";
+  const dirs = Array.isArray(value)
+    ? value
+    : Object.entries(value).filter(([, allowed]) => Boolean(allowed)).map(([dir]) => dir);
+  if (dirs.length === 0) return "-";
+  return dirs.map(directionToArrow).join(" ");
+}
+
+function renderCard({ tile, deckIndex }) {
+  const { tileId, editedCells } = ensureMapDeckDebugEdits(tile);
+  const editableTemplate = editableCellsToTemplate(editedCells);
+  // Use editableTemplate directly as subTiles — connectivity (enterFrom/exitTo) not needed for the micro-grid
+  const tileForRender = { ...tile, subTilesTemplate: editableTemplate, subTiles: editableTemplate };
+  const microHtml = buildMicroGridHtml(tileForRender);
+
+  const isExpanded = mapDeckExpandedTiles.has(tileId);
+  let subtileSection = "";
+  if (isExpanded) {
+    const subtileRows = [];
+    for (let ly = 0; ly < 3; ly += 1) {
+      for (let lx = 0; lx < 3; lx += 1) {
+        const coord = key(lx, ly);
+        const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [], airDucts: [] };
+        if (window.renderSubtileEditorRow && window.renderCompassCheckboxes) {
+          subtileRows.push(window.renderSubtileEditorRow({
+            prefix: "data-debug-",
+            coord, lx, ly, cell, tileId,
+            renderCompassCheckboxes: window.renderCompassCheckboxes
+          }));
+        }
+      }
+    }
+    subtileSection = `
+      <button type="button" class="deck-expand-btn deck-expand-btn--open" data-debug-expand-tile="${tileId}">Subtiles ▲</button>
+      <div class="deck-subtiles">${subtileRows.join("")}</div>
+    `;
+  } else {
+    subtileSection = `<button type="button" class="deck-expand-btn" data-debug-expand-tile="${tileId}">Edit Subtiles ▼</button>`;
+  }
+
+  const zombieTotal = Object.values(tileForRender.zombies || {}).reduce((s, n) => s + n, 0);
+  const currentZombieType = Object.keys(tileForRender.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
+  const gwConn = tileForRender.zoneGatewayConnector || "";
+  const sc = getCollectionShortCode(tileForRender.collection);
+  const scBadge = sc ? ` <span class="coll-short-code">${sc}</span>` : "";
+
+  const generatedCode = buildSubTilesTemplateCode(editedCells);
+  const { _debugTileId, subTiles, ...tileForCode } = tileForRender;
+  const fullTileCode = formatTileCode(tileForCode);
+
+  return `
+    <div class="deck-tile ${getTileClassName(tileForRender)}" data-debug-card-id="${tileId}" style="background: ${getTileBackgroundStyle(tileForRender.type)}">
+      <div class="small">#${deckIndex + 1}</div>
+      <div class="deck-tile-edit-line">
+        <strong>${getTileDisplayName(tileForRender)}</strong>${scBadge}
+      </div>
+      <div class="deck-tile-collections">
+        <strong>Collections</strong>
+        <div class="deck-tile-collections-grid">
+          ${Object.entries(COLLECTIONS).map(([k, v]) => {
+            const cnt = resolveCollectionCounts(tileForRender)[v] || 0;
+            return `<label style="opacity:${cnt > 0 ? 1 : 0.4}">${k}:<input type="number" min="0" value="${cnt}" data-debug-tile-id="${tileId}" data-debug-field="collectionCount" data-debug-dir="${v}" class="deck-tile-count-input" /></label>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Type</strong>
+        <select data-debug-tile-id="${tileId}" data-debug-field="tileType">
+          ${Object.values(TILE_TYPE).map((v) => `<option value="${v}" ${tileForRender.type === v ? "selected" : ""}>${v}</option>`).join("")}
+        </select>
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Spawn Mode</strong>
+        <select data-debug-tile-id="${tileId}" data-debug-field="zombieSpawnMode">
+          <option value="by_card" ${(tileForRender.zombieSpawnMode || "by_card") === "by_card" ? "selected" : ""}>by_card</option>
+          <option value="by_exits" ${tileForRender.zombieSpawnMode === "by_exits" ? "selected" : ""}>by_exits</option>
+          <option value="none" ${tileForRender.zombieSpawnMode === "none" ? "selected" : ""}>none</option>
+        </select>
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Zombies</strong>
+        <input type="number" min="0" value="${zombieTotal}" data-debug-tile-id="${tileId}" data-debug-field="zombieCount" data-debug-dir="${currentZombieType}" class="deck-tile-count-input" />
+        <select data-debug-tile-id="${tileId}" data-debug-field="zombieType">
+          <option value="${ZOMBIE_TYPE.REGULAR}" ${currentZombieType === ZOMBIE_TYPE.REGULAR ? "selected" : ""}>regular</option>
+          <option value="${ZOMBIE_TYPE.ENHANCED}" ${currentZombieType === ZOMBIE_TYPE.ENHANCED ? "selected" : ""}>enhanced</option>
+        </select>
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Hearts</strong>
+        <input type="number" min="0" value="${tileForRender.hearts || 0}" data-debug-tile-id="${tileId}" data-debug-field="hearts" class="deck-tile-count-input" />
+        <strong>Bullets</strong>
+        <input type="number" min="0" value="${tileForRender.bullets || 0}" data-debug-tile-id="${tileId}" data-debug-field="bullets" class="deck-tile-count-input" />
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Connectors</strong>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="N" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("N") ? "checked" : ""}/>N</label>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="E" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("E") ? "checked" : ""}/>E</label>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="S" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("S") ? "checked" : ""}/>S</label>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="W" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("W") ? "checked" : ""}/>W</label>
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Flags</strong>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isStartTile" ${tileForRender.isStartTile ? "checked" : ""} />isStartTile</label>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isWinTile" ${tileForRender.isWinTile ? "checked" : ""} />isWinTile</label>
+        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="firstDrawWhenSolo" ${tileForRender.firstDrawWhenSolo ? "checked" : ""} />firstDrawWhenSolo</label>
+      </div>
+      <div class="deck-tile-edit-line">
+        <strong>Zone Gateway</strong>
+        <select data-debug-tile-id="${tileId}" data-debug-field="zoneGatewayConnector">
+          <option value="" ${!gwConn ? "selected" : ""}>— none —</option>
+          <option value="N" ${gwConn === "N" ? "selected" : ""}>N</option>
+          <option value="E" ${gwConn === "E" ? "selected" : ""}>E</option>
+          <option value="S" ${gwConn === "S" ? "selected" : ""}>S</option>
+          <option value="W" ${gwConn === "W" ? "selected" : ""}>W</option>
+        </select>
+      </div>
+      <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
+      <div class="small">Z${zombieTotal}, L${tileForRender.hearts || 0}, B${tileForRender.bullets || 0}</div>
+      <div class="micro-grid">${microHtml}</div>
+      ${subtileSection}
+      <details class="deck-code-wrap">
+        <summary>Generated subTilesTemplate code</summary>
+        <div class="deck-code-actions">
+          <button type="button" class="deck-copy-btn" data-debug-copy-code="1">Copy</button>
+          <span class="deck-copy-status" aria-live="polite"></span>
+        </div>
+        <pre class="deck-code">${escapeHtml(generatedCode)}</pre>
+      </details>
+      <details class="deck-code-wrap">
+        <summary>Generated full tile object code</summary>
+        <div class="deck-code-actions">
+          <button type="button" class="deck-copy-btn" data-debug-copy-code="2">Copy</button>
+          <span class="deck-copy-status" aria-live="polite"></span>
+        </div>
+        <pre class="deck-code">${escapeHtml(fullTileCode)}</pre>
+      </details>
+    </div>
+  `;
+}
+
+function rerenderCard(tileId) {
+  if (!refs.mapDeckDebug) return;
+  const tile = state.mapDeck.find((t) => t._debugTileId === tileId);
+  if (!tile) { renderMapDeckDebug(); return; }
+  const deckIndex = state.mapDeck.indexOf(tile);
+  const existing = refs.mapDeckDebug.querySelector(`[data-debug-card-id="${tileId}"]`);
+  if (!existing) { renderMapDeckDebug(); return; }
+  const temp = document.createElement("div");
+  temp.innerHTML = renderCard({ tile, deckIndex });
+  const newEl = temp.firstElementChild;
+  if (newEl) existing.replaceWith(newEl);
+}
+
+function scheduleRerenderCard(tileId) {
+  _pendingRerenderIds.add(tileId);
+  clearTimeout(_renderDebounceTimer);
+  _renderDebounceTimer = setTimeout(() => {
+    _renderDebounceTimer = null;
+    const ids = new Set(_pendingRerenderIds);
+    _pendingRerenderIds.clear();
+    ids.forEach((id) => rerenderCard(id));
+  }, 80);
+}
+
 function renderMapDeckDebug() {
   if (!refs.mapDeckDebug || !refs.mapDeckDebugCount) {
     return;
@@ -175,164 +344,17 @@ function renderMapDeckDebug() {
     });
   });
 
-  const renderCard = ({ tile, deckIndex }) => {
-    const { tileId, editedCells } = ensureMapDeckDebugEdits(tile);
-
-    const editableTemplate = editableCellsToTemplate(editedCells);
-    const tileForRender = {
-      ...tile,
-      subTilesTemplate: editableTemplate,
-      subTiles: buildSubTilesForTile({ ...tile, subTilesTemplate: editableTemplate })
-    };
-
-    const microHtml = buildMicroGridHtml(tileForRender);
-
-    const subtileRows = [];
-    for (let ly = 0; ly < 3; ly += 1) {
-      for (let lx = 0; lx < 3; lx += 1) {
-        const coord = key(lx, ly);
-        const cell = editedCells?.[coord] || { walkable: false, type: "", walls: [], doors: [], airDucts: [] };
-        if (window.renderSubtileEditorRow && window.renderCompassCheckboxes) {
-          subtileRows.push(window.renderSubtileEditorRow({
-            prefix: "data-debug-",
-            coord,
-            lx,
-            ly,
-            cell,
-            tileId,
-            renderCompassCheckboxes: window.renderCompassCheckboxes
-          }));
-        } else {
-          subtileRows.push(`<div>${coord}</div>`);
-        }
-      }
-    }
-
-    const formatDirs = (value) => {
-      if (!value) return "-";
-      const dirs = Array.isArray(value)
-        ? value
-        : Object.entries(value)
-          .filter(([, allowed]) => Boolean(allowed))
-          .map(([dir]) => dir);
-      if (dirs.length === 0) return "-";
-      return dirs.map(directionToArrow).join(" ");
-    };
-
-    const zombieTotal = Object.values(tileForRender.zombies || {}).reduce((s, n) => s + n, 0);
-    const currentZombieType = Object.keys(tileForRender.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
-    const gwConn = tileForRender.zoneGatewayConnector || "";
-    const sc = getCollectionShortCode(tileForRender.collection);
-    const scBadge = sc ? ` <span class="coll-short-code">${sc}</span>` : "";
-
-    const generatedCode = buildSubTilesTemplateCode(editedCells);
-    const { _debugTileId, subTiles, ...tileForCode } = tileForRender;
-    const fullTileCode = formatTileCode(tileForCode);
-
-    return `
-      <div class="deck-tile ${getTileClassName(tileForRender)}" data-debug-card-id="${tileId}" style="background: ${getTileBackgroundStyle(tileForRender.type)}">
-        <div class="small">#${deckIndex + 1}</div>
-        <div class="deck-tile-edit-line">
-          <strong>${getTileDisplayName(tileForRender)}</strong>${scBadge}
-        </div>
-        <div class="deck-tile-collections">
-          <strong>Collections</strong>
-          <div class="deck-tile-collections-grid">
-            ${Object.entries(COLLECTIONS).map(([k, v]) => {
-              const cnt = resolveCollectionCounts(tileForRender)[v] || 0;
-              return `<label style="opacity:${cnt > 0 ? 1 : 0.4}">${k}:<input type="number" min="0" value="${cnt}" data-debug-tile-id="${tileId}" data-debug-field="collectionCount" data-debug-dir="${v}" class="deck-tile-count-input" /></label>`;
-            }).join("")}
-          </div>
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Type</strong>
-          <select data-debug-tile-id="${tileId}" data-debug-field="tileType">
-            ${Object.values(TILE_TYPE).map((v) => `<option value="${v}" ${tileForRender.type === v ? "selected" : ""}>${v}</option>`).join("")}
-          </select>
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Spawn Mode</strong>
-          <select data-debug-tile-id="${tileId}" data-debug-field="zombieSpawnMode">
-            <option value="by_card" ${(tileForRender.zombieSpawnMode || "by_card") === "by_card" ? "selected" : ""}>by_card</option>
-            <option value="by_exits" ${tileForRender.zombieSpawnMode === "by_exits" ? "selected" : ""}>by_exits</option>
-            <option value="none" ${tileForRender.zombieSpawnMode === "none" ? "selected" : ""}>none</option>
-          </select>
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Zombies</strong>
-          <input type="number" min="0" value="${zombieTotal}" data-debug-tile-id="${tileId}" data-debug-field="zombieCount" data-debug-dir="${currentZombieType}" class="deck-tile-count-input" />
-          <select data-debug-tile-id="${tileId}" data-debug-field="zombieType">
-            <option value="${ZOMBIE_TYPE.REGULAR}" ${currentZombieType === ZOMBIE_TYPE.REGULAR ? "selected" : ""}>regular</option>
-            <option value="${ZOMBIE_TYPE.ENHANCED}" ${currentZombieType === ZOMBIE_TYPE.ENHANCED ? "selected" : ""}>enhanced</option>
-          </select>
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Hearts</strong>
-          <input type="number" min="0" value="${tileForRender.hearts || 0}" data-debug-tile-id="${tileId}" data-debug-field="hearts" class="deck-tile-count-input" />
-          <strong>Bullets</strong>
-          <input type="number" min="0" value="${tileForRender.bullets || 0}" data-debug-tile-id="${tileId}" data-debug-field="bullets" class="deck-tile-count-input" />
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Connectors</strong>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="N" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("N") ? "checked" : ""}/>N</label>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="E" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("E") ? "checked" : ""}/>E</label>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="S" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("S") ? "checked" : ""}/>S</label>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="W" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("W") ? "checked" : ""}/>W</label>
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Flags</strong>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isStartTile" ${tileForRender.isStartTile ? "checked" : ""} />isStartTile</label>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isWinTile" ${tileForRender.isWinTile ? "checked" : ""} />isWinTile</label>
-          <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="firstDrawWhenSolo" ${tileForRender.firstDrawWhenSolo ? "checked" : ""} />firstDrawWhenSolo</label>
-        </div>
-        <div class="deck-tile-edit-line">
-          <strong>Zone Gateway</strong>
-          <select data-debug-tile-id="${tileId}" data-debug-field="zoneGatewayConnector">
-            <option value="" ${!gwConn ? "selected" : ""}>— none —</option>
-            <option value="N" ${gwConn === "N" ? "selected" : ""}>N</option>
-            <option value="E" ${gwConn === "E" ? "selected" : ""}>E</option>
-            <option value="S" ${gwConn === "S" ? "selected" : ""}>S</option>
-            <option value="W" ${gwConn === "W" ? "selected" : ""}>W</option>
-          </select>
-        </div>
-        <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
-        <div class="small">
-          Z${zombieTotal},
-          L${tileForRender.hearts || 0},
-          B${tileForRender.bullets || 0}
-        </div>
-        <div class="micro-grid">${microHtml}</div>
-        <div class="deck-subtiles">${subtileRows.join("")}</div>
-        <details class="deck-code-wrap">
-          <summary>Generated subTilesTemplate code</summary>
-          <div class="deck-code-actions">
-            <button type="button" class="deck-copy-btn" data-debug-copy-code="1">Copy</button>
-            <span class="deck-copy-status" aria-live="polite"></span>
-          </div>
-          <pre class="deck-code">${escapeHtml(generatedCode)}</pre>
-        </details>
-        <details class="deck-code-wrap">
-          <summary>Generated full tile object code</summary>
-          <div class="deck-code-actions">
-            <button type="button" class="deck-copy-btn" data-debug-copy-code="2">Copy</button>
-            <span class="deck-copy-status" aria-live="polite"></span>
-          </div>
-          <pre class="deck-code">${escapeHtml(fullTileCode)}</pre>
-        </details>
-      </div>
-    `;
-  };
-
   const sectionOrder = ["Buildings", "Road", "Grass", "Special Cards"];
   const sections = sectionOrder.map((section) => {
     const entries = grouped.get(section) || [];
     if (entries.length === 0) return "";
+    const isOpen = mapDeckOpenGroups.has(section);
     return `
       <section class="map-deck-group">
-        <h4 class="map-deck-group-title">${section} (${entries.length})</h4>
-        <div class="map-deck-group-grid">
-          ${entries.map((entry) => renderCard(entry)).join("")}
-        </div>
+        <button type="button" class="map-deck-group-title" data-deck-group-toggle="${section}">
+          ${section} (${entries.length}) ${isOpen ? "▲" : "▼"}
+        </button>
+        ${isOpen ? `<div class="map-deck-group-grid">${entries.map((entry) => renderCard(entry)).join("")}</div>` : ""}
       </section>
     `;
   });

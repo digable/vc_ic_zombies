@@ -206,9 +206,37 @@
 }
 
 .map-deck-group-title {
+  display: block;
+  width: 100%;
   margin: 0 0 0.32rem;
+  padding: 0.2rem 0.3rem;
   font-size: 0.9rem;
+  font-weight: 600;
   color: #1c2a38;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-deck-group-title:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.deck-expand-btn {
+  margin-top: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid #b0bcc8;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #2a3a4a;
+}
+
+.deck-expand-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .map-deck-group-grid {

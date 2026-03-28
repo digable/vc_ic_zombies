@@ -73,7 +73,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
   if (field === "tileType") {
     if (!tile) return;
     tile.type = typeof value === "string" ? value.trim().toLowerCase() : tile.type;
-    renderMapDeckDebug();
+    renderMapDeckDebug(); // full re-render: may change group membership
     return;
   }
 
@@ -83,14 +83,14 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     const n = Math.max(0, parseInt(value, 10) || 0);
     if (n === 0) { delete colCounts[dir]; } else { colCounts[dir] = n; }
     tile.collection = colCounts;
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
   if (field === "zombieSpawnMode") {
     if (!tile) return;
     tile.zombieSpawnMode = typeof value === "string" ? value.trim() : tile.zombieSpawnMode;
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
@@ -101,32 +101,31 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     if (!tile.zombies) tile.zombies = {};
     if (n === 0) { delete tile.zombies[zombieType]; } else { tile.zombies[zombieType] = n; }
     if (Object.keys(tile.zombies).length === 0) delete tile.zombies;
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
   if (field === "zombieType") {
     if (!tile) return;
-    // Remap the current zombie count to the new type
     const currentZombies = tile.zombies || {};
     const total = Object.values(currentZombies).reduce((s, n) => s + n, 0);
     tile.zombies = total > 0 ? { [value]: total } : {};
     if (Object.keys(tile.zombies).length === 0) delete tile.zombies;
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
   if (field === "hearts") {
     if (!tile) return;
     tile.hearts = Math.max(0, parseInt(value, 10) || 0);
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
   if (field === "bullets") {
     if (!tile) return;
     tile.bullets = Math.max(0, parseInt(value, 10) || 0);
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
@@ -135,21 +134,21 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     const set = new Set(Array.isArray(tile.connectors) ? tile.connectors : []);
     if (value) { set.add(dir); } else { set.delete(dir); }
     tile.connectors = ["N", "E", "S", "W"].filter((d) => set.has(d));
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
   if (field === "isStartTile" || field === "isWinTile" || field === "firstDrawWhenSolo") {
     if (!tile) return;
     if (value) { tile[field] = true; } else { delete tile[field]; }
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
   if (field === "zoneGatewayConnector") {
     if (!tile) return;
     if (value) { tile.zoneGatewayConnector = value; } else { delete tile.zoneGatewayConnector; }
-    renderMapDeckDebug();
+    scheduleRerenderCard(tileId);
     return;
   }
 
@@ -169,7 +168,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     editedCells[coord][field] = ["N", "E", "S", "W"].filter((d) => set.has(d));
   }
 
-  renderMapDeckDebug();
+  scheduleRerenderCard(tileId);
 }
 
 
@@ -323,6 +322,30 @@ function attachTileDebugListeners() {
   refs.mapDeckDebug.addEventListener("click", async (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    // Group collapse/expand toggle
+    const groupToggle = target.closest("[data-deck-group-toggle]");
+    if (groupToggle instanceof HTMLElement) {
+      const group = groupToggle.getAttribute("data-deck-group-toggle");
+      if (group) {
+        if (mapDeckOpenGroups.has(group)) { mapDeckOpenGroups.delete(group); }
+        else { mapDeckOpenGroups.add(group); }
+        renderMapDeckDebug();
+      }
+      return;
+    }
+
+    // Subtile editor expand/collapse
+    const expandBtn = target.closest("[data-debug-expand-tile]");
+    if (expandBtn instanceof HTMLElement) {
+      const tileId = expandBtn.getAttribute("data-debug-expand-tile");
+      if (tileId) {
+        if (mapDeckExpandedTiles.has(tileId)) { mapDeckExpandedTiles.delete(tileId); }
+        else { mapDeckExpandedTiles.add(tileId); }
+        rerenderCard(tileId);
+      }
       return;
     }
 
