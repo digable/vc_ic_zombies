@@ -28,6 +28,22 @@
   backdrop-filter: blur(2px);
 }
 
+.sidebar-panel-summary {
+  display: list-item;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--tone-warm);
+  padding: 0.1rem 0;
+  margin-bottom: 0.2rem;
+  list-style-position: inside;
+  user-select: none;
+}
+
+#sidebarPanel:not([open]) {
+  padding-bottom: 0.3rem;
+}
+
 .controls .row {
   display: flex;
   flex-wrap: wrap;
@@ -642,3 +658,4 @@
     height: 96px;
   }
 }
+

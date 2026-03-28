@@ -390,6 +390,11 @@ function applyCollectionTooltips() {
   });
 }
 
+if (window.matchMedia("(max-width: 480px)").matches) {
+  const s = document.getElementById("sidebarPanel");
+  if (s) s.removeAttribute("open");
+}
+
 buildCollectionRows();
 attachListeners();
 populateCollectionCounts();
