@@ -31,6 +31,7 @@ function endTurn() {
   if (outgoing.cannotMoveTurns > 0) {
     outgoing.cannotMoveTurns -= 1;
   }
+  if (state.weaponsJammedCount > 0) state.weaponsJammedCount -= 1;
   state.playerTrail = [];
   state.lastCombatResult = null;
   state.zombieMovedSpaces = new Set();

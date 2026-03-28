@@ -97,7 +97,33 @@ function resolvePendingCombatDecision(actionCode) {
     return;
   }
 
+  if (actionCode === "LS") {
+    const lsIndex = player.hand ? player.hand.findIndex((c) => c.name === "Lucky Shot") : -1;
+    if (lsIndex === -1) { render(); return; }
+    if (player.bullets <= 0) { logLine(`${player.name} has no bullets for Lucky Shot.`); render(); return; }
+    if (state.weaponsJammedCount > 0) { logLine("Weapons are jammed — Lucky Shot cannot be used."); render(); return; }
+    const lsCard = player.hand.splice(lsIndex, 1)[0];
+    state.eventDiscardPile.push(lsCard);
+    player.bullets -= 1;
+    state.zombies.delete(playerSpaceKey);
+    player.kills += 1;
+    state.lastCombatResult = "Lucky Shot";
+    state.recentKillKey = playerSpaceKey;
+    logLine(`${player.name} used Lucky Shot — spent 1 bullet and auto-killed the zombie.`, "kill");
+    const options = pending.options;
+    state.pendingCombatDecision = null;
+    checkWin(player);
+    applyCombatPostStep(player, playerSpaceKey, options);
+    render();
+    return;
+  }
+
   if (actionCode === "B") {
+    if (state.weaponsJammedCount > 0) {
+      logLine("Weapons and bullets are jammed — cannot spend bullets.");
+      render();
+      return;
+    }
     if (player.bullets <= 0) {
       logLine(`${player.name} cannot spend a bullet (none remaining).`);
       render();
@@ -163,6 +189,11 @@ function resolvePendingCombatDecision(actionCode) {
   }
 
   if (actionCode.startsWith("W:")) {
+    if (state.weaponsJammedCount > 0) {
+      logLine("Weapons and bullets are jammed — cannot use weapons.");
+      render();
+      return;
+    }
     const weaponName = actionCode.slice(2);
     const weaponIndex = player.items ? player.items.findIndex((c) => c.name === weaponName) : -1;
     if (weaponIndex < 0) {

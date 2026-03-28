@@ -590,5 +590,112 @@ const playerEventCards = [
         damagePlayer(player, 1, { endStep: false });
       }
     }
+  },
+  {
+    name: "Jammed",
+    description: "Players may not use weapons or spend bullet tokens until the end of your next turn.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    apply(player) {
+      state.weaponsJammedCount = state.players.length + 1;
+      logLine(`${player.name} played Jammed — weapons and bullets are disabled for ${state.players.length + 1} turn(s).`);
+    }
+  },
+  {
+    name: "Lots of Luck with That!",
+    description: "Play when on the same space as another player. Your movement ends and you take 1 bullet and 1 random card from that player.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    canPlay() {
+      const cp = currentPlayer();
+      return state.players.some((p) => p.id !== cp.id && p.x === cp.x && p.y === cp.y);
+    },
+    apply(player) {
+      const target = state.players.find((p) => p.id !== player.id && p.x === player.x && p.y === player.y);
+      if (!target) {
+        logLine(`${player.name} played Lots of Luck with That! — no co-located player found.`);
+        return;
+      }
+      if (state.step === STEP.MOVE) state.movesRemaining = 0;
+      let gained = [];
+      if (target.bullets > 0) {
+        target.bullets -= 1;
+        player.bullets += 1;
+        gained.push("1 bullet");
+      }
+      if (target.hand && target.hand.length > 0) {
+        const idx = Math.floor(Math.random() * target.hand.length);
+        const stolen = target.hand.splice(idx, 1)[0];
+        player.hand.push(stolen);
+        gained.push(`${stolen.name} (card)`);
+      }
+      const gainedText = gained.length > 0 ? gained.join(" and ") : "nothing (target had no bullets or cards)";
+      logLine(`${player.name} played Lots of Luck with That! — took ${gainedText} from ${target.name}. Movement ends.`);
+    }
+  },
+  {
+    name: "Lucky Shot",
+    description: "Play while in combat: spend 1 bullet to automatically kill the zombie you are fighting.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    // No apply() — this card is used directly from the combat panel (like First Aid Kit).
+  },
+  {
+    name: "Now that's just gross!",
+    description: "Play in the Lingerie Shop to place in front of you. Discard to immediately move to any space adjoining a building or store.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    isItem: true,
+    requiresTile: "Lingerie Shop",
+    apply(player) {
+      logLine(`${player.name} placed Now that's just gross! in front of them.`);
+    },
+    activateItem(player) {
+      const valid = getSpacesAdjoiningBuilding();
+      if (valid.size === 0) {
+        logLine(`${player.name} discarded Now that's just gross! — no valid spaces found.`);
+        return;
+      }
+      state.pendingSpaceSelect = { playerId: player.id, cardName: "Now that's just gross!" };
+      logLine(`${player.name} discarded Now that's just gross! — click a highlighted space to move there.`);
+    }
+  },
+  {
+    name: "Sprinkler System",
+    description: "No zombies in the mall may move until the end of your next turn. All combat occurs as normal.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    apply(player) {
+      state.zombieMoveFreezeCount = state.players.length + 1;
+      logLine(`${player.name} played Sprinkler System — zombie movement frozen for ${state.players.length + 1} phase(s).`);
+    }
+  },
+  {
+    name: "One Man's Garbage",
+    description: "Play in the Consignment Shop to place in front of you. Discard to retrieve the top card from the event discard pile into your hand.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    isItem: true,
+    requiresTile: "Consignment Shop",
+    apply(player) {
+      logLine(`${player.name} placed One Man's Garbage in front of them.`);
+    },
+    activateItem(player) {
+      if (state.eventDiscardPile.length === 0) {
+        logLine(`${player.name} discarded One Man's Garbage — the discard pile is empty.`);
+        return;
+      }
+      const retrieved = state.eventDiscardPile.pop();
+      player.hand.push(retrieved);
+      logLine(`${player.name} discarded One Man's Garbage — retrieved ${retrieved.name} from the discard pile.`);
+    }
+  },
+  {
+    name: "Aww, isn't he cute!",
+    description: "Play in the Pet Store to place in front of you. Discard to ignore all zombie combat on your current tile for the remainder of the turn.",
+    collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    isItem: true,
+    requiresTile: "Pet Store",
+    apply(player) {
+      logLine(`${player.name} placed Aww, isn't he cute! in front of them.`);
+    },
+    activateItem(player) {
+      player.noCombatThisTurn = true;
+      logLine(`${player.name} discarded Aww, isn't he cute! — zombie combat ignored on this tile for the rest of the turn.`);
+    }
   }
 ];

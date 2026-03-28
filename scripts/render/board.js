@@ -2,6 +2,8 @@
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
 function renderBoard() {
+  const adjBuildingSpaces = state.pendingSpaceSelect ? getSpacesAdjoiningBuilding() : null;
+
   // Build companion preview map: cellKey → { tile } for every valid gate placement option.
   // Compound direction is determined per-option: away from the side that connects to the
   // existing board, so companions always extend into open space regardless of gate rotation.
@@ -193,6 +195,8 @@ function renderBoard() {
             if (dp && manhattanDist(sx, sy, dp.x, dp.y) <= 1 && !(sx === dp.x && sy === dp.y)) {
               zombieClass = " zombie-selectable";
             }
+          } else if (state.pendingSpaceSelect && isWalkable && adjBuildingSpaces?.has(spaceKey)) {
+            zombieClass = " zombie-target";
           } else if (state.pendingZombiePlace && isWalkable && !data.zombieType) {
             zombieClass = " zombie-target";
           } else if (pzr) {

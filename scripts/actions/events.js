@@ -428,6 +428,67 @@ function finishZombieFlood() {
   render();
 }
 
+// Returns a Set of global space keys that are walkable and border at least one building/mall store subtile.
+function getSpacesAdjoiningBuilding() {
+  const valid = new Set();
+  state.board.forEach((tile, tKey) => {
+    const { x: tx, y: ty } = parseKey(tKey);
+    for (let lx = 0; lx < TILE_DIM; lx += 1) {
+      for (let ly = 0; ly < TILE_DIM; ly += 1) {
+        const sub = tile.subTiles?.[key(lx, ly)];
+        if (!sub?.walkable) continue;
+        const gx = tx * TILE_DIM + lx;
+        const gy = ty * TILE_DIM + ly;
+        const neighbors = [[gx - 1, gy], [gx + 1, gy], [gx, gy - 1], [gx, gy + 1]];
+        for (const [nx, ny] of neighbors) {
+          const ntx = spaceToTileCoord(nx);
+          const nty = spaceToTileCoord(ny);
+          const nTile = state.board.get(key(ntx, nty));
+          if (!nTile) continue;
+          const nlx = getLocalCoord(nx, ntx);
+          const nly = getLocalCoord(ny, nty);
+          const subType = getSubTileType(nTile, nlx, nly);
+          if (subType === "building" || subType === "mall store") {
+            valid.add(key(gx, gy));
+            break;
+          }
+        }
+      }
+    }
+  });
+  return valid;
+}
+
+function handleSpaceSelectClick(sx, sy) {
+  const pss = state.pendingSpaceSelect;
+  if (!pss) return;
+
+  const player = state.players.find((p) => p.id === pss.playerId);
+  if (!player) { state.pendingSpaceSelect = null; render(); return; }
+
+  const valid = getSpacesAdjoiningBuilding();
+  const spaceKey = key(sx, sy);
+  if (!valid.has(spaceKey)) return;
+
+  player.x = sx;
+  player.y = sy;
+  state.pendingSpaceSelect = null;
+  logLine(`${player.name} used ${pss.cardName} — moved to [${sx}, ${sy}].`);
+
+  if (state.zombies.has(spaceKey) && !player.noCombatThisTurn) {
+    logLine(`${player.name} landed on a zombie space — combat triggers immediately.`);
+    resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
+  }
+  render();
+}
+
+function finishSpaceSelect() {
+  if (!state.pendingSpaceSelect) return;
+  state.pendingSpaceSelect = null;
+  logLine("Now that's just gross! — cancelled.");
+  render();
+}
+
 function handleDynamiteTargetClick(sx, sy) {
   const pdt = state.pendingDynamiteTarget;
   if (!pdt) return;

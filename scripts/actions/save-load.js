@@ -27,7 +27,7 @@ function hasPendingState() {
     state.pendingDynamiteTarget  || state.pendingMinefield        ||
     state.pendingRocketLauncher  || state.pendingTile             ||
     state.pendingZombieFlood     ||
-    state.pendingBreakthrough
+    state.pendingBreakthrough    || state.pendingSpaceSelect
   );
 }
 
@@ -51,6 +51,7 @@ function serializeState() {
     gameOver:                state.gameOver,
     winInfo:                 state.winInfo,
     zombieMoveFreezeCount:   state.zombieMoveFreezeCount,
+    weaponsJammedCount:      state.weaponsJammedCount,
     movementBonus:           state.movementBonus,
     moveFloorThisTurn:       state.moveFloorThisTurn,
     doubleMovementThisTurn:  state.doubleMovementThisTurn,
@@ -131,6 +132,7 @@ function deserializeState(data) {
   state.gameOver               = data.gameOver;
   state.winInfo                = data.winInfo;
   state.zombieMoveFreezeCount  = data.zombieMoveFreezeCount;
+  state.weaponsJammedCount     = data.weaponsJammedCount ?? 0;
   state.movementBonus          = data.movementBonus;
   state.moveFloorThisTurn      = data.moveFloorThisTurn;
   state.doubleMovementThisTurn = data.doubleMovementThisTurn;
@@ -164,6 +166,7 @@ function deserializeState(data) {
   state.pendingCompanionTiles    = [];
   state.pendingTileDeck          = "base";
   state.pendingBreakthrough      = null;
+  state.pendingSpaceSelect       = null;
   state.selectedHandIndex        = null;
   state.lastCombatResult         = null;
   state.recentKillKey            = null;

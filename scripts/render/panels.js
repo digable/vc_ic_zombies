@@ -224,7 +224,7 @@ function renderHand() {
     Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove) ||
     Boolean(state.pendingDynamiteTarget) || Boolean(state.pendingMinefield) ||
     Boolean(state.pendingRocketLauncher) || Boolean(state.pendingZombieFlood) ||
-    Boolean(state.pendingBuildingSelect);
+    Boolean(state.pendingBuildingSelect) || Boolean(state.pendingSpaceSelect);
 
   const isCardPlayable = (card) => {
     if (globallyBlocked) return false;
@@ -319,10 +319,11 @@ function renderCombatDecision() {
       ? `need ${bulletsNeededToWin} total to win`
       : "won't be enough — wasted bullet";
   const bulletHintClass = bulletWins ? "good" : canWinWithBullets ? "good" : "warn";
+  const jammed = state.weaponsJammedCount > 0;
   const bulletBtn = actionWrap(
-    `<button data-combat-action="B" ${player.bullets > 0 ? "" : "disabled"}>Spend 1 Bullet (+1) — ${player.bullets} left</button>`,
-    player.bullets > 0 ? `→ ${bulletResult}` : null,
-    bulletHintClass
+    `<button data-combat-action="B" ${player.bullets > 0 && !jammed ? "" : "disabled"}>Spend 1 Bullet (+1) — ${player.bullets} left${jammed ? " 🚫" : ""}</button>`,
+    jammed ? "weapons jammed" : player.bullets > 0 ? `→ ${bulletResult}` : null,
+    jammed ? "warn" : bulletHintClass
   );
 
   const heartsAfterReroll = player.hearts - 1;
@@ -340,6 +341,15 @@ function renderCombatDecision() {
     ? actionWrap(`<button data-combat-action="FAK">Use First Aid Kit (free reroll)</button>`, "no cost", "muted")
     : "";
 
+  const hasLuckyShot = player.hand && player.hand.some((c) => c.name === "Lucky Shot");
+  const luckyShotBtn = hasLuckyShot
+    ? actionWrap(
+        `<button data-combat-action="LS" ${player.bullets > 0 && !jammed ? "" : "disabled"}>Lucky Shot — spend 1 bullet, auto-kill</button>`,
+        jammed ? "weapons jammed" : player.bullets > 0 ? "kills the zombie!" : "no bullets",
+        jammed || player.bullets <= 0 ? "warn" : "good"
+      )
+    : "";
+
   const weaponBtns = player.items
     ? player.items.filter((c) => c.combatWeapon).map((c) => {
         const boost = c.combatBoost || c.turnCombatBoost || c.permanentAttackBoost || c.oncePerTurnCombatBoost;
@@ -351,9 +361,9 @@ function renderCombatDecision() {
           ? `kills the zombie!${turnNote}`
           : `→ total: ${newTotal}${turnNote}`;
         const wClass = newTotal >= WIN ? "good" : "muted";
-        const isDisabled = isOncePer
+        const isDisabled = jammed || (isOncePer
           ? (player.itemsUsedThisTurn || []).includes(c.name)
-          : pending.weaponUsed;
+          : pending.weaponUsed);
         return actionWrap(
           `<button data-combat-action="W:${c.name}" ${isDisabled ? "disabled" : ""}>${c.name} (+${boost})</button>`,
           wHint, wClass
@@ -374,9 +384,9 @@ function renderCombatDecision() {
       Rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}) — need ${WIN}+ to win.<br />
       Current total: <span class="combat-roll-total">${roll}</span>
     </div>
-    <div class="combat-resources"><span class="bullet-icon">⬤</span> ${player.bullets}&ensp;·&ensp;❤️ ${player.hearts}</div>
+    <div class="combat-resources"><span class="bullet-icon">⬤</span> ${player.bullets}&ensp;·&ensp;❤️ ${player.hearts}${jammed ? `&ensp;·&ensp;<span class="warn">🚫 Weapons Jammed</span>` : ""}</div>
     <div class="combat-decision-actions">
-      ${bulletBtn}${rerollBtn}${fakBtn}${weaponBtns}${loseBtn}
+      ${bulletBtn}${rerollBtn}${fakBtn}${luckyShotBtn}${weaponBtns}${loseBtn}
     </div>
   `;
 }
@@ -479,6 +489,19 @@ function renderZombieReplacePanel() {
     panel.innerHTML = `
       <div class="combat-decision-title">${pbs.cardName}</div>
       <div class="small">Click any space inside a building to fill it with zombies.</div>
+    `;
+    return;
+  }
+
+  const pss = state.pendingSpaceSelect;
+  if (pss) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">${pss.cardName}</div>
+      <div class="small">Click any highlighted space adjoining a building or store.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Cancel</button>
+      </div>
     `;
     return;
   }
