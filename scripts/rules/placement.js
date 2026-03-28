@@ -39,8 +39,9 @@ function mustBeFloor2(tile) {
 // incomingDir: direction from the incoming tile toward the neighbor.
 // incomingGatewayDirs: rotated gateway connector directions on the incoming tile (or null).
 function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, incomingGatewayDirs) {
-  // The start tile (Town Square) always acts as "base" zone regardless of its placedDeck stamp.
-  const neighborDeck = (neighborTile.isStartTile ? null : neighborTile.placedDeck) || "base";
+  // Start tiles (Town Square, Ped Mall, etc.) are zone-neutral — any zone can connect to them.
+  if (neighborTile.isStartTile) return true;
+  const neighborDeck = neighborTile.placedDeck || "base";
   if (neighborDeck === tileDeck) return true;
 
   // Cross-zone allowed at the neighbor's gateway connector

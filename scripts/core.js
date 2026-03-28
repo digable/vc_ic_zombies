@@ -57,12 +57,13 @@ const COLLECTION_META = {
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
     shortCode: "IC",
-    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    requiresBase: null,
     year: 2026,
-    type: "Expansion",
+    type: "Standalone / Expansion",
     version: "0.1.0",
-    description: "Iowa City themed locations. Requires Director's Cut to play.",
-    creator: "digable"
+    description: "Iowa City themed locations. Playable standalone or alongside Director's Cut.",
+    creator: "digable",
+    standaloneDeck: true
   }
 };
 

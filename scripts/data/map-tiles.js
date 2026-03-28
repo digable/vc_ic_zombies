@@ -923,25 +923,25 @@ const namedTiles = [
   }
   },
   {
-    name: "Ped Mall",
-    type: "named",
+    name: "College Street",
+    type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "E", "S", "W"],
+    connectors: ["N", "S"],
     zombieSpawnMode: "by_card",
-    zombies: { [ZOMBIE_TYPE.REGULAR]: 5 },
-    hearts: 2,
-    bullets: 2,
-    firstDrawWhenSolo: true,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
+    hearts: 0,
+    bullets: 1,
+    zoneGatewayConnector: "N",
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
-      "1,0": { walkable: true, type: "road", doors: ["N"] },
-      "2,0": { walkable: true, type: "grass", walls: ["N", "E"] },
-      "0,1": { walkable: true, type: "road", doors: ["W"] },
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "road" },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"] },
       "1,1": { walkable: true, type: "road" },
-      "2,1": { walkable: true, type: "road", doors: ["E"] },
-      "0,2": { walkable: true, type: "grass", walls: ["S", "W"] },
-      "1,2": { walkable: true, type: "road", doors: ["S"] },
-      "2,2": { walkable: true, type: "grass", walls: ["E", "S"] }
+      "2,1": { walkable: true, type: "building", walls: ["E"] },
+      "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "building", walls: ["S", "E"] }
     }
   },
   /*{
@@ -1184,7 +1184,7 @@ const specialTiles = [
   {
     name: "Helipad",
     type: "helipad",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
@@ -1212,7 +1212,7 @@ const START_TILES = [
   {
     name: "Town Square",
     type: "town",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1 },
     isStartTile: true,
     connectors: ["N", "E", "S", "W"],
     zombieSpawnMode: "by_card",
@@ -1228,6 +1228,28 @@ const START_TILES = [
       "0,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
       "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
       "2,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] }
+    }
+  },
+  {
+    name: "Ped Mall",
+    type: "town",
+    collection: { [COLLECTIONS.IOWA_CITY]: 1 },
+    isStartTile: true,
+    connectors: ["N", "E", "S", "W"],
+    zombieSpawnMode: "by_card",
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "road" },
+      "2,0": { walkable: true, type: "grass", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "road" },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road" },
+      "0,2": { walkable: true, type: "grass", walls: ["S", "W"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["E", "S"] }
     }
   }
 ];
