@@ -16,6 +16,7 @@ const COLLECTIONS = {
   DIRECTORS_CUT: "directors_cut",
   ZOMBIE_CORPS_E_: "zombie_corps_e_",
   MALL_WALKERS: "mall_walkers",
+  NOT_DEAD_YET: "not_dead_yet",
   IOWA_CITY: "iowa_city"
 };
 
@@ -51,7 +52,18 @@ const COLLECTION_META = {
     type: "Standalone / Expansion",
     version: "1.0.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
-    creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein",
+    creator: "Based on the Twilight Creations Zombies!!! 3 - Mall Walkers by Todd A. Breitenstein",
+    standaloneDeck: true
+  },
+  [COLLECTIONS.NOT_DEAD_YET]: {
+    label: "Not Dead Yet!",
+    shortCode: "Z3.5",
+    requiresBase: null,
+    year: 2003,
+    type: "Expansion",
+    version: "1.0.0",
+    description: "Playable with any stand alonegame. These are new events to play with any standalone or base game.",
+    creator: "Based on the Twilight Creations Zombies!!! 3.5 - Not Dead Yet! by Todd A. Breitenstein",
     standaloneDeck: true
   },
   [COLLECTIONS.IOWA_CITY]: {

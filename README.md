@@ -24,9 +24,9 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Road tiles connect via compass connectors — roads must align; wall-to-wall adjacency is allowed as long as at least one side has a road-to-road connection
 - Named buildings spawn zombies and loot when placed
 - Helipad shuffled into the second half of the deck — escape is possible but never guaranteed
-- Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles — supports all tile fields including flags, zone gateway, and companion tiles
+- Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles — supports all tile fields including flags, zone gateway, and companion tiles; tile groups collapse for performance, subtile editors expand on demand
 - Collection metadata (type, version, year, description, creator) shown as tooltip on setup checkboxes
-- Each tile and event card shows a short collection code badge (Z1, Z2, IC) — on the board, in your event hand, and in the setup panel
+- Each tile and event card shows a short collection code badge (Z1, Z2, IC, MW) — on the board, in your event hand, and in the setup panel
 
 ### ⚔️ Combat System
 - Combat triggers when entering or sharing a space with a zombie
@@ -35,6 +35,8 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Combat panel shows current hearts and bullets, with smart hints (e.g. warns if spending bullets won't be enough to win)
 - All decisions resolved in-page — no browser prompts
 - Knockout: lose half your kills (rounded down), respawn at Town Square, reset to 3 hearts / 3 bullets — a toast banner confirms the event and auto-dismisses after 5 seconds
+- **Lucky Shot** — when in your hand, a button appears in the combat panel; spend 1 bullet to auto-kill the current zombie
+- **Weapons Jammed** — the Jammed event card blocks bullet tokens and weapon items for all players until the end of your next turn; affected buttons are disabled with a jammed indicator in the combat panel
 
 ### 🧟 Zombie AI
 - Zombies move toward the nearest player each phase
@@ -54,6 +56,17 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves
 - Event card collections are configured independently from map tile collections at setup — you can mix any combination
 - **Opponent disruption cards** include multi-step interactions: forced movement (Brain Cramp), tile placement hijacking (I Think It's Over Here), item theft (You Don't Need That!), card redirect (You Lookin' at Me?!?), hand wipe (Weekend Pass: DENIED!), and forced tile restriction (What is That Smell?!?)
+- **Mall Walkers (Z3) cards** include location-gated items and global effects:
+
+| Card | Effect |
+|------|--------|
+| Aww, isn't he cute! | Item (Pet Store). Discard to ignore all zombie combat on your current tile for the rest of the turn |
+| Sprinkler System | No zombies in the mall may move until the end of your next turn |
+| One Man's Garbage | Item (Consignment Shop). Discard to retrieve the top card of the event discard pile |
+| Now that's just gross! | Item (Lingerie Shop). Discard and teleport to any space adjoining a building or store |
+| Jammed | Blocks all bullet tokens and weapons for all players until the end of your next turn |
+| Lots of Luck with That! | Play when sharing a space with another player — end your movement and take 1 bullet + 1 random card from them |
+| Lucky Shot | In combat only — spend 1 bullet to automatically kill the current zombie |
 
 ### 💾 Save / Load
 - 5 save slots stored in `localStorage` — no account or server required
@@ -61,6 +74,10 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Saves the full game state: board layout, all player stats, decks, zombies, tokens, event hand, and turn number
 - On load, the setup UI (collection checkboxes, player count, deck preview) syncs to match the loaded game's configuration
 - Saving is blocked while any pending action (combat choice, zombie placement, etc.) is in progress
+
+**Export / Import** — each save slot has its own Export and Import buttons:
+- **Export** downloads the slot's data as a timestamped `.json` file (e.g. `vc-zombies-slot1-2026-03-28T14-30-00.json`). Useful for backing up a game, sharing a save with another player, or attaching to a bug report.
+- **Import** opens a file picker and loads a `.json` file into that slot. If the slot already has data you'll be asked to confirm the overwrite. After importing, press **Load** to start playing from that save.
 
 ### 🃏 Deck Management
 - **"Show cards"** dropdown in Map Deck Info and Event Deck Info panels lists every card in the remaining deck
@@ -109,17 +126,19 @@ vc_ic_zombies/
 │   │   ├── panels.js                 # Sidebar panels, combat UI, log, knockout banner
 │   │   ├── debug.js                  # Tile editor / map deck debug rendering
 │   │   ├── render.js                 # Render orchestrator (updateButtons + render())
+│   │   ├── save-load-panel.js        # Save/Load slot panel rendering
 │   │   └── compass-checkboxes.js     # Compass direction checkbox helper (tile editor)
 │   ├── actions/
 │   │   ├── setup.js                  # Game setup, tile draw/place
 │   │   ├── combat.js                 # Combat resolution and knockout
 │   │   ├── movement.js               # Player movement roll/step/end
 │   │   ├── zombies.js                # Zombie movement phase
-│   │   ├── events.js                 # Event hand draw/play/discard
+│   │   ├── events.js                 # Event hand draw/play/discard, pending action handlers
 │   │   ├── turn-end.js               # End-turn cleanup
+│   │   ├── save-load.js              # Save/load/export/import game state
 │   │   └── win.js                    # Win condition checks
 │   ├── rules/
-│   │   ├── placement.js              # Tile placement and connector validation
+│   │   ├── placement.js              # Tile placement, connector validation, zone isolation
 │   │   ├── combat-flow.js            # Combat/zombie-step skip gating
 │   │   ├── movement.js               # Step legality across subtiles and tile edges
 │   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
@@ -130,7 +149,7 @@ vc_ic_zombies/
 │       ├── event-deck.js             # Event deck builder
 │       └── event-cards/
 │           ├── helpers.js            # Shared event utilities
-│           ├── player-cards.js       # Player buff/recovery cards
+│           ├── player-cards.js       # Player buff/recovery cards (includes Z3 Mall Walkers cards)
 │           ├── opponent-cards.js     # Opponent disruption cards
 │           └── zombie-cards.js       # Zombie spawn/remove/move cards
 └── styles/
@@ -200,9 +219,11 @@ Current collections:
 | `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Standalone or expansion — playable alone or alongside Director's Cut; tiles form an isolated zone when mixed |
 | `MALL_WALKERS` | `"mall_walkers"` | Standalone or expansion — mall-themed tiles with 2-floor mechanics; includes Escalator (bridges floors) and a mall Helipad that must be placed on the 2nd floor |
 
-Map tile and event card collections are configured **independently** in the setup panel. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`):
+Map tile and event card collections are configured **independently** in the setup panel. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`).
 
 Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTION_META`) get their own separate tile deck. When mixed with a base collection, their tiles can only be placed adjacent to tiles from the same collection — the one exception is the **gateway tile** (e.g. Front Gate), whose `zoneGatewayConnector` side may touch base-zone tiles, and the gateway tile itself is shuffled into the base deck. The standalone deck button is locked in the UI until the gateway tile is placed. When played without a base collection, the standalone deck is available immediately and Front Gate is the first tile drawn.
+
+**Zone isolation in mixed play:** expansion tiles cannot connect to Town Square directly. Only the first tile drawn from the standalone deck may connect to Town Square; after that, all further expansion tiles must connect to other expansion tiles.
 
 | Property | Description |
 |----------|-------------|
@@ -248,7 +269,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 - Helipad is shuffled into the second half of the deck
 - Zombies spawn on tiles when placed based on `zombieSpawnMode`
 - Combat roll: d6 + attack bonus + temp bonus; kill threshold varies by zombie type (regular 4+, government-enhanced 5+)
-- Failed combat options: spend bullet (+1), spend heart (reroll), or accept loss
+- Failed combat options: spend bullet (+1), spend heart (reroll), use a weapon item, or accept loss
 - Knockout: lose half kills (rounded down), respawn Town Square, reset stats
 - Hearts are capped at 5
 - One event card may be played per turn cycle; some cards have timing restrictions (e.g. Much Needed Rest must be played before rolling movement)

@@ -9,7 +9,10 @@
       "Bash(done)",
       "Bash(wc -l /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/data/event-cards/*.js)",
       "Bash(grep -n \"\\\\.map\\(.*=>.*\\\\.push\\\\|\\\\.forEach.*push\\\\|\\\\.forEach.*\\\\.filter\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(find scripts:*)",
+      "Bash(grep -n \"currentZombieRoll\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/*.js /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/**/*.js)",
+      "Bash(grep -n \"regularZombieEnhanced\\\\|forcedNextOpponentId\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/core.js /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)"
     ]
   }
 }

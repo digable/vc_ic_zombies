@@ -11,6 +11,7 @@ function buildCollectionRows() {
   const grid = document.getElementById("collectionGrid");
   if (!grid) return;
   const eventCounts = getEventCardCountsByCollection();
+  const mapCounts   = getMapTileCountsByCollection();
 
   Object.entries(COLLECTION_META).forEach(([collKey, meta]) => {
     const isBase = meta.requiresBase === null;
@@ -21,15 +22,19 @@ function buildCollectionRows() {
     const sc = meta.shortCode ? ` <span class="coll-short-code">${meta.shortCode}</span>` : "";
     nameSpan.innerHTML = `${meta.label}${sc} ${collTagsHtml(meta)}<br><span class="coll-counts" data-coll-counts="${collKey}"></span>`;
 
-    const mapInput = document.createElement("input");
-    mapInput.type = "checkbox";
-    mapInput.setAttribute("data-deck-coll", collKey);
-    mapInput.setAttribute("data-deck-state", "enabled");
-    if (isBase && !meta.standaloneDeck) mapInput.checked = true;
-    if (!isBase) mapInput.setAttribute("data-requires-base", meta.requiresBase);
-
     grid.appendChild(nameSpan);
-    grid.appendChild(mapInput);
+
+    if (mapCounts[collKey]) {
+      const mapInput = document.createElement("input");
+      mapInput.type = "checkbox";
+      mapInput.setAttribute("data-deck-coll", collKey);
+      mapInput.setAttribute("data-deck-state", "enabled");
+      if (isBase && !meta.standaloneDeck) mapInput.checked = true;
+      if (!isBase) mapInput.setAttribute("data-requires-base", meta.requiresBase);
+      grid.appendChild(mapInput);
+    } else {
+      grid.appendChild(document.createElement("span"));
+    }
 
     if (eventCounts[collKey]) {
       const eventInput = document.createElement("input");
