@@ -33,16 +33,21 @@ function mustBeFloor2(tile) {
   return hasEscalator;
 }
 
+// "directors_cut" and "base" are the same zone: tiles drawn from the base map deck always
+// receive tileDeck="base" while the Town Square start tile is stamped "directors_cut" in mixed play.
+function normalizeZone(deck) {
+  return deck === "directors_cut" ? "base" : (deck || "base");
+}
+
 // Returns true if the tile being placed (with tileDeck) may connect to neighborTile
 // via the neighbor's connector in direction neighborConnDir.
 // Zone rules: tiles must share the same placedDeck, except at a gateway connector.
 // incomingDir: direction from the incoming tile toward the neighbor.
 // incomingGatewayDirs: rotated gateway connector directions on the incoming tile (or null).
 function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, incomingGatewayDirs) {
-  // Start tiles (Town Square, Ped Mall, etc.) are zone-neutral — any zone can connect to them.
-  if (neighborTile.isStartTile) return true;
-  const neighborDeck = neighborTile.placedDeck || "base";
-  if (neighborDeck === tileDeck) return true;
+  const neighborDeck = normalizeZone(neighborTile.placedDeck);
+  const incomingDeck = normalizeZone(tileDeck);
+  if (neighborDeck === incomingDeck) return true;
 
   // Cross-zone allowed at the neighbor's gateway connector
   const gwConn = neighborTile.zoneGatewayConnector;
@@ -73,6 +78,23 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
     if (!lenientMismatch && meHas !== themHas) return false;
     // Road-to-road: check zone and count
     if (meHas && themHas) {
+      // Standalone restriction: Town Square only accepts its first road neighbor.
+      // In base/mixed play the base collection is active and Town Square is the hub — no restriction.
+      if (neighbor.isStartTile && neighbor.name === "Town Square") {
+        const hasBaseCollection = !!(state.deckFilters?.[COLLECTIONS.DIRECTORS_CUT]?.enabled);
+        if (!hasBaseCollection) {
+          // Check if Town Square already has any road-connected neighbor
+          const ntx = x + def.x;
+          const nty = y + def.y;
+          let alreadyConnected = false;
+          for (const [nd, ndef] of Object.entries(DIRS)) {
+            if (!hasRoad(neighbor, nd)) continue;
+            const adj = state.board.get(key(ntx + ndef.x, nty + ndef.y));
+            if (adj && hasRoad(adj, ndef.opposite)) { alreadyConnected = true; break; }
+          }
+          if (alreadyConnected) return false;
+        }
+      }
       if (floor1OnlyDirs && !floor1OnlyDirs.has(dir)) return false;
       if (tileDeck !== undefined && !isZoneCompatible(neighbor, def.opposite, tileDeck, dir, incomingGatewayDirs)) return false;
       roadMatches += 1;
