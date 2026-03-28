@@ -249,3 +249,42 @@ function getSlotMeta(slot) {
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
+
+function exportSlot(slot) {
+  const raw = localStorage.getItem(SAVE_KEY(slot));
+  if (!raw) return;
+  const meta = getSlotMeta(slot);
+  const ts = (meta?.savedAt ?? new Date().toISOString()).replace(/[:.]/g, "-").slice(0, 19);
+  const blob = new Blob([raw], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `vc-zombies-slot${slot + 1}-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importToSlot(slot, file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.players || !data.board) throw new Error("Not a valid save file.");
+      const existing = getSlotMeta(slot);
+      if (existing && !confirm(`Overwrite Slot ${slot + 1}?\n(${formatSavedAt(existing.savedAt)})`)) return;
+      localStorage.setItem(SAVE_KEY(slot), e.target.result);
+      localStorage.setItem(META_KEY(slot), JSON.stringify({
+        turnNumber:  data.turnNumber,
+        playerCount: data.players.length,
+        step:        data.step,
+        savedAt:     data.savedAt
+      }));
+      logLine(`Save file imported into Slot ${slot + 1}.`);
+    } catch (err) {
+      alert(`Import failed: ${err.message}`);
+    }
+    render();
+  };
+  reader.readAsText(file);
+}

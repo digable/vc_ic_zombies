@@ -36,14 +36,16 @@ function renderSaveLoadPanel() {
     const loadDisabled = isEmpty ? "disabled" : "";
     const delDisabled  = isEmpty ? "disabled" : "";
 
-    const saveBtn = `<button class="save-slot-btn" title="${saveTitle}" ${saveDisabled} onclick="confirmSave(${slot})">Save</button>`;
-    const loadBtn = `<button class="save-slot-btn" ${loadDisabled} onclick="confirmLoad(${slot})">Load</button>`;
-    const delBtn  = `<button class="save-slot-btn save-slot-del" ${delDisabled} onclick="confirmDelete(${slot})" title="Delete save">✕</button>`;
+    const exportBtn = `<button class="save-slot-btn" ${isEmpty ? "disabled" : ""} title="Download Slot ${slot + 1} as a file" onclick="exportSlot(${slot})">Export</button>`;
+    const importBtn = `<button class="save-slot-btn" title="Import a file into Slot ${slot + 1}" onclick="document.getElementById('importInput${slot}').click()">Import</button><input id="importInput${slot}" type="file" accept=".json" style="display:none" onchange="importToSlot(${slot},this.files[0]);this.value=''">`;
+    const saveBtn   = `<button class="save-slot-btn" title="${saveTitle}" ${saveDisabled} onclick="confirmSave(${slot})">Save</button>`;
+    const loadBtn   = `<button class="save-slot-btn" ${loadDisabled} onclick="confirmLoad(${slot})">Load</button>`;
+    const delBtn    = `<button class="save-slot-btn save-slot-del" ${delDisabled} onclick="confirmDelete(${slot})" title="Delete save">✕</button>`;
 
     html += `<div class="save-slot-row">
       <span class="save-slot-num">Slot ${slot + 1}</span>
       <span class="save-slot-label">${label}</span>
-      <span class="save-slot-actions">${saveBtn}${loadBtn}${delBtn}</span>
+      <span class="save-slot-actions">${saveBtn}${loadBtn}${exportBtn}${importBtn}${delBtn}</span>
     </div>`;
   }
 
