@@ -28,7 +28,14 @@ function buildEventDeckHelpers() {
       const forced = state.players.find((p) => p.id === state.forcedNextOpponentId);
       if (forced) return forced;
     }
-    return state.players[(i + 1) % state.players.length];
+    const target = state.players[(i + 1) % state.players.length];
+    if (target?.musicShieldActive && !target.eventUsedThisRound) {
+      target.musicShieldActive = false;
+      target.eventUsedThisRound = true;
+      logLine(`${target.name} plays Where is that music coming from? — card countered!`);
+      return null;
+    }
+    return target;
   };
 
   const nearestZombieDistance = (x, y) =>

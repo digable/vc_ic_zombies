@@ -317,10 +317,15 @@ function renderCombatDecision() {
       : "won't be enough — wasted bullet";
   const bulletHintClass = bulletWins ? "good" : canWinWithBullets ? "good" : "warn";
   const jammed = state.weaponsJammedCount > 0;
+  const bulletsFrozen = state.bulletsCombatFrozenCount > 0;
+  const bulletDisabled = player.bullets <= 0 || jammed || bulletsFrozen;
+  const bulletHint = jammed ? "weapons jammed" : bulletsFrozen ? "No Guts, No Glory" : player.bullets > 0 ? `→ ${bulletResult}` : null;
+  const bulletHintStyle = jammed || bulletsFrozen ? "warn" : bulletHintClass;
+  const bulletLabel = `Spend 1 Bullet (+1) — ${player.bullets} left${jammed ? " 🚫" : bulletsFrozen ? " 🚫" : ""}`;
   const bulletBtn = actionWrap(
-    `<button data-combat-action="B" ${player.bullets > 0 && !jammed ? "" : "disabled"}>Spend 1 Bullet (+1) — ${player.bullets} left${jammed ? " 🚫" : ""}</button>`,
-    jammed ? "weapons jammed" : player.bullets > 0 ? `→ ${bulletResult}` : null,
-    jammed ? "warn" : bulletHintClass
+    `<button data-combat-action="B" ${bulletDisabled ? "disabled" : ""}>${bulletLabel}</button>`,
+    bulletHint,
+    bulletHintStyle
   );
 
   const heartsAfterReroll = player.hearts - 1;
@@ -339,11 +344,14 @@ function renderCombatDecision() {
     : "";
 
   const hasLuckyShot = player.hand && player.hand.some((c) => c.name === "Lucky Shot");
+  const luckyShotDisabled = player.bullets <= 0 || jammed || bulletsFrozen;
+  const luckyShotHint = jammed ? "weapons jammed" : bulletsFrozen ? "No Guts, No Glory" : player.bullets > 0 ? "kills the zombie!" : "no bullets";
+  const luckyShotHintClass = luckyShotDisabled ? "warn" : "good";
   const luckyShotBtn = hasLuckyShot
     ? actionWrap(
-        `<button data-combat-action="LS" ${player.bullets > 0 && !jammed ? "" : "disabled"}>Lucky Shot — spend 1 bullet, auto-kill</button>`,
-        jammed ? "weapons jammed" : player.bullets > 0 ? "kills the zombie!" : "no bullets",
-        jammed || player.bullets <= 0 ? "warn" : "good"
+        `<button data-combat-action="LS" ${luckyShotDisabled ? "disabled" : ""}>Lucky Shot — spend 1 bullet, auto-kill</button>`,
+        luckyShotHint,
+        luckyShotHintClass
       )
     : "";
 
@@ -491,7 +499,7 @@ function renderZombieReplacePanel() {
     panel.classList.remove("hidden");
     panel.innerHTML = `
       <div class="combat-decision-title">${pss.cardName}</div>
-      <div class="small">Click any highlighted space adjoining a building or store.</div>
+      <div class="small">${pss.promptText ?? "Click any highlighted space adjoining a building or store."}</div>
       <div class="combat-decision-actions">
         <button id="zombieReplaceDoneBtn">Cancel</button>
       </div>

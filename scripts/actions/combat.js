@@ -18,6 +18,15 @@ function handleKnockout(player, options = {}) {
   player.knockedOut = true;
   player.hasJeep = false;
   player.knockouts = (player.knockouts || 0) + 1;
+  if (player.meatCleaverActive) {
+    player.meatCleaverActive = false;
+    const mcIdx = player.items ? player.items.findIndex((c) => c.name === "Meat Cleaver") : -1;
+    if (mcIdx >= 0) {
+      const [mc] = player.items.splice(mcIdx, 1);
+      state.eventDiscardPile.push(mc);
+      logLine(`${player.name}'s Meat Cleaver was lost on knockout.`);
+    }
+  }
   if (endStep) {
     state.step = STEP.END;
   }
@@ -102,6 +111,7 @@ function resolvePendingCombatDecision(actionCode) {
     if (lsIndex === -1) { render(); return; }
     if (player.bullets <= 0) { logLine(`${player.name} has no bullets for Lucky Shot.`); render(); return; }
     if (state.weaponsJammedCount > 0) { logLine("Weapons are jammed — Lucky Shot cannot be used."); render(); return; }
+    if (state.bulletsCombatFrozenCount > 0) { logLine("No Guts, No Glory — bullets may not be spent in zombie combat."); render(); return; }
     const lsCard = player.hand.splice(lsIndex, 1)[0];
     state.eventDiscardPile.push(lsCard);
     player.bullets -= 1;
@@ -109,6 +119,7 @@ function resolvePendingCombatDecision(actionCode) {
     player.kills += 1;
     state.lastCombatResult = "Lucky Shot";
     state.recentKillKey = playerSpaceKey;
+    state.recentKillByPlayerId = player.id;
     logLine(`${player.name} used Lucky Shot — spent 1 bullet and auto-killed the zombie.`, "kill");
     const options = pending.options;
     state.pendingCombatDecision = null;
@@ -121,6 +132,11 @@ function resolvePendingCombatDecision(actionCode) {
   if (actionCode === "B") {
     if (state.weaponsJammedCount > 0) {
       logLine("Weapons and bullets are jammed — cannot spend bullets.");
+      render();
+      return;
+    }
+    if (state.bulletsCombatFrozenCount > 0) {
+      logLine("No Guts, No Glory — bullets may not be spent in zombie combat.");
       render();
       return;
     }
@@ -139,6 +155,7 @@ function resolvePendingCombatDecision(actionCode) {
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = playerSpaceKey;
+    state.recentKillByPlayerId = player.id;
       const bonusText = ` (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus})`;
       const zombieLabel = pending.isEnhanced ? "government-enhanced zombie" : "zombie";
       logLine(`${player.name} raised the roll to ${pending.modifiedRoll}${bonusText} and killed the ${zombieLabel}.`, "kill");
@@ -241,6 +258,7 @@ function resolvePendingCombatDecision(actionCode) {
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = pending.pKey;
+      state.recentKillByPlayerId = player.id;
       const zombieLabel = pending.isEnhanced ? "government-enhanced zombie" : "zombie";
       logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the ${zombieLabel}.`, "kill");
       const options = pending.options;
@@ -316,8 +334,10 @@ function resolveCombatForPlayer(player, options = {}) {
     drawOneEventCardForPlayer(player, "In the Zone");
   }
   const diePenalty = player.dieRollPenalty || 0;
-  const baseCombatRoll = roll - diePenalty + permanentBonus + tempBonus + shotgunBonus + tileBonus;
-  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""})`;
+  const meatCleaverBonus = player.meatCleaverActive ? 1 : 0;
+  const macheteBonus = (player.items || []).some((c) => c.name === "Machete") ? 1 : 0;
+  const baseCombatRoll = roll - diePenalty + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus;
+  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""})`;
   const zombieLabel = isEnhanced ? "government-enhanced zombie" : "zombie";
 
   if (baseCombatRoll >= killRoll) {
@@ -325,6 +345,7 @@ function resolveCombatForPlayer(player, options = {}) {
     player.kills += 1;
     state.lastCombatResult = `Success (${baseCombatRoll})`;
     state.recentKillKey = playerSpaceKey;
+    state.recentKillByPlayerId = player.id;
     logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and killed the ${zombieLabel}.`, "kill");
     checkWin(player);
     applyCombatPostStep(player, playerSpaceKey, { resumeStepAfterPending });

@@ -132,7 +132,13 @@ function deserializeState(data) {
   state.gameOver               = data.gameOver;
   state.winInfo                = data.winInfo;
   state.zombieMoveFreezeCount  = data.zombieMoveFreezeCount;
-  state.weaponsJammedCount     = data.weaponsJammedCount ?? 0;
+  state.weaponsJammedCount         = data.weaponsJammedCount ?? 0;
+  state.movementRollFreezeCount    = data.movementRollFreezeCount ?? 0;
+  state.tokenPickupFrozenCount     = data.tokenPickupFrozenCount ?? 0;
+  state.bulletsCombatFrozenCount   = data.bulletsCombatFrozenCount ?? 0;
+  state.lastPlayedWeaponName       = data.lastPlayedWeaponName ?? null;
+  state.lastPlayedWeaponByPlayerId = data.lastPlayedWeaponByPlayerId ?? null;
+  state.recentKillByPlayerId       = data.recentKillByPlayerId ?? null;
   state.movementBonus          = data.movementBonus;
   state.moveFloorThisTurn      = data.moveFloorThisTurn;
   state.doubleMovementThisTurn = data.doubleMovementThisTurn;

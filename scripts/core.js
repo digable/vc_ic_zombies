@@ -62,9 +62,9 @@ const COLLECTION_META = {
     year: 2003,
     type: "Expansion",
     version: "1.0.0",
-    description: "Playable with any stand alonegame. These are new events to play with any standalone or base game.",
+    description: "Event cards only — no map tiles. Add to any standalone or base game collection.",
     creator: "Based on the Twilight Creations Zombies!!! 3.5 - Not Dead Yet! by Todd A. Breitenstein",
-    standaloneDeck: true
+    standaloneDeck: false
   },
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
@@ -135,6 +135,11 @@ const state = {
   pendingEventChoice: null,
   zombieMoveFreezeCount: 0,
   weaponsJammedCount: 0,
+  movementRollFreezeCount: 0,
+  tokenPickupFrozenCount: 0,
+  bulletsCombatFrozenCount: 0,
+  lastPlayedWeaponName: null,
+  lastPlayedWeaponByPlayerId: null,
   movementBonus: 0,
   moveFloorThisTurn: 0,
   doubleMovementThisTurn: false,
@@ -160,6 +165,7 @@ const state = {
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
   knockoutBanner: null, // { playerName, lostKills } — shown briefly after knockout
   recentKillKey: null,
+  recentKillByPlayerId: null,
   zombieMovedSpaces: new Set(), // space keys where zombies arrived this turn — cleared at turn end
   zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
   logs: []
@@ -724,6 +730,7 @@ function placeBuildingTokens(tx, ty, hearts, bullets) {
 }
 
 function collectTokensAtPlayerSpace(player) {
+  if (state.tokenPickupFrozenCount > 0) return;
   const sk = playerKey(player);
   const tokens = state.spaceTokens.get(sk);
   if (!tokens) {

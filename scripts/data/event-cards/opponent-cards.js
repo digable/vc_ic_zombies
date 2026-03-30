@@ -312,5 +312,160 @@ const opponentEventCards = [
       target.halfMovementNextTurn = true;
       logLine(`${player.name} played Your Shoe's Untied on ${target.name} — their next movement roll is halved.`);
     }
+  },
+  {
+    name: "With friends like you...",
+    description: "Play at any time if you have a weapon or item in play. All players discard all weapons and items in play.",
+    collection: { [COLLECTIONS.NOT_DEAD_YET]: 2 },
+    canPlay() {
+      return (currentPlayer().items?.length ?? 0) > 0;
+    },
+    apply(player) {
+      state.players.forEach((p) => {
+        if (!p.items || p.items.length === 0) return;
+        p.items.forEach((item) => {
+          if (item.name === "Meat Cleaver" && p.meatCleaverActive) p.meatCleaverActive = false;
+          state.eventDiscardPile.push(item);
+        });
+        p.items = [];
+      });
+      logLine(`${player.name} played With friends like you... — all weapons and items discarded.`);
+    }
+  },
+  {
+    name: "Don't go to sleep",
+    description: "Play at the beginning of an opponent's turn. They must roll 1 or 6 to continue; any other roll loses their turn and places a zombie on their space.",
+    collection: { [COLLECTIONS.NOT_DEAD_YET]: 2 },
+    apply(player, helpers) {
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played Don't go to sleep — no valid target.`);
+        return;
+      }
+      target.sleepChallengePending = true;
+      logLine(`${player.name} played Don't go to sleep on ${target.name} — ${target.name} must roll 1 or 6 at the start of their next turn.`);
+    }
+  },
+  {
+    name: "Why Won't You Die?!?!?",
+    description: "Play when an opponent just killed a zombie. That zombie respawns at its kill location and the kill is reversed.",
+    collection: { [COLLECTIONS.NOT_DEAD_YET]: 2 },
+    canPlay() {
+      return state.recentKillKey !== null &&
+             state.recentKillByPlayerId !== null &&
+             state.recentKillByPlayerId !== currentPlayer().id;
+    },
+    apply(player) {
+      const killKey = state.recentKillKey;
+      const killer = state.players.find((p) => p.id === state.recentKillByPlayerId);
+      if (!killKey || !killer) {
+        logLine(`${player.name} played Why Won't You Die?!?!? — no recent opponent kill to target.`);
+        return;
+      }
+      if (state.zombies.has(killKey)) {
+        logLine(`${player.name} played Why Won't You Die?!?!? — that space is already occupied by a zombie.`);
+        return;
+      }
+      state.zombies.set(killKey, { type: ZOMBIE_TYPE.REGULAR });
+      killer.kills = Math.max(0, killer.kills - 1);
+      state.recentKillKey = null;
+      state.recentKillByPlayerId = null;
+      logLine(`${player.name} played Why Won't You Die?!?!? — zombie respawned at ${killKey}. ${killer.name}'s kill reversed (now ${killer.kills}).`);
+    }
+  },
+  {
+    name: "They're Coming For You, ______",
+    description: "Place a zombie on every legal space on one opponent's current tile.",
+    collection: { [COLLECTIONS.NOT_DEAD_YET]: 2 },
+    apply(player) {
+      const floodTile = (target) => {
+        const tx = spaceToTileCoord(target.x);
+        const ty = spaceToTileCoord(target.y);
+        const tile = state.board.get(key(tx, ty));
+        if (!tile) { logLine(`${player.name} played They're Coming For You — no tile found.`); return; }
+        if (state.noZombieTiles?.has(key(tx, ty))) {
+          logLine(`${player.name} played They're Coming For You on ${target.name}'s tile — zombies cannot be placed there.`);
+          return;
+        }
+        let placed = 0;
+        for (let lx = 0; lx < TILE_DIM; lx += 1) {
+          for (let ly = 0; ly < TILE_DIM; ly += 1) {
+            if (!isSubtileZombieViable(tile, lx, ly)) continue;
+            const sk = key(tx * TILE_DIM + lx, ty * TILE_DIM + ly);
+            if (state.zombies.has(sk)) continue;
+            state.zombies.set(sk, { type: ZOMBIE_TYPE.REGULAR });
+            placed += 1;
+          }
+        }
+        logLine(`${player.name} played They're Coming For You on ${target.name}'s tile — ${placed} zombie(s) placed.`);
+      };
+
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 0) {
+        logLine(`${player.name} played They're Coming For You — no opponents.`);
+        return;
+      }
+      if (others.length === 1) {
+        floodTile(others[0]);
+        return;
+      }
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "They're Coming For You, ______",
+        options: others.map((p) => ({ key: String(p.id), label: p.name })),
+        resolve(optionKey) {
+          const target = state.players.find((p) => String(p.id) === optionKey);
+          if (target) floodTile(target);
+        }
+      };
+      logLine(`${player.name} played They're Coming For You — choose a target.`);
+    }
+  },
+  {
+    name: "Lots of running and screaming",
+    description: "Play before an opponent rolls movement. Their movement roll is used to move your player instead. Does not count as your movement on your next turn.",
+    collection: { [COLLECTIONS.NOT_DEAD_YET]: 2 },
+    apply(player, helpers) {
+      const target = helpers.getNextOpponent(player);
+      if (!target) {
+        logLine(`${player.name} played Lots of running and screaming — no valid target.`);
+        return;
+      }
+      target.movementHijack = { byPlayerId: player.id };
+      logLine(`${player.name} played Lots of running and screaming on ${target.name} — ${player.name} will use ${target.name}'s next movement roll.`);
+    }
+  },
+  {
+    name: "Troubled Childhood",
+    description: "Look at the cards in one opponent's hand.",
+    collection: { [COLLECTIONS.NOT_DEAD_YET]: 2 },
+    apply(player) {
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 0) {
+        logLine(`${player.name} played Troubled Childhood — no opponents.`);
+        return;
+      }
+      const showHand = (target) => {
+        if (target.hand.length === 0) {
+          logLine(`${player.name} looked at ${target.name}'s hand (Troubled Childhood) — it is empty.`);
+        } else {
+          logLine(`${player.name} looked at ${target.name}'s hand (Troubled Childhood): ${target.hand.map((c) => c.name).join(", ")}.`);
+        }
+      };
+      if (others.length === 1) {
+        showHand(others[0]);
+        return;
+      }
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "Troubled Childhood",
+        options: others.map((p) => ({ key: String(p.id), label: p.name })),
+        resolve(optionKey) {
+          const target = state.players.find((p) => String(p.id) === optionKey);
+          if (target) showHand(target);
+        }
+      };
+      logLine(`${player.name} played Troubled Childhood — choose an opponent to look at.`);
+    }
   }
 ];

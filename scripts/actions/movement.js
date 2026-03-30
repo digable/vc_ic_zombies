@@ -105,6 +105,41 @@ function rollMovement() {
     return;
   }
 
+  if (player.movementHijack) {
+    const { byPlayerId } = player.movementHijack;
+    player.movementHijack = null;
+    const hijacker = state.players.find((p) => p.id === byPlayerId);
+    const roll = rollD6();
+    const move = roll + (hijacker ? (hijacker.movementBonus || 0) : 0);
+    state.currentMoveRoll = roll;
+    state.movementBonus = 0;
+    state.moveFloorThisTurn = 0;
+    if (hijacker) {
+      state.movesRemaining = move;
+      state.step = STEP.MOVE;
+      state.pendingForcedMove = { targetPlayerId: hijacker.id, remaining: move, priorStep: STEP.MOVE_ZOMBIES, cardName: "Lots of running and screaming" };
+      logLine(`Lots of running and screaming! ${player.name} rolled ${roll} — ${hijacker.name} uses this movement (${move} space(s)).`);
+    } else {
+      state.movesRemaining = 0;
+      state.step = STEP.MOVE_ZOMBIES;
+      autoSkipZombieMoveIfClear();
+      logLine(`Lots of running and screaming! ${player.name} rolled ${roll} — hijacking player not found; movement lost.`);
+    }
+    render();
+    return;
+  }
+
+  if (state.movementRollFreezeCount > 0) {
+    state.currentMoveRoll = null;
+    state.movesRemaining = 0;
+    state.movementBonus = 0;
+    state.moveFloorThisTurn = 0;
+    state.step = STEP.MOVE;
+    logLine(`${player.name} cannot roll for movement (Too...tired...to...run is active) — 0 spaces. Card effects may still move players.`);
+    render();
+    return;
+  }
+
   const roll = rollD6();
   const dieRollPenalty = player.dieRollPenalty || 0;
   const penalizedRoll = roll - dieRollPenalty;
@@ -319,6 +354,14 @@ function movePlayer(dir) {
   state.movesRemaining -= 1;
   state.playerTrail.push(key(player.x, player.y));
 
+  if (player.movingTogether) {
+    const companion = state.players.find((p) => p.id === player.movingTogether.withPlayerId);
+    if (companion) {
+      companion.x = player.x;
+      companion.y = player.y;
+    }
+  }
+
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
   logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}].`);
@@ -422,6 +465,14 @@ function forcedMoveTarget(dir) {
   pfm.remaining -= 1;
   state.movesRemaining = pfm.remaining;
   state.playerTrail.push(key(player.x, player.y));
+
+  if (player.movingTogether) {
+    const companion = state.players.find((p) => p.id === player.movingTogether.withPlayerId);
+    if (companion) {
+      companion.x = player.x;
+      companion.y = player.y;
+    }
+  }
 
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);

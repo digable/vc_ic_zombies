@@ -88,6 +88,7 @@ function playEvent(index) {
     player.hand.splice(index, 1);
     player.items.push(card);
     card.apply(player, buildEventDeckHelpers());
+    if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
     player.eventUsedThisRound = true;
     render();
     return;
@@ -111,6 +112,7 @@ function playEvent(index) {
       state.forcedNextOpponentId = altTargets[0].id;
       card.apply(player, buildEventDeckHelpers());
       state.forcedNextOpponentId = null;
+      if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
     } else {
       state.pendingEventChoice = {
         playerId: lookin.byPlayerId,
@@ -120,6 +122,7 @@ function playEvent(index) {
           state.forcedNextOpponentId = Number(optKey.slice(2));
           card.apply(player, buildEventDeckHelpers());
           state.forcedNextOpponentId = null;
+          if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
           state.eventDiscardPile.push(card);
           checkWin(player);
         }
@@ -140,6 +143,7 @@ function playEvent(index) {
   }
 
   card.apply(player, buildEventDeckHelpers());
+  if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
   state.eventDiscardPile.push(card);
   player.eventUsedThisRound = true;
 
@@ -252,6 +256,7 @@ function handleZombiePlaceClick(sx, sy) {
   const spaceKey = key(sx, sy);
   if (isSpaceOccupiedByZombie(spaceKey)) return;
   if (state.players.some((p) => key(p.x, p.y) === spaceKey)) return;
+  if (pzp.validSpaces && !pzp.validSpaces.has(spaceKey)) return;
 
   state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
   logLine(`Zombie placed at ${spaceKey}.`);
@@ -460,7 +465,7 @@ function handleSpaceSelectClick(sx, sy) {
   const player = state.players.find((p) => p.id === pss.playerId);
   if (!player) { state.pendingSpaceSelect = null; render(); return; }
 
-  const valid = getSpacesAdjoiningBuilding();
+  const valid = pss.validSpaces ?? getSpacesAdjoiningBuilding();
   const spaceKey = key(sx, sy);
   if (!valid.has(spaceKey)) return;
 
@@ -478,8 +483,9 @@ function handleSpaceSelectClick(sx, sy) {
 
 function finishSpaceSelect() {
   if (!state.pendingSpaceSelect) return;
+  const cardName = state.pendingSpaceSelect.cardName || "Card";
   state.pendingSpaceSelect = null;
-  logLine("Now that's just gross! — cancelled.");
+  logLine(`${cardName} — cancelled.`);
   render();
 }
 
