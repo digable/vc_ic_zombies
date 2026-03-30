@@ -89,7 +89,7 @@ function resolvePendingCombatDecision(actionCode) {
     return;
   }
 
-  const playerSpaceKey = key(player.x, player.y);
+  const playerSpaceKey = playerKey(player);
   if (!state.zombies.has(playerSpaceKey)) {
     state.pendingCombatDecision = null;
     applyCombatPostStep(player, playerSpaceKey, pending.options);
@@ -285,7 +285,7 @@ function resolveCombatForPlayer(player, options = {}) {
     return { fought: false, knockedOut: false, pending: false };
   }
 
-  const playerSpaceKey = key(player.x, player.y);
+  const playerSpaceKey = playerKey(player);
 
   if (!state.zombies.has(playerSpaceKey)) {
     if (advanceStepWhenClear && state.step === STEP.COMBAT) {

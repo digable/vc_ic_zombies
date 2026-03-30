@@ -130,7 +130,7 @@ function playEvent(index) {
     }
     state.eventDiscardPile.push(card);
     player.eventUsedThisRound = true;
-    const pKey = key(player.x, player.y);
+    const pKey = playerKey(player);
     if (state.zombies.has(pKey) && !player.noCombatThisTurn) {
       resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
     }
@@ -143,7 +143,7 @@ function playEvent(index) {
   state.eventDiscardPile.push(card);
   player.eventUsedThisRound = true;
 
-  const pKey = key(player.x, player.y);
+  const pKey = playerKey(player);
   if (state.zombies.has(pKey) && !player.noCombatThisTurn) {
     logLine(`${player.name} is in a zombie space after playing ${card.name}. Combat resolves immediately.`);
     resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
@@ -280,9 +280,7 @@ function handleRocketLauncherClick(sx, sy) {
   const player = state.players.find((p) => p.id === prl.playerId);
   if (!player) { state.pendingRocketLauncher = null; render(); return; }
 
-  const tileX = spaceToTileCoord(sx);
-  const tileY = spaceToTileCoord(sy);
-  const tileKey = key(tileX, tileY);
+  const tileKey = getSpaceTileKey(sx, sy);
   const tile = state.board.get(tileKey);
   if (!tile) return;
 
@@ -349,9 +347,7 @@ function handleMinefieldClick(sx, sy) {
   const player = state.players.find((p) => p.id === pmf.playerId);
   if (!player) { state.pendingMinefield = null; render(); return; }
 
-  const tileX = spaceToTileCoord(sx);
-  const tileY = spaceToTileCoord(sy);
-  const tile = state.board.get(key(tileX, tileY));
+  const tile = state.board.get(getSpaceTileKey(sx, sy));
   if (!tile) return;
 
   let killed = 0;
@@ -393,9 +389,7 @@ function handleZombieFloodClick(sx, sy) {
   const player = state.players.find((p) => p.id === pzf.playerId);
   if (!player) { state.pendingZombieFlood = null; render(); return; }
 
-  const tileX = spaceToTileCoord(sx);
-  const tileY = spaceToTileCoord(sy);
-  const tileKey = key(tileX, tileY);
+  const tileKey = getSpaceTileKey(sx, sy);
   const tile = state.board.get(tileKey);
   if (!tile) return;
 

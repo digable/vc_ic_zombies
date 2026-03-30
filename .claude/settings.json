@@ -12,7 +12,8 @@
       "Bash(xargs wc:*)",
       "Bash(find scripts:*)",
       "Bash(grep -n \"currentZombieRoll\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/*.js /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/**/*.js)",
-      "Bash(grep -n \"regularZombieEnhanced\\\\|forcedNextOpponentId\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/core.js /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)"
+      "Bash(grep -n \"regularZombieEnhanced\\\\|forcedNextOpponentId\" /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/core.js /c/Users/digable/source/repos/digable/vc_ic_zombies/scripts/actions/*.js)",
+      "WebFetch(domain:docs.github.com)"
     ]
   }
 }

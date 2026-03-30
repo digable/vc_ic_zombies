@@ -236,7 +236,7 @@ function handleBreakthroughAttempt(dir) {
     collectTokensAtPlayerSpace(player);
     logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(toTile)} [space ${toX}, ${toY}].`);
     if (checkWin(player)) { render(); return; }
-    const playerSpaceKey = key(player.x, player.y);
+    const playerSpaceKey = playerKey(player);
     if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
       logLine(`${player.name} encountered a zombie and must fight immediately.`);
       resolveCombatForPlayer(player, {
@@ -341,7 +341,7 @@ function movePlayer(dir) {
     return;
   }
 
-  const playerSpaceKey = key(player.x, player.y);
+  const playerSpaceKey = playerKey(player);
   if (state.zombies.has(playerSpaceKey)) {
     if (player.noCombatThisTurn) {
       logLine(`${player.name} is under a no-combat effect and ignores zombie battle this turn.`);
@@ -434,7 +434,7 @@ function forcedMoveTarget(dir) {
     return;
   }
 
-  const playerSpaceKey = key(player.x, player.y);
+  const playerSpaceKey = playerKey(player);
   if (state.zombies.has(playerSpaceKey)) {
     logLine(`${player.name} encountered a zombie and must fight immediately.`);
     const result = resolveCombatForPlayer(player, {

@@ -12,7 +12,7 @@ function isCombatRequiredForCurrentPlayer() {
   if (player.noCombatThisTurn) {
     return false;
   }
-  return state.zombies.has(key(player.x, player.y));
+  return state.zombies.has(playerKey(player));
 }
 
 function autoSkipCombatIfClear() {

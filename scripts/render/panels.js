@@ -1,6 +1,11 @@
 // render-panels.js — UI panel rendering functions.
 // Handles deck info, players, hand, combat, zombie panels, event choice, log, meta, and game over.
 
+function clearPanel(panel) {
+  panel.classList.add("hidden");
+  panel.innerHTML = "";
+}
+
 function renderDeckInfo(previewDeck) {
   const box = document.getElementById("deckInfoBox");
   if (!box) return;
@@ -288,18 +293,10 @@ function renderCombatDecision() {
   }
 
   const pending = state.pendingCombatDecision;
-  if (!pending) {
-    panel.classList.add("hidden");
-    panel.innerHTML = "";
-    return;
-  }
+  if (!pending) { clearPanel(panel); return; }
 
   const player = state.players.find((p) => p.id === pending.playerId);
-  if (!player) {
-    panel.classList.add("hidden");
-    panel.innerHTML = "";
-    return;
-  }
+  if (!player) { clearPanel(panel); return; }
 
   const WIN = pending.killRoll;
   const roll = pending.modifiedRoll;
@@ -396,11 +393,7 @@ function renderZombieDiceChallenge() {
   if (!panel) return;
 
   const pzdc = state.pendingZombieDiceChallenge;
-  if (!pzdc) {
-    panel.classList.add("hidden");
-    panel.innerHTML = "";
-    return;
-  }
+  if (!pzdc) { clearPanel(panel); return; }
 
   const target = state.players.find((p) => p.id === pzdc.targetPlayerId);
   if (!target) { panel.classList.add("hidden"); return; }
@@ -552,11 +545,7 @@ function renderZombieReplacePanel() {
   }
 
   const pzr = state.pendingZombieReplace;
-  if (!pzr) {
-    panel.classList.add("hidden");
-    panel.innerHTML = "";
-    return;
-  }
+  if (!pzr) { clearPanel(panel); return; }
 
   panel.classList.remove("hidden");
   const instruction = pzr.adjacentToKey
@@ -579,18 +568,10 @@ function renderEventChoice() {
   if (!panel) return;
 
   const pending = state.pendingEventChoice;
-  if (!pending) {
-    panel.classList.add("hidden");
-    panel.innerHTML = "";
-    return;
-  }
+  if (!pending) { clearPanel(panel); return; }
 
   const player = state.players.find((p) => p.id === pending.playerId);
-  if (!player) {
-    panel.classList.add("hidden");
-    panel.innerHTML = "";
-    return;
-  }
+  if (!player) { clearPanel(panel); return; }
 
   panel.classList.remove("hidden");
   const buttons = pending.options
@@ -635,11 +616,7 @@ function renderKnockoutBanner() {
   const el = refs.knockoutBanner;
   if (!el) return;
   const ko = state.knockoutBanner;
-  if (!ko) {
-    el.classList.add("hidden");
-    el.innerHTML = "";
-    return;
-  }
+  if (!ko) { clearPanel(el); return; }
   el.innerHTML = `
     <span class="knockout-banner-icon">💀</span>
     <span class="knockout-banner-body">

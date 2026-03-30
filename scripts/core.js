@@ -244,6 +244,14 @@ function getSpaceLocalCoords(sx, sy) {
   return { lx: getLocalCoord(sx, tx), ly: getLocalCoord(sy, ty) };
 }
 
+function getSpaceTileKey(sx, sy) {
+  return key(spaceToTileCoord(sx), spaceToTileCoord(sy));
+}
+
+function playerKey(player) {
+  return key(player.x, player.y);
+}
+
 function manhattanDist(x1, y1, x2, y2) {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 }
@@ -712,7 +720,7 @@ function placeBuildingTokens(tx, ty, hearts, bullets) {
 }
 
 function collectTokensAtPlayerSpace(player) {
-  const sk = key(player.x, player.y);
+  const sk = playerKey(player);
   const tokens = state.spaceTokens.get(sk);
   if (!tokens) {
     return;
