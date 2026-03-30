@@ -201,7 +201,7 @@ function handleZombieReplaceClick(sx, sy) {
   const spaceKey = key(sx, sy);
 
   if (!pzr.selectedZombieKey) {
-    if (!state.zombies.has(spaceKey)) return;
+    if (!isSpaceOccupiedByZombie(spaceKey)) return;
     pzr.selectedZombieKey = spaceKey;
     render();
     return;
@@ -220,7 +220,7 @@ function handleZombieReplaceClick(sx, sy) {
   const tileX = spaceToTileCoord(sx);
   const tileY = spaceToTileCoord(sy);
   if (!isLocalWalkable(tile, getLocalCoord(sx, tileX), getLocalCoord(sy, tileY))) return;
-  if (state.zombies.has(spaceKey)) return;
+  if (isSpaceOccupiedByZombie(spaceKey)) return;
 
   if (pzr.adjacentToKey) {
     const { x: ax, y: ay } = parseKey(pzr.adjacentToKey);
@@ -250,7 +250,7 @@ function handleZombiePlaceClick(sx, sy) {
   if (!tile) return;
   if (!isSubtileZombieViable(tile, getLocalCoord(sx, spaceToTileCoord(sx)), getLocalCoord(sy, spaceToTileCoord(sy)))) return;
   const spaceKey = key(sx, sy);
-  if (state.zombies.has(spaceKey)) return;
+  if (isSpaceOccupiedByZombie(spaceKey)) return;
   if (state.players.some((p) => key(p.x, p.y) === spaceKey)) return;
 
   state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
