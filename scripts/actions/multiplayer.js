@@ -76,12 +76,18 @@ function renderLobbyPanel(session) {
 function showLobbySection() {
   document.getElementById("mpLobbySection")?.classList.remove("hidden");
   document.getElementById("mpCreateJoinSection")?.classList.add("hidden");
+  // Hide the regular Start Game button so players don't accidentally start a local game
+  const newGameBtn = document.getElementById("newGameBtn");
+  if (newGameBtn) newGameBtn.style.display = "none";
 }
 
 function showCreateJoinSection() {
   document.getElementById("mpLobbySection")?.classList.add("hidden");
   document.getElementById("mpCreateJoinSection")?.classList.remove("hidden");
   setLobbyStatus("");
+  // Restore the regular Start Game button
+  const newGameBtn = document.getElementById("newGameBtn");
+  if (newGameBtn) newGameBtn.style.display = "";
 }
 
 // ---------------------------------------------------------------------------
