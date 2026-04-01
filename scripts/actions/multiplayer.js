@@ -35,7 +35,6 @@ async function apiFetch(path, options = {}) {
   });
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
-    // Got HTML (likely Vercel's index.html fallback) — treat as a routing error
     throw Object.assign(new Error(`API route not found: ${path}`), { status: 404 });
   }
   const data = await res.json().catch(() => ({}));
@@ -61,8 +60,8 @@ function renderLobbyPanel(session) {
   const codeEl = document.getElementById("mpShareCode");
   if (codeEl && session?.code) {
     const url = `${location.origin}${location.pathname}?game=${session.code}`;
-    codeEl.innerHTML = `Code: <strong>${session.code}</strong> &nbsp;|&nbsp; <a href="${url}" target="_blank">Share link</a>
-      <button onclick="navigator.clipboard.writeText('${url}')" class="mp-copy-btn">Copy</button>`;
+    codeEl.innerHTML = `Code: <strong>${session.code}</strong> &nbsp;|&nbsp;
+      <button onclick="navigator.clipboard.writeText('${url}')" class="mp-copy-btn">Copy Link</button>`;
   }
   const mp = mpSession();
   const startBtn = document.getElementById("mpStartBtn");
@@ -76,18 +75,20 @@ function renderLobbyPanel(session) {
 function showLobbySection() {
   document.getElementById("mpLobbySection")?.classList.remove("hidden");
   document.getElementById("mpCreateJoinSection")?.classList.add("hidden");
-  // Hide the regular Start Game button so players don't accidentally start a local game
-  const newGameBtn = document.getElementById("newGameBtn");
-  if (newGameBtn) newGameBtn.style.display = "none";
+  document.getElementById("newGameBtn").style.display = "none";
 }
 
 function showCreateJoinSection() {
   document.getElementById("mpLobbySection")?.classList.add("hidden");
   document.getElementById("mpCreateJoinSection")?.classList.remove("hidden");
+  document.getElementById("newGameBtn").style.display = "";
   setLobbyStatus("");
-  // Restore the regular Start Game button
-  const newGameBtn = document.getElementById("newGameBtn");
-  if (newGameBtn) newGameBtn.style.display = "";
+}
+
+// Called once the game is live — collapses the MP panel for both host and joiner
+function hideMpPanel() {
+  const panel = document.getElementById("mpPanel");
+  if (panel) panel.removeAttribute("open");
 }
 
 // ---------------------------------------------------------------------------
@@ -131,18 +132,23 @@ async function pollFromCloud() {
     if (!session.state) return;
 
     const incoming = session.state;
-    // Only apply if the state has changed (different turn index or step)
-    if (
-      incoming.currentPlayerIndex === state.currentPlayerIndex &&
-      incoming.step === state.step &&
-      incoming.turnNumber === state.turnNumber
-    ) return;
+
+    // Use a composite key to detect real state changes.
+    // On first "playing" poll (mp.lastStateKey is unset), always apply.
+    const stateKey = `${incoming.turnNumber}:${incoming.currentPlayerIndex}:${incoming.step}`;
+    if (mp.lastStateKey === stateKey) return;
+    mp.lastStateKey = stateKey;
+
+    // First time seeing "playing" — close the lobby panel
+    if (!mp.gameStarted) {
+      mp.gameStarted = true;
+      hideMpPanel();
+    }
 
     deserializeState(incoming);
     updateMpTurnBanner();
     render();
 
-    // If it's now our turn, stop polling (we become the sender)
     if (isMyTurn()) {
       stopPolling();
     }
@@ -159,11 +165,13 @@ async function syncToCloud() {
   if (!isOnlineMode()) return;
   const mp = mpSession();
   try {
+    const serialized = serializeState();
     await apiFetch(`${API_BASE}/${mp.code}`, {
       method: "POST",
-      body: { playerId: mp.myPlayerId, gameState: serializeState() }
+      body: { playerId: mp.myPlayerId, gameState: serialized }
     });
-    // Start polling now that it's the next player's turn
+    // Update our own key so we don't re-apply our own push when polling resumes
+    mp.lastStateKey = `${serialized.turnNumber}:${serialized.currentPlayerIndex}:${serialized.step}`;
     if (!isMyTurn()) startPolling();
   } catch (e) {
     console.warn("syncToCloud failed:", e.message);
@@ -187,7 +195,6 @@ async function createMultiplayerGame() {
     const deviceId = getOrCreateDeviceId();
     const { code, hostId } = await apiFetch(API_BASE, { method: "POST" });
 
-    // Join as first player
     const { playerId } = await apiFetch(`${API_BASE}/${code}/join`, {
       method: "POST",
       body: { displayName, deviceId }
@@ -199,14 +206,13 @@ async function createMultiplayerGame() {
 
     state.multiplayerSession = {
       code, myPlayerId: playerId, myDeviceId: deviceId,
-      myPlayerSlot: 0, isHost: true, hostId, mode: "online", pollInterval: null
+      myPlayerSlot: 0, isHost: true, hostId, mode: "online",
+      pollInterval: null, gameStarted: false, lastStateKey: null
     };
 
     showLobbySection();
-    setLobbyStatus(`Game created! Share code: ${code}`);
+    setLobbyStatus(`Share this link or code: ${code}`);
     renderLobbyPanel({ code, players: [{ id: playerId, name: displayName }] });
-
-    // Poll lobby for joiners
     startPolling();
   } catch (e) {
     setLobbyStatus(e.message || "Failed to create game.", true);
@@ -226,7 +232,7 @@ async function joinMultiplayerGame() {
   const displayName = nameInput?.value.trim();
 
   if (!code || code.length !== 4) { setLobbyStatus("Enter a 4-character game code.", true); return; }
-  if (!displayName) { setLobbyStatus("Enter your display name first.", true); return; }
+  if (!displayName) { setLobbyStatus("Enter your name first.", true); return; }
 
   const btn = document.getElementById("mpJoinBtn");
   if (btn) btn.disabled = true;
@@ -242,17 +248,17 @@ async function joinMultiplayerGame() {
     sessionStorage.setItem("vc_mp_code", code);
     sessionStorage.setItem("vc_mp_playerId", playerId);
 
-    // Fetch session to determine player slot
     const session = await apiFetch(`${API_BASE}/${code}`);
     const slot = session.players.findIndex((p) => p.id === playerId);
 
     state.multiplayerSession = {
       code, myPlayerId: playerId, myDeviceId: deviceId,
-      myPlayerSlot: slot, isHost: false, hostId: null, mode: "online", pollInterval: null
+      myPlayerSlot: slot, isHost: false, hostId: null, mode: "online",
+      pollInterval: null, gameStarted: false, lastStateKey: null
     };
 
     showLobbySection();
-    setLobbyStatus(rejoined ? "Rejoined lobby." : "Joined! Waiting for host to start...");
+    setLobbyStatus(rejoined ? "Rejoined! Waiting for host to start..." : "Joined! Waiting for host to start...");
     renderLobbyPanel(session);
     startPolling();
   } catch (e) {
@@ -275,14 +281,11 @@ async function startMultiplayerGame() {
   setLobbyStatus("Starting...");
 
   try {
-    // Fetch final lobby to get player list
     const session = await apiFetch(`${API_BASE}/${mp.code}`);
     const lobbyPlayers = session.players;
 
-    // Stop lobby polling
     stopPolling();
 
-    // Set up local game state with the right player count and lobby names
     const pcInput = document.getElementById("playerCount");
     if (pcInput) pcInput.value = lobbyPlayers.length;
 
@@ -292,19 +295,18 @@ async function startMultiplayerGame() {
       if (state.players[i]) state.players[i].name = lp.name;
     });
 
-    // Update player slot now that state.players exists
     mp.myPlayerSlot = session.players.findIndex((p) => p.id === mp.myPlayerId);
 
     const initialState = serializeState();
+    mp.lastStateKey = `${initialState.turnNumber}:${initialState.currentPlayerIndex}:${initialState.step}`;
+    mp.gameStarted = true;
 
-    // Mark session as playing in Atlas BEFORE any endTurn() can fire
     await apiFetch(`${API_BASE}/${mp.code}/start`, {
       method: "POST",
       body: { hostId: mp.hostId, gameState: initialState }
     });
 
-    // Host is player 0 — their turn first, no polling needed yet
-    document.getElementById("mpPanel")?.classList.add("hidden");
+    hideMpPanel();
     updateMpTurnBanner();
     render();
   } catch (e) {
@@ -332,7 +334,7 @@ async function leaveMultiplayerGame() {
   sessionStorage.removeItem("vc_mp_playerId");
   sessionStorage.removeItem("vc_mp_hostId");
   showCreateJoinSection();
-  document.getElementById("mpPanel")?.classList.remove("hidden");
+  document.getElementById("mpPanel")?.setAttribute("open", "");
   updateMpTurnBanner();
   render();
 }
@@ -345,7 +347,7 @@ function updateMpTurnBanner() {
   const el = document.getElementById("mpTurnBanner");
   if (!el) return;
   const mp = mpSession();
-  if (!mp) { el.classList.add("hidden"); return; }
+  if (!mp || !mp.gameStarted) { el.classList.add("hidden"); return; }
   el.classList.remove("hidden");
   if (isMyTurn()) {
     el.textContent = "Your turn";
@@ -358,22 +360,33 @@ function updateMpTurnBanner() {
 }
 
 // ---------------------------------------------------------------------------
-// Auto-rejoin on page load (if sessionStorage has saved session)
+// Auto-detect invite link on page load
 // ---------------------------------------------------------------------------
 
 function tryAutoRejoin() {
-  const code = sessionStorage.getItem("vc_mp_code");
-  const playerId = sessionStorage.getItem("vc_mp_playerId");
-  if (!code || !playerId) return;
+  const urlCode = new URLSearchParams(location.search).get("game")?.toUpperCase();
+  const savedCode = sessionStorage.getItem("vc_mp_code");
+  const code = urlCode || savedCode;
+  if (!code) return;
 
-  // Pre-fill the join form so the user can manually rejoin, or auto-rejoin
+  // Open the MP panel
+  const panel = document.getElementById("mpPanel");
+  if (panel) panel.setAttribute("open", "");
+
+  // If this is an invite link, hide the Create section and show invite note
+  if (urlCode) {
+    document.getElementById("mpCreateSection")?.classList.add("hidden");
+    const note = document.getElementById("mpInviteNote");
+    if (note) {
+      note.textContent = `You've been invited to game ${urlCode}. Enter your name to join.`;
+      note.classList.remove("hidden");
+    }
+    // Hide the code input row — code is already known from URL
+    document.getElementById("mpJoinCodeRow")?.classList.add("hidden");
+  }
+
+  // Pre-fill code and focus name
   const codeInput = document.getElementById("mpJoinCode");
   if (codeInput) codeInput.value = code;
-
-  // Check if the URL has ?game=XXXX
-  const urlCode = new URLSearchParams(location.search).get("game");
-  if (urlCode) {
-    const urlCodeInput = document.getElementById("mpJoinCode");
-    if (urlCodeInput) urlCodeInput.value = urlCode.toUpperCase();
-  }
+  document.getElementById("mpJoinName")?.focus();
 }

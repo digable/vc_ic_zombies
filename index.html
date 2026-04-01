@@ -43,19 +43,24 @@
           <summary>Online Multiplayer</summary>
 
           <div id="mpCreateJoinSection">
-            <div class="row">
-              <input id="mpHostName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
+            <div id="mpCreateSection">
+              <div class="row">
+                <input id="mpHostName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
+              </div>
+              <div class="row">
+                <button id="mpCreateBtn" onclick="createMultiplayerGame()">Create Game</button>
+              </div>
+              <hr style="margin:6px 0;opacity:0.3"/>
             </div>
-            <div class="row">
-              <button id="mpCreateBtn" onclick="createMultiplayerGame()">Create Game</button>
-            </div>
-            <hr style="margin:6px 0;opacity:0.3"/>
-            <div class="row">
-              <input id="mpJoinName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
-            </div>
-            <div class="row">
-              <input id="mpJoinCode" type="text" maxlength="4" placeholder="Code" style="width:60px;text-transform:uppercase" />
-              <button id="mpJoinBtn" onclick="joinMultiplayerGame()">Join Game</button>
+            <div id="mpJoinSection">
+              <div id="mpInviteNote" class="mp-invite-note hidden"></div>
+              <div class="row">
+                <input id="mpJoinName" type="text" maxlength="32" placeholder="Your name" style="flex:1" />
+              </div>
+              <div class="row" id="mpJoinCodeRow">
+                <input id="mpJoinCode" type="text" maxlength="4" placeholder="Code" style="width:60px;text-transform:uppercase" />
+                <button id="mpJoinBtn" onclick="joinMultiplayerGame()">Join Game</button>
+              </div>
             </div>
           </div>
 
