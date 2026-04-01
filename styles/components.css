@@ -836,3 +836,45 @@
   background: #fff0f0;
 }
 .save-slot-del:hover:not(:disabled) { background: #ffe0e0; }
+
+/* ---------------------------------------------------------------------------
+   Multiplayer UI
+   --------------------------------------------------------------------------- */
+
+.mp-turn-banner {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  text-align: center;
+}
+.mp-turn-banner.hidden { display: none; }
+.mp-your-turn  { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.mp-waiting    { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+.mp-share-code {
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.mp-copy-btn {
+  font-size: 0.75rem;
+  padding: 1px 6px;
+}
+.mp-player-list {
+  font-size: 0.85rem;
+  margin: 4px 0;
+}
+.mp-player-entry {
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.mp-lobby-status {
+  font-size: 0.8rem;
+  margin-top: 4px;
+  min-height: 1.2em;
+  color: #555;
+}
+.mp-lobby-error { color: #a03030; }
+.hidden { display: none; }

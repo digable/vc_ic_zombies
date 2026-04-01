@@ -97,6 +97,7 @@ function endTurn() {
       }
       logLine(`${player.name} rolled ${sleepRoll} — turn lost and a zombie placed on their space.`);
       state.step = STEP.END;
+      syncToCloud();
       render();
       return;
     }
@@ -114,9 +115,11 @@ function endTurn() {
     if (combat.pending) {
       logLine(`${player.name} must resolve combat before continuing the turn.`);
     }
+    syncToCloud();
     render();
     return;
   }
 
+  syncToCloud();
   render();
 }

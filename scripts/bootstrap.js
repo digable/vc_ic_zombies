@@ -409,3 +409,4 @@ renderSaveLoadPanel();
 attachDeckDragListeners();
 const _baseFilter = { [getBaseCollection()]: { enabled: true, disabled: false } };
 setupGame(2, _baseFilter, _baseFilter);
+tryAutoRejoin();

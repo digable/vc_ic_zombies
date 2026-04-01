@@ -39,6 +39,38 @@
           <button id="newGameBtn">Start Game</button>
         </div>
 
+        <details id="mpPanel" class="save-load-details">
+          <summary>Online Multiplayer</summary>
+
+          <div id="mpCreateJoinSection">
+            <div class="row">
+              <input id="mpHostName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
+            </div>
+            <div class="row">
+              <button id="mpCreateBtn" onclick="createMultiplayerGame()">Create Game</button>
+            </div>
+            <hr style="margin:6px 0;opacity:0.3"/>
+            <div class="row">
+              <input id="mpJoinName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
+            </div>
+            <div class="row">
+              <input id="mpJoinCode" type="text" maxlength="4" placeholder="Code" style="width:60px;text-transform:uppercase" />
+              <button id="mpJoinBtn" onclick="joinMultiplayerGame()">Join Game</button>
+            </div>
+          </div>
+
+          <div id="mpLobbySection" class="hidden">
+            <div id="mpShareCode" class="mp-share-code"></div>
+            <div id="mpPlayerList" class="mp-player-list"></div>
+            <div class="row" style="margin-top:6px">
+              <button id="mpStartBtn" onclick="startMultiplayerGame()">Start Game</button>
+              <button onclick="leaveMultiplayerGame()">Leave</button>
+            </div>
+          </div>
+
+          <div id="mpLobbyStatus" class="mp-lobby-status"></div>
+        </details>
+
         <div class="phase-group">
           <span class="phase-label">Tile</span>
           <div class="row">
@@ -110,6 +142,7 @@
           <h2>Map</h2>
           <div id="turnInfo"></div>
         </div>
+        <div id="mpTurnBanner" class="mp-turn-banner hidden"></div>
         <div id="board"></div>
       </section>
 
@@ -172,6 +205,7 @@
     <script defer src="scripts/actions/events.js"></script>
     <script defer src="scripts/actions/turn-end.js"></script>
     <script defer src="scripts/actions/save-load.js"></script>
+    <script defer src="scripts/actions/multiplayer.js"></script>
     <script defer src="scripts/render/helpers.js"></script>
     <script defer src="scripts/render/board.js"></script>
     <script defer src="scripts/render/panels.js"></script>

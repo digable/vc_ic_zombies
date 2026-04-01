@@ -168,7 +168,8 @@ const state = {
   recentKillByPlayerId: null,
   zombieMovedSpaces: new Set(), // space keys where zombies arrived this turn — cleared at turn end
   zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
-  logs: []
+  logs: [],
+  multiplayerSession: null      // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
 };
 
 const refs = {
