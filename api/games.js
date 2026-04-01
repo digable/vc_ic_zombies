@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
   try {
     const db = await getDb();
 
-    await checkRateLimit(db, ip, "create_game", 3, 3600);
+    await checkRateLimit(db, ip, "create_game", 20, 3600);
 
     // Max 10 active sessions per IP
     const activeSessions = await db.collection("sessions").countDocuments({

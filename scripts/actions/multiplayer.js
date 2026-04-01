@@ -240,7 +240,7 @@ async function joinMultiplayerGame() {
 
   try {
     const deviceId = getOrCreateDeviceId();
-    const { playerId, rejoined } = await apiFetch(`${API_BASE}/${code}/join`, {
+    const { playerId, rejoined, status: joinStatus } = await apiFetch(`${API_BASE}/${code}/join`, {
       method: "POST",
       body: { displayName, deviceId }
     });
@@ -256,6 +256,15 @@ async function joinMultiplayerGame() {
       myPlayerSlot: slot, isHost: false, hostId: null, mode: "online",
       pollInterval: null, gameStarted: false, lastStateKey: null
     };
+
+    // If the game is already playing (rejoining mid-game), skip the lobby
+    // and go straight to polling for the current game state
+    if (joinStatus === "playing" || session.status === "playing") {
+      showLobbySection();
+      setLobbyStatus("Rejoining game in progress...");
+      startPolling();
+      return;
+    }
 
     showLobbySection();
     setLobbyStatus(rejoined ? "Rejoined! Waiting for host to start..." : "Joined! Waiting for host to start...");
@@ -289,6 +298,7 @@ async function startMultiplayerGame() {
     const pcInput = document.getElementById("playerCount");
     if (pcInput) pcInput.value = lobbyPlayers.length;
 
+    state.gameActive = true;
     setupGame(lobbyPlayers.length, readCurrentFilters(), readCurrentEventFilters());
 
     lobbyPlayers.forEach((lp, i) => {

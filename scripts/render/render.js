@@ -2,6 +2,16 @@
 // All rendering helpers live in render-helpers.js, render-board.js, render-panels.js, render-debug.js.
 
 function updateButtons() {
+  // No game started yet — disable all action buttons
+  if (!state.gameActive) {
+    [refs.drawTileBtn, refs.rotateLeftBtn, refs.rotateRightBtn, refs.combatBtn,
+     refs.drawEventsBtn, refs.rollMoveBtn, refs.endMoveBtn, refs.moveZombiesBtn,
+     refs.discardBtn, refs.endTurnBtn].forEach((b) => { if (b) b.disabled = true; });
+    document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
+    refs.moveDirBtns.forEach((b) => { b.disabled = true; });
+    return;
+  }
+
   // Online mode: disable everything when it's not this device's turn
   if (state.multiplayerSession?.mode === "online" && !isMyTurn()) {
     [refs.drawTileBtn, refs.rotateLeftBtn, refs.rotateRightBtn, refs.combatBtn,

@@ -75,6 +75,7 @@ function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
     const count = Number(refs.playerCount.value) || 2;
+    state.gameActive = true;
     setupGame(Math.max(1, Math.min(4, count)), readCurrentFilters(), readCurrentEventFilters());
   });
 

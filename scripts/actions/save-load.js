@@ -153,6 +153,8 @@ function deserializeState(data) {
   state.playerTrail            = data.playerTrail || [];
   state.logs                   = data.logs || [];
 
+  state.gameActive = true;
+
   // Clear all pending / ephemeral state (save only possible when none were active)
   state.pendingCombatDecision    = null;
   state.pendingEventChoice       = null;

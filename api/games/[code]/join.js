@@ -19,7 +19,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const db = await getDb();
-    await checkRateLimit(db, ip, "join", 10, 3600);
+    await checkRateLimit(db, ip, "join", 50, 3600);
 
     const { displayName, deviceId } = req.body || {};
     if (!displayName || typeof displayName !== "string") {
@@ -30,13 +30,17 @@ module.exports = async function handler(req, res) {
 
     const session = await db.collection("sessions").findOne({ code });
     if (!session) return err(res, 404, "Game not found");
-    if (session.status !== "lobby") return err(res, 409, "Game already started");
-    if (session.players.length >= MAX_PLAYERS) return err(res, 409, "Lobby is full");
+    if (session.status === "done") return err(res, 409, "Game has ended");
 
+    // Always allow rejoin by deviceId regardless of status
     const existingPlayer = session.players.find((p) => p.deviceId === deviceId);
     if (existingPlayer) {
-      return send(res, 200, { playerId: existingPlayer.id, rejoined: true });
+      return send(res, 200, { playerId: existingPlayer.id, rejoined: true, status: session.status });
     }
+
+    // New player — only allowed while in lobby
+    if (session.status !== "lobby") return err(res, 409, "Game already started — ask the host to create a new game");
+    if (session.players.length >= MAX_PLAYERS) return err(res, 409, "Lobby is full");
 
     const playerId = randomUUID();
     await db.collection("sessions").updateOne(
