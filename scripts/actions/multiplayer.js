@@ -59,13 +59,13 @@ function renderLobbyPanel(session) {
     codeEl.innerHTML = `Code: <strong>${session.code}</strong> &nbsp;|&nbsp; <a href="${url}" target="_blank">Share link</a>
       <button onclick="navigator.clipboard.writeText('${url}')" class="mp-copy-btn">Copy</button>`;
   }
+  const mp = mpSession();
   const startBtn = document.getElementById("mpStartBtn");
   if (startBtn) {
-    startBtn.disabled = players.length < 1;
+    const isHost = mp?.isHost === true;
+    startBtn.style.display = isHost ? "" : "none";
+    startBtn.disabled = !isHost || players.length < 1;
   }
-  // Show/hide start button based on host status
-  const mp = mpSession();
-  if (startBtn) startBtn.style.display = (mp?.isHost) ? "" : "none";
 }
 
 function showLobbySection() {
@@ -271,19 +271,22 @@ async function startMultiplayerGame() {
     // Stop lobby polling
     stopPolling();
 
-    // Adjust player count input to match lobby and start game
+    // Set up local game state with the right player count and lobby names
     const pcInput = document.getElementById("playerCount");
     if (pcInput) pcInput.value = lobbyPlayers.length;
 
-    // Rename players to match lobby names before setup
-    setupGame(); // creates state.players with defaults
+    setupGame(lobbyPlayers.length, readCurrentFilters(), readCurrentEventFilters());
 
     lobbyPlayers.forEach((lp, i) => {
       if (state.players[i]) state.players[i].name = lp.name;
     });
 
+    // Update player slot now that state.players exists
+    mp.myPlayerSlot = session.players.findIndex((p) => p.id === mp.myPlayerId);
+
     const initialState = serializeState();
 
+    // Mark session as playing in Atlas BEFORE any endTurn() can fire
     await apiFetch(`${API_BASE}/${mp.code}/start`, {
       method: "POST",
       body: { hostId: mp.hostId, gameState: initialState }
