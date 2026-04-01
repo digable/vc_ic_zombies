@@ -33,6 +33,11 @@ async function apiFetch(path, options = {}) {
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined
   });
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    // Got HTML (likely Vercel's index.html fallback) — treat as a routing error
+    throw Object.assign(new Error(`API route not found: ${path}`), { status: 404 });
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw Object.assign(new Error(data.error || "Request failed"), { status: res.status, data });
   return data;

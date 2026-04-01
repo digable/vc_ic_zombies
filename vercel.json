@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    { "source": "/api/games/:code/join",  "destination": "/api/games/[code]?action=join" },
-    { "source": "/api/games/:code/start", "destination": "/api/games/[code]?action=start" },
-    { "source": "/api/games/:code/leave", "destination": "/api/games/[code]?action=leave" },
-    { "source": "/api/games/:code",       "destination": "/api/games/[code]" }
+    { "source": "/api/games/:code/join",  "destination": "/api/games/:code?action=join" },
+    { "source": "/api/games/:code/start", "destination": "/api/games/:code?action=start" },
+    { "source": "/api/games/:code/leave", "destination": "/api/games/:code?action=leave" }
   ]
 }
