@@ -57,7 +57,12 @@ module.exports = async function handler(req, res) {
     if (!playerInSession) return err(res, 403, "Player not in this session");
 
     const playerSlot = session.players.findIndex((p) => p.id === playerId);
-    if (gameState.currentPlayerIndex !== playerSlot) {
+    const n = session.players.length;
+    // After endTurn the index is already advanced to the next player.
+    // Valid if: this player just finished their turn (previous slot) OR
+    // they took an extra turn (index unchanged — same slot).
+    const prevSlot = (gameState.currentPlayerIndex - 1 + n) % n;
+    if (playerSlot !== prevSlot && playerSlot !== gameState.currentPlayerIndex) {
       return err(res, 403, "Not your turn");
     }
 
