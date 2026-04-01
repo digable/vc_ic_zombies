@@ -340,9 +340,11 @@ async function leaveMultiplayerGame() {
     });
   } catch { /* best-effort */ }
   state.multiplayerSession = null;
+  state.gameActive = false;
   sessionStorage.removeItem("vc_mp_code");
   sessionStorage.removeItem("vc_mp_playerId");
   sessionStorage.removeItem("vc_mp_hostId");
+  showSetupUI();
   showCreateJoinSection();
   document.getElementById("mpPanel")?.setAttribute("open", "");
   updateMpTurnBanner();
@@ -373,6 +375,16 @@ function updateMpTurnBanner() {
 // Auto-detect invite link on page load
 // ---------------------------------------------------------------------------
 
+function hideSetupUI() {
+  document.getElementById("setupSection")?.classList.add("hidden");
+  document.getElementById("newGameBtn").style.display = "none";
+}
+
+function showSetupUI() {
+  document.getElementById("setupSection")?.classList.remove("hidden");
+  document.getElementById("newGameBtn").style.display = "";
+}
+
 function tryAutoRejoin() {
   const urlCode = new URLSearchParams(location.search).get("game")?.toUpperCase();
   const savedCode = sessionStorage.getItem("vc_mp_code");
@@ -383,8 +395,9 @@ function tryAutoRejoin() {
   const panel = document.getElementById("mpPanel");
   if (panel) panel.setAttribute("open", "");
 
-  // If this is an invite link, hide the Create section and show invite note
+  // If this is an invite link, hide the local game setup entirely and show invite note
   if (urlCode) {
+    hideSetupUI();
     document.getElementById("mpCreateSection")?.classList.add("hidden");
     const note = document.getElementById("mpInviteNote");
     if (note) {
