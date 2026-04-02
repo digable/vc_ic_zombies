@@ -24,7 +24,7 @@ function updateButtons() {
   }
   updateMpTurnBanner();
 
-  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget || state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood || state.pendingBreakthrough || state.pendingSpaceSelect) {
+  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget || state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood || state.pendingBreakthrough || state.pendingSpaceSelect || state.pendingDuctChoice) {
     refs.drawTileBtn.disabled = true;
     document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
     refs.rotateLeftBtn.disabled = true;
@@ -88,6 +88,7 @@ function render() {
   renderEventChoice();
   renderZombieReplacePanel();
   renderZombieDiceChallenge();
+  renderDuctChoice();
   renderLog();
   rebuildStandaloneDrawBtns();
   updateButtons();

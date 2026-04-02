@@ -284,6 +284,16 @@ function attachListeners() {
     });
   }
 
+  if (refs.ductChoicePanel) {
+    refs.ductChoicePanel.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const destIndex = target.getAttribute("data-duct-dest");
+      if (destIndex !== null) { confirmDuctTeleport(Number(destIndex)); return; }
+      if (target.getAttribute("data-duct-skip")) skipDuct();
+    });
+  }
+
   if (refs.eventChoicePanel) {
     refs.eventChoicePanel.addEventListener("click", (event) => {
       const target = event.target;

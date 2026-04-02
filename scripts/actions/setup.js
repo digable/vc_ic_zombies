@@ -33,7 +33,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       smellEffect: null,
       itemsUsedThisTurn: [],
       dieRollPenalty: 0,
-      nextTurnDieRollPenalty: 0
+      nextTurnDieRollPenalty: 0,
+      pendingDuctTeleport: null
     });
   }
 

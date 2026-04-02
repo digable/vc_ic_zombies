@@ -168,6 +168,7 @@ function deserializeState(data) {
   state.pendingMinefield         = null;
   state.pendingRocketLauncher    = null;
   state.pendingZombieFlood       = null;
+  state.pendingDuctChoice        = null;
   state.pendingTile              = null;
   state.pendingRotation          = 0;
   state.pendingTileOptions       = [];

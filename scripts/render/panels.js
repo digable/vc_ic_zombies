@@ -596,6 +596,27 @@ function renderEventChoice() {
   `;
 }
 
+function renderDuctChoice() {
+  const panel = refs.ductChoicePanel;
+  if (!panel) return;
+  const pdc = state.pendingDuctChoice;
+  if (!pdc) { clearPanel(panel); return; }
+  const player = state.players.find((p) => p.id === pdc.playerId);
+  if (!player) { clearPanel(panel); return; }
+  panel.classList.remove("hidden");
+  const destButtons = pdc.destinations
+    .map((d, i) => `<button data-duct-dest="${i}">${d.tileName}</button>`)
+    .join("");
+  panel.innerHTML = `
+    <div class="combat-decision-title">Air Duct — ${player.name}</div>
+    <div class="small">Using the duct costs your next movement roll. Choose a destination store, or stay here.</div>
+    <div class="combat-decision-actions">
+      ${destButtons}
+      <button data-duct-skip="1">Stay here</button>
+    </div>
+  `;
+}
+
 function renderLog() {
   refs.log.innerHTML = state.logs.map((entry) => {
     const typeClass = entry.type ? ` log-line--${entry.type}` : "";

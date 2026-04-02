@@ -55,6 +55,34 @@ function rollMovement() {
   }
 
   const player = currentPlayer();
+
+  // Air duct teleport: player committed to a duct last turn — execute it first
+  if (player.pendingDuctTeleport) {
+    const { x, y } = player.pendingDuctTeleport;
+    player.pendingDuctTeleport = null;
+    player.x = x;
+    player.y = y;
+    state.currentMoveRoll = null;
+    state.movesRemaining = 0;
+    state.playerTrail = [key(x, y)];
+    collectTokensAtPlayerSpace(player);
+    const destTile = getTileAtSpace(x, y);
+    logLine(`${player.name} teleports through the air duct to ${destTile?.name || `(${x}, ${y})`}!`);
+    moveToZombiePhase(true);
+    render();
+    return;
+  }
+
+  // Duct check: offer the duct before rolling (only if no other turn-skipping effects)
+  if (!state._skipDuctCheck && !player.cannotMoveTurns && playerOnDuctSpace(player)) {
+    const destinations = findDuctDestinations(player);
+    if (destinations.length > 0) {
+      state.pendingDuctChoice = { playerId: player.id, destinations, skipToRoll: true };
+      render();
+      return;
+    }
+  }
+
   if (player.cannotMoveTurns > 0) {
     state.currentMoveRoll = 0;
     state.movesRemaining = 0;
@@ -185,9 +213,62 @@ function rollMovement() {
   render();
 }
 
-function moveToZombiePhase() {
+// skipDuctCheck=true when called after a teleport (don't offer duct again immediately)
+function moveToZombiePhase(skipDuctCheck = false) {
+  if (!skipDuctCheck) {
+    const player = currentPlayer();
+    if (player && playerOnDuctSpace(player)) {
+      const destinations = findDuctDestinations(player);
+      if (destinations.length > 0) {
+        state.pendingDuctChoice = { playerId: player.id, destinations };
+        // Don't transition yet — wait for player to choose
+        render();
+        return;
+      }
+    }
+  }
   state.step = STEP.MOVE_ZOMBIES;
   autoSkipZombieMoveIfClear();
+}
+
+function confirmDuctTeleport(destIndex) {
+  const pdc = state.pendingDuctChoice;
+  if (!pdc) return;
+  const player = state.players.find((p) => p.id === pdc.playerId);
+  if (!player) { state.pendingDuctChoice = null; return; }
+  const dest = pdc.destinations[destIndex];
+  if (!dest) return;
+  const skipToRoll = pdc.skipToRoll;
+  state.pendingDuctChoice = null;
+  player.pendingDuctTeleport = { x: dest.sx, y: dest.sy };
+  if (skipToRoll) {
+    // We're still in ROLL_MOVE — re-enter rollMovement to execute the teleport immediately
+    state._skipDuctCheck = true;
+    rollMovement();
+    state._skipDuctCheck = false;
+  } else {
+    logLine(`${player.name} will use the air duct next turn — destination: ${dest.tileName}.`);
+    moveToZombiePhase(true);
+    render();
+  }
+}
+
+function skipDuct() {
+  const pdc = state.pendingDuctChoice;
+  if (!pdc) return;
+  const skipToRoll = pdc.skipToRoll;
+  const player = state.players.find((p) => p.id === pdc.playerId);
+  state.pendingDuctChoice = null;
+  if (player) logLine(`${player.name} chose not to use the air duct.`);
+  if (skipToRoll) {
+    // Continue with the normal roll — bypass the duct check so we don't loop
+    state._skipDuctCheck = true;
+    rollMovement();
+    state._skipDuctCheck = false;
+  } else {
+    moveToZombiePhase(true);
+    render();
+  }
 }
 
 const BREAKTHROUGH_EDGE = {
