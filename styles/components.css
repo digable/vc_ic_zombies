@@ -877,6 +877,84 @@
   color: #555;
 }
 .mp-lobby-error { color: #a03030; }
+/* ---------------------------------------------------------------------------
+   Bug Report
+   --------------------------------------------------------------------------- */
+
+.br-trigger {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.35);
+  color: inherit;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.br-trigger:hover { background: rgba(255,255,255,0.1); }
+
+.br-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.br-overlay.hidden { display: none; }
+
+.br-box {
+  background: var(--bg, #fff);
+  border: 1px solid var(--border, #ccc);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  width: min(480px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.br-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.br-close {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.br-label { font-size: 0.85rem; font-weight: 600; margin-top: 4px; }
+.br-required { color: #c00; }
+.br-optional { font-weight: normal; color: #888; }
+.br-input, .br-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 4px;
+}
+.br-textarea { resize: vertical; }
+.br-note { font-size: 0.78rem; color: #666; margin: 2px 0; }
+
+.br-status { font-size: 0.82rem; min-height: 1.2em; }
+.br-error { color: #a03030; }
+
+.br-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.br-submit { font-weight: 600; }
+
+.br-success { font-weight: bold; color: #1a7a1a; margin: 0; }
+.br-issue-link { font-size: 0.8rem; word-break: break-all; }
+
 .mp-invite-note {
   font-size: 0.85rem;
   background: #e8f4fd;

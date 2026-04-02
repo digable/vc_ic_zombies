@@ -13,6 +13,7 @@
     <header class="topbar">
       <h1>VC IC Zombies</h1>
       <p class="subtitle">Town square survival. Reach the helipad or collect 25 kills. <a href="tile-editor.html">Tile Editor</a></p>
+      <button class="br-trigger" onclick="openBugReportModal()">Report a Bug</button>
     </header>
 
     <main class="layout">
@@ -173,6 +174,41 @@
 
     <div id="knockoutBanner" class="knockout-banner hidden"></div>
 
+    <div id="bugReportModal" class="br-overlay hidden">
+      <div class="br-box">
+        <div class="br-header">
+          <span>Report a Bug</span>
+          <button class="br-close" onclick="closeBugReportModal()">✕</button>
+        </div>
+
+        <div id="brInputSection">
+          <label class="br-label" for="brTitle">Title <span class="br-required">*</span></label>
+          <input id="brTitle" type="text" maxlength="120" placeholder='e.g. "Zombie walked through wall"' class="br-input" />
+
+          <label class="br-label" for="brDescription">What happened? <span class="br-optional">(optional)</span></label>
+          <textarea id="brDescription" rows="4" maxlength="2000" placeholder="Steps to reproduce, what you expected vs what happened..." class="br-textarea"></textarea>
+
+          <p class="br-note">Game state and last 20 log entries will be included automatically.</p>
+          <div id="brStatus" class="br-status"></div>
+
+          <div class="br-actions">
+            <button onclick="closeBugReportModal()">Cancel</button>
+            <button id="brSubmitBtn" onclick="submitBugReport()" class="br-submit">Submit Report</button>
+          </div>
+        </div>
+
+        <div id="brResultSection" class="hidden">
+          <p class="br-success">Bug report submitted!</p>
+          <p class="br-label">View on GitHub:</p>
+          <a id="brIssueLink" href="#" target="_blank" class="br-issue-link"></a>
+          <div class="br-actions" style="margin-top:12px">
+            <button id="brDownloadBtn" class="br-submit">Download Save File</button>
+            <button onclick="closeBugReportModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="gameOverOverlay" class="game-over-overlay hidden">
       <div class="game-over-box">
         <div id="gameOverTitle" class="game-over-title">GAME OVER</div>
@@ -211,6 +247,7 @@
     <script defer src="scripts/actions/turn-end.js"></script>
     <script defer src="scripts/actions/save-load.js"></script>
     <script defer src="scripts/actions/multiplayer.js"></script>
+    <script defer src="scripts/actions/bug-report.js"></script>
     <script defer src="scripts/render/helpers.js"></script>
     <script defer src="scripts/render/board.js"></script>
     <script defer src="scripts/render/panels.js"></script>
