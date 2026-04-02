@@ -6,7 +6,7 @@ const { promisify } = require("util");
 const { gunzip }    = require("zlib");
 const gunzipAsync   = promisify(gunzip);
 
-const { cors, getIp, err, send } = require("./_helpers");
+const { cors, err, send } = require("./_helpers");
 
 const GITHUB_API  = "https://api.github.com";
 const REPO        = "digable/vc_ic_zombies";
@@ -43,7 +43,9 @@ module.exports = async function handler(req, res) {
   let logLines = [];
   try {
     const parsed = JSON.parse(saveJson);
-    logLines = (parsed.logs || []).slice(-20);
+    logLines = (parsed.logs || []).slice(-20).map((entry) =>
+      typeof entry === "string" ? entry : (entry?.text ?? String(entry))
+    );
   } catch { /* ignore */ }
 
   const descriptionSection = description?.trim()
