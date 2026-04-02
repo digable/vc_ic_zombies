@@ -13,7 +13,7 @@ The dead have risen. Streets are overrun, buildings are locked down, and the onl
 
 ## 🕹️ Play Now
 
-**[▶ Play in your browser →](https://digable.github.io/vc_ic_zombies/)**
+**[▶ Play in your browser →](https://vc-ic-zombies.vercel.app/)**
 
 Or clone the repo and open `index.html` locally — no server or build step required.
 
