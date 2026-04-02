@@ -49,6 +49,9 @@ function createEditableSubtileCells(tile) {
         ),
         doors: normalizeDirList(
           actual.doors || actual.door || raw.doors || raw.door || cell.doors || cell.door
+        ),
+        airDucts: normalizeDirList(
+          actual.airDucts || raw.airDucts || cell.airDucts
         )
       };
     }
