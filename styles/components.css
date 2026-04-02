@@ -386,7 +386,12 @@
 
 .micro-cell .duct-side {
   color: #5bc8d4;
-  text-shadow: 0 0 2px rgba(0,0,0,0.8);
+  line-height: 0;
+}
+
+.micro-cell .duct-wave {
+  display: block;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.7));
 }
 
 .micro-cell:nth-child(3n) {

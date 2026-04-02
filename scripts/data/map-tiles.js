@@ -616,7 +616,7 @@ const namedTiles = [
     hearts: 1,
     bullets: 1,
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "mall store", walls: ["N", "S", "W"] },
+      "0,0": { walkable: true, type: "mall store", walls: ["N", "S", "W"], airDucts: ["W"] },
       "1,0": { walkable: true, type: "mall store", walls: ["N"], doors: ["S"] },
       "2,0": { walkable: true, type: "mall store", walls: ["N", "E", "S"] },
       "0,1": { walkable: true, type: "mall hallway", walls: ["N", "S"] },
@@ -643,7 +643,7 @@ const namedTiles = [
     subTilesTemplate: {
       "0,0": { walkable: true, type: "mall store", walls: ["N", "S", "W"] },
       "1,0": { walkable: true, type: "mall store", walls: ["N"], doors: ["S"] },
-      "2,0": { walkable: true, type: "mall store", walls: ["N", "E", "S"] },
+      "2,0": { walkable: true, type: "mall store", walls: ["N", "E", "S"], airDucts: ["N"] },
       "0,1": { walkable: true, type: "mall hallway", walls: ["N", "S"] },
       "1,1": { walkable: true, type: "mall hallway" },
       "2,1": { walkable: true, type: "mall hallway", walls: ["N", "S"] },
@@ -672,7 +672,7 @@ const namedTiles = [
       "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"] },
       "1,1": { walkable: true, type: "mall hallway" },
       "2,1": { walkable: true, type: "mall hallway", walls: ["S"] },
-      "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] },
+      "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"], airDucts: ["W"] },
       "1,2": { walkable: true, type: "mall hallway", walls: ["E"] },
       "2,2": { walkable: false }
     }
@@ -693,7 +693,7 @@ const namedTiles = [
     subTilesTemplate: {
       "0,0": { walkable: true, type: "mall store", walls: ["N", "S", "W"] },
       "1,0": { walkable: true, type: "mall store", walls: ["N"], doors: ["S"] },
-      "2,0": { walkable: true, type: "mall store", walls: ["N", "E"] },
+      "2,0": { walkable: true, type: "mall store", walls: ["N", "E"], airDucts: ["N"] },
       "0,1": { walkable: true, type: "mall hallway", walls: ["N", "S"] },
       "1,1": { walkable: true, type: "mall hallway" },
       "2,1": { walkable: true, type: "mall store", walls: ["E"], doors: ["W"] },
@@ -745,7 +745,7 @@ const namedTiles = [
       "0,0": { walkable: true, type: "mall store", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "mall store", walls: ["N", "E", "W"] },
       "2,0": { walkable: true, type: "mall store", walls: ["N", "E"] },
-      "0,1": { walkable: true, type: "mall store", walls: ["W"] },
+      "0,1": { walkable: true, type: "mall store", walls: ["W"], airDucts: ["W"] },
       "1,1": { walkable: true, type: "mall store", doors: ["S"] },
       "2,1": { walkable: true, type: "mall store", walls: ["E"] },
       "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] },
@@ -767,7 +767,7 @@ const namedTiles = [
     hearts: 3,
     bullets: 3,
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "mall store", walls: ["N", "W"] },
+      "0,0": { walkable: true, type: "mall store", walls: ["N", "W"], airDucts: ["N"] },
       "1,0": { walkable: true, type: "mall store", walls: ["N"] },
       "2,0": { walkable: true, type: "mall store", walls: ["N", "E"] },
       "0,1": { walkable: true, type: "mall store", walls: ["W"] },
@@ -798,7 +798,7 @@ const namedTiles = [
       "0,1": { walkable: true, type: "mall store", walls: ["W"] },
       "1,1": { walkable: true, type: "mall store", doors: ["S"] },
       "2,1": { walkable: true, type: "mall store", walls: ["E"] },
-      "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] },
+      "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"], airDucts: ["W"] },
       "1,2": { walkable: true, type: "mall hallway", walls: ["E", "W"] },
       "2,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] }
     }
@@ -820,7 +820,7 @@ const namedTiles = [
       "0,0": { walkable: true, type: "mall store", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "mall hallway", walls: ["E", "W"] },
       "2,0": { walkable: false },
-      "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"] },
+      "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"], airDucts: ["W"] },
       "1,1": { walkable: true, type: "mall hallway", walls: ["E"] },
       "2,1": { walkable: false },
       "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] },
@@ -845,7 +845,7 @@ const namedTiles = [
       "0,0": { walkable: true, type: "mall store", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "mall hallway", walls: ["E", "W"] },
       "2,0": { walkable: false },
-      "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"] },
+      "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"], airDucts: ["W"] },
       "1,1": { walkable: true, type: "mall hallway", walls: ["E"] },
       "2,1": { walkable: false },
       "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] },
@@ -870,7 +870,7 @@ const namedTiles = [
       "0,0": { walkable: true, type: "mall store", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "mall hallway", walls: ["E", "W"] },
       "2,0": { walkable: false },
-      "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"] },
+      "0,1": { walkable: true, type: "mall store", walls: ["W"], doors: ["E"], airDucts: ["W"] },
       "1,1": { walkable: true, type: "mall hallway", walls: ["E"] },
       "2,1": { walkable: false },
       "0,2": { walkable: true, type: "mall store", walls: ["E", "S", "W"] },

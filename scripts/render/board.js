@@ -152,6 +152,14 @@ function renderBoard() {
           const walls = wallDirs
             .map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`)
             .join("");
+          const ductDirs = getSubTileAirDuctDirs(tile, lx, ly);
+          const ductLabels = ductDirs.map((dir) => {
+            const horiz = dir === "E" || dir === "W";
+            const svg = horiz
+              ? `<svg class="duct-wave" width="10" height="7" viewBox="0 0 12 7" xmlns="http://www.w3.org/2000/svg"><path d="M0,2 C2,0 4,0 6,2 C8,4 10,4 12,2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M0,5 C2,3 4,3 6,5 C8,7 10,7 12,5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`
+              : `<svg class="duct-wave" width="7" height="10" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"><path d="M2,0 C0,2 0,4 2,6 C4,8 4,10 2,12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M5,0 C3,2 3,4 5,6 C7,8 7,10 5,12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+            return `<span class="side-label side-label-${dir.toLowerCase()} duct-side">${svg}</span>`;
+          }).join("");
 
           if (!isWalkable) {
             parts.push('<span class="mark blocked">X</span>');
@@ -213,7 +221,7 @@ function renderBoard() {
           }
           const subTypeClass = subType ? ` ${subType.replaceAll(" ", "-")}-subtile` : "";
           const movedClass = state.zombieMovedSpaces.has(spaceKey) ? " zombie-moved" : "";
-          micro.push(`<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}${zombieClass}${movedClass}" data-sx="${sx}" data-sy="${sy}">${lanes}${walls}${parts.join("")}</span>`);
+          micro.push(`<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}${zombieClass}${movedClass}" data-sx="${sx}" data-sy="${sy}">${lanes}${walls}${ductLabels}${parts.join("")}</span>`);
         }
       }
 

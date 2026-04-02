@@ -268,7 +268,13 @@ function buildMicroGridHtml(tileForRender) {
       const doorDirs = getSubTileDoorDirs(tileForRender, lx, ly);
       const ductDirs = getSubTileAirDuctDirs(tileForRender, lx, ly);
       const doorLabels = doorDirs.map((dir) => `<span class="side-label side-label-${dir.toLowerCase()} door-side">D</span>`).join("");
-      const ductLabels = ductDirs.map((dir) => `<span class="side-label side-label-${dir.toLowerCase()} duct-side">AD</span>`).join("");
+      const ductLabels = ductDirs.map((dir) => {
+        const horiz = dir === "E" || dir === "W";
+        const svg = horiz
+          ? `<svg class="duct-wave" width="10" height="7" viewBox="0 0 12 7" xmlns="http://www.w3.org/2000/svg"><path d="M0,2 C2,0 4,0 6,2 C8,4 10,4 12,2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M0,5 C2,3 4,3 6,5 C8,7 10,7 12,5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`
+          : `<svg class="duct-wave" width="7" height="10" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"><path d="M2,0 C0,2 0,4 2,6 C4,8 4,10 2,12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M5,0 C3,2 3,4 5,6 C7,8 7,10 5,12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+        return `<span class="side-label side-label-${dir.toLowerCase()} duct-side">${svg}</span>`;
+      }).join("");
       const subTypeClass = subType ? ` ${subType.replaceAll(" ", "-")}-subtile` : "";
       micro.push(
         `<span class="micro-cell${subTypeClass}${!isWalkable ? " blocked-subtile" : ""}">${lanes}${walls}${doorLabels}${ductLabels}${!isWalkable ? '<span class="mark blocked">X</span>' : ""}${isExit ? '<span class="mark exit">E</span>' : ""}</span>`
