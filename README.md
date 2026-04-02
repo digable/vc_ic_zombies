@@ -1,6 +1,6 @@
 # 🧟 VC IC Zombies
 
-A browser-based board game adaptation of zombie survival set in Iowa City. Draw tiles to build the city, fight zombies, grab loot, and reach the Helipad before the horde overwhelms you.
+A browser-based board game adaptation of zombie survival. Draw tiles to build the city, fight zombies, grab loot, and reach the Helipad before the horde overwhelms you.
 
 [![Play Now](https://img.shields.io/badge/Play%20Now-digable.github.io-orange)](https://digable.github.io/vc_ic_zombies/)
 ![Game Type](https://img.shields.io/badge/Type-Board%20Game-red)
@@ -9,7 +9,7 @@ A browser-based board game adaptation of zombie survival set in Iowa City. Draw 
 
 ## 📖 Story
 
-The dead have risen in Iowa City. Streets are overrun, buildings are locked down, and the only way out is the Helipad on the edge of town. You and your fellow survivors must draw tiles to reveal the city block by block, battle zombies in every corner, scavenge hearts and bullets from named buildings, and race to escape — or rack up 25 kills and prove you're the last one standing.
+The dead have risen. Streets are overrun, buildings are locked down, and the only way out is the Helipad on the edge of town. You and your fellow survivors must draw tiles to reveal the city block by block, battle zombies in every corner, scavenge hearts and bullets from named buildings, and race to escape — or rack up 25 kills and prove you're the last one standing.
 
 ## 🕹️ Play Now
 
@@ -27,6 +27,15 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Tile editor tool (`tile-editor.html`) for creating and previewing custom tiles — supports all tile fields including flags, zone gateway, and companion tiles; tile groups collapse for performance, subtile editors expand on demand
 - Collection metadata (type, version, year, description, creator) shown as tooltip on setup checkboxes
 - Each tile and event card shows a short collection code badge (Z1, Z2, IC, MW) — on the board, in your event hand, and in the setup panel
+
+### 🌐 Online Multiplayer
+- Create or join a game with a 4-character room code — share the link and anyone can join instantly
+- **Host controls** — only the host can start the game; other players see a waiting state until the game begins
+- **Turn enforcement** — all game buttons are disabled when it's not your turn; a banner shows whose turn it is
+- **Automatic state sync** — game state is pushed to the cloud after every turn and polled every 1.5 seconds by other players
+- **Invite links** — joining via a `?game=XXXX` URL pre-fills the code and hides local-game setup
+- **Rejoin support** — closing and reopening the same invite link rejoins an in-progress game automatically
+- Powered by Vercel serverless functions and MongoDB Atlas — no dedicated game server required
 
 ### ⚔️ Combat System
 - Combat triggers when entering or sharing a space with a zombie
@@ -68,6 +77,14 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 | Lots of Luck with That! | Play when sharing a space with another player — end your movement and take 1 bullet + 1 random card from them |
 | Lucky Shot | In combat only — spend 1 bullet to automatically kill the current zombie |
 
+### 🏬 Air Ducts (Mall Walkers)
+- Certain mall store subtiles have air duct connections, shown as blue wave markers on the board
+- When a player ends movement on a duct subtile, a panel appears offering to use the duct or stay
+- Choosing a destination costs the player's next movement turn — the teleport fires when they click Roll Movement
+- Destinations include any adjacent store tile (including diagonals) that also has a duct subtile
+- If the destination is itself a duct space, the offer appears again next turn — allowing chaining across multiple stores at the cost of one turn each
+- Zombies cannot use air ducts
+
 ### 💾 Save / Load
 - 5 save slots stored in `localStorage` — no account or server required
 - Accessible via the collapsible **Save / Load** panel in Game Controls
@@ -78,6 +95,12 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 **Export / Import** — each save slot has its own Export and Import buttons:
 - **Export** downloads the slot's data as a timestamped `.json` file (e.g. `vc-zombies-slot1-2026-03-28T14-30-00.json`). Useful for backing up a game, sharing a save with another player, or attaching to a bug report.
 - **Import** opens a file picker and loads a `.json` file into that slot. If the slot already has data you'll be asked to confirm the overwrite. After importing, press **Load** to start playing from that save.
+
+### 🐛 Bug Reports
+- A **Report a Bug** button in the top bar opens the bug report modal at any time
+- Enter a title and optional description — game state and the last 20 log entries are attached automatically
+- On submit, a GitHub Issue is created with the full save file embedded in a collapsible block
+- After submission you can view the issue on GitHub or download the save file as a `.json` for local import
 
 ### 🃏 Deck Management
 - **"Show cards"** dropdown in Map Deck Info and Event Deck Info panels lists every card in the remaining deck
@@ -98,7 +121,7 @@ Each turn follows this sequence:
 | 1 | **Draw & Place Tile** — reveal and place a new city block |
 | 2 | **Combat Current Space** — fight any zombies sharing your space |
 | 3 | **Draw to 3 Events** — top up your event hand |
-| 4 | **Roll Movement** — roll and move with direction buttons |
+| 4 | **Roll Movement** — roll and move with direction buttons; air duct offer appears if on a duct space |
 | 5 | **Move Zombies** — roll and advance the horde |
 | 6 | **Discard Event** — discard a card from your hand if desired |
 | 7 | **End Turn** — pass to the next player |
@@ -114,6 +137,19 @@ vc_ic_zombies/
 ├── README.md                         # This file
 ├── LICENSE                           # MIT License
 ├── RULES_REFERENCE.md                # Official Zombies!!! rules & FAQ summary
+├── vercel.json                       # Vercel deployment config
+├── package.json                      # Node dependencies (mongodb)
+├── api/
+│   ├── _db.js                        # Shared MongoDB Atlas connection
+│   ├── _helpers.js                   # CORS, error helpers, code generator
+│   ├── _rateLimit.js                 # Per-IP rate limiting (Atlas-backed)
+│   ├── games.js                      # POST /api/games — create session
+│   ├── bug-report.js                 # POST /api/bug-report — create GitHub issue
+│   └── games/[code]/
+│       ├── index.js                  # GET poll + POST state push
+│       ├── join.js                   # POST join session
+│       ├── start.js                  # POST start game (host only)
+│       └── leave.js                  # POST leave session
 ├── scripts/
 │   ├── constants.js                  # Shared numeric constants (TILE_DIM, WIN_KILLS, etc.)
 │   ├── core.js                       # State, collections, shared helpers
@@ -121,26 +157,28 @@ vc_ic_zombies/
 │   ├── tile-debug.js                 # Tile editor page logic
 │   ├── subtile-editor-row.js         # Subtile editor row renderer
 │   ├── render/
-│   │   ├── helpers.js                # Rendering utilities (formatTileCode, collection labels, road lines)
+│   │   ├── helpers.js                # Rendering utilities (formatTileCode, collection labels, road lines, air duct SVG)
 │   │   ├── board.js                  # Board grid, player trail SVG, move status
-│   │   ├── panels.js                 # Sidebar panels, combat UI, log, knockout banner
+│   │   ├── panels.js                 # Sidebar panels, combat UI, log, knockout banner, duct choice panel
 │   │   ├── debug.js                  # Tile editor / map deck debug rendering
 │   │   ├── render.js                 # Render orchestrator (updateButtons + render())
 │   │   ├── save-load-panel.js        # Save/Load slot panel rendering
 │   │   └── compass-checkboxes.js     # Compass direction checkbox helper (tile editor)
 │   ├── actions/
-│   │   ├── setup.js                  # Game setup, tile draw/place
+│   │   ├── setup.js                  # Game setup, tile draw/place, companion tile logic
 │   │   ├── combat.js                 # Combat resolution and knockout
-│   │   ├── movement.js               # Player movement roll/step/end
+│   │   ├── movement.js               # Player movement roll/step/end, air duct teleport
 │   │   ├── zombies.js                # Zombie movement phase
 │   │   ├── events.js                 # Event hand draw/play/discard, pending action handlers
-│   │   ├── turn-end.js               # End-turn cleanup
+│   │   ├── turn-end.js               # End-turn cleanup, multiplayer sync
 │   │   ├── save-load.js              # Save/load/export/import game state
+│   │   ├── multiplayer.js            # Online session create/join/start/leave/poll/sync
+│   │   ├── bug-report.js             # Bug report modal, compression, API call
 │   │   └── win.js                    # Win condition checks
 │   ├── rules/
 │   │   ├── placement.js              # Tile placement, connector validation, zone isolation
 │   │   ├── combat-flow.js            # Combat/zombie-step skip gating
-│   │   ├── movement.js               # Step legality across subtiles and tile edges
+│   │   ├── movement.js               # Step legality, air duct destination finding
 │   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
 │   │   └── board-bounds.js           # Dynamic board render bounds
 │   └── data/
@@ -149,13 +187,14 @@ vc_ic_zombies/
 │       ├── event-deck.js             # Event deck builder
 │       └── event-cards/
 │           ├── helpers.js            # Shared event utilities
-│           ├── player-cards.js       # Player buff/recovery cards (includes Z3 Mall Walkers cards)
+│           ├── player-cards.js       # Player buff/recovery cards (Z1/Z2/Z3)
+│           ├── player-cards-z35.js   # NOT_DEAD_YET player cards
 │           ├── opponent-cards.js     # Opponent disruption cards
 │           └── zombie-cards.js       # Zombie spawn/remove/move cards
 └── styles/
     ├── base.css                      # Design tokens, CSS variables, global element defaults
-    ├── layout.css                    # Page layout, panels, responsive rules
-    ├── components.css                # Tiles, micro-grid, badges, markers
+    ├── layout.css                    # Page layout, panels, topbar
+    ├── components.css                # Tiles, micro-grid, badges, markers, multiplayer UI, bug report modal
     └── tile-debug.css                # Tile editor specific styles
 ```
 
@@ -165,8 +204,22 @@ vc_ic_zombies/
 
 - **Pure Vanilla JS** — no frameworks, no bundler, no build step
 - **Global scope** — all files load via `<script>` tags in order; no ES modules
-- **3×3 subtile grid** — each map tile has a 3×3 movement grid with walkability, walls, and doors
-- **In-page decisions** — combat choices, rotation, and placement are all handled in the UI
+- **3×3 subtile grid** — each map tile has a 3×3 movement grid with walkability, walls, doors, and air ducts
+- **In-page decisions** — combat choices, rotation, placement, and duct choices are all handled in the UI
+- **Serverless backend** — Vercel functions handle multiplayer sessions and bug reports; MongoDB Atlas stores session state with TTL indexes for automatic cleanup
+
+### Online Multiplayer Architecture
+
+Multiplayer is polling-based — no WebSockets required:
+
+- **Create** (`POST /api/games`) — generates a 4-character code and stores a session document in Atlas
+- **Join** (`POST /api/games/[code]/join`) — adds a player slot; rejoining with the same device ID is always allowed regardless of session status
+- **Start** (`POST /api/games/[code]/start`) — host-only; sets status to `"playing"` and activates the game
+- **Sync** (`POST /api/games/[code]`) — current player pushes serialized game state after their turn ends; server validates it was actually that player's turn using the previous slot index
+- **Poll** (`GET /api/games/[code]`) — all players poll every 1.5 seconds; state only applies when the composite `turnNumber:playerIndex:step` key changes
+- **Leave** (`POST /api/games/[code]/leave`) — removes the player from the session
+
+Rate limiting is enforced per IP (20 game creates / hour, 50 joins / hour) using a separate Atlas collection with a TTL index.
 
 ### Subtile Authoring
 
@@ -180,6 +233,7 @@ Supported per-subtile properties:
 | `walls: ["N","E","S","W"]` | Directions that are always closed |
 | `doors: ["N","E","S","W"]` | Directions that are always open |
 | `type: "road"\|"building"\|...` | Visual and logic type |
+| `airDucts: ["N","E","S","W"]` | Directions the air duct faces — enables duct teleportation from this subtile |
 
 **Example:**
 ```js
@@ -217,11 +271,11 @@ Current collections:
 | `DIRECTORS_CUT` | `"directors_cut"` | Base game — can be played standalone |
 | `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
 | `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Standalone or expansion — playable alone or alongside Director's Cut; tiles form an isolated zone when mixed |
-| `MALL_WALKERS` | `"mall_walkers"` | Standalone or expansion — mall-themed tiles with 2-floor mechanics; includes Escalator (bridges floors) and a mall Helipad that must be placed on the 2nd floor |
+| `MALL_WALKERS` | `"mall_walkers"` | Standalone or expansion — mall-themed tiles with 2-floor mechanics, air ducts, and companion tile placement; includes Escalator and a mall Helipad |
 
 Map tile and event card collections are configured **independently** in the setup panel. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`).
 
-Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTION_META`) get their own separate tile deck. When mixed with a base collection, their tiles can only be placed adjacent to tiles from the same collection — the one exception is the **gateway tile** (e.g. Front Gate), whose `zoneGatewayConnector` side may touch base-zone tiles, and the gateway tile itself is shuffled into the base deck. The standalone deck button is locked in the UI until the gateway tile is placed. When played without a base collection, the standalone deck is available immediately and Front Gate is the first tile drawn.
+Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTION_META`) get their own separate tile deck. When mixed with a base collection, their tiles can only be placed adjacent to tiles from the same collection — the one exception is the **gateway tile** (e.g. Front Gate, Front Door), whose `zoneGatewayConnector` side may touch base-zone tiles, and the gateway tile itself is shuffled into the base deck. The standalone deck button is locked in the UI until the gateway tile is placed. When played without a base collection, the standalone deck is available immediately and the gateway tile is the first tile drawn.
 
 **Zone isolation in mixed play:** expansion tiles cannot connect to Town Square directly. Only the first tile drawn from the standalone deck may connect to Town Square; after that, all further expansion tiles must connect to other expansion tiles.
 
@@ -253,7 +307,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 | `isStartTile` | `true` — tile placed at (0,0) to start the game; one per standalone collection |
 | `isWinTile` | `true` — tile shuffled into the back half of the deck; reaching its center wins the game |
 | `firstDrawWhenSolo` | `true` — tile is moved to position 0 in the shuffled deck when its collection is the only enabled collection. Ignored in mixed-collection games. |
-| `companionTiles` | Array of `{ name }` objects — tiles pulled from the deck and auto-placed in a chain when this tile is drawn. e.g. `[{ name: "Straight" }, { name: "4-Way" }]` |
+| `companionTiles` | Array of `{ name }` objects — tiles pulled from the deck and auto-placed in a chain when this tile is drawn. e.g. `[{ name: "Straight" }, { name: "4-Way (mall)" }]` |
 | `companionDir` | Which connector side companions chain from in the tile's unrotated orientation (default `"S"`). The opposite side is treated as the map-connection side. The engine auto-detects if the tile is placed reversed and flips the chain accordingly. |
 | `zoneGatewayConnector` | The connector (unrotated) that may touch base-zone tiles. All other connectors on this tile are zone-isolated. Only meaningful on standalone-deck tiles. |
 | `floor1Connectors` | Connectors on this tile that belong to floor 1. Used by the Escalator tile to separate the two floor zones. |
@@ -275,6 +329,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 - One event card may be played per turn cycle; some cards have timing restrictions (e.g. Much Needed Rest must be played before rolling movement)
 - Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot
 - Zombie auto-move plays out one zombie per tick (350 ms delay); spaces where zombies landed pulse red until the player ends their turn — a **Skip animation** button flushes the remaining moves instantly
+- **Air Ducts (Mall Walkers):** landing on a duct space offers a choice to teleport to any adjacent store (including diagonals) with a duct subtile; using it costs your next movement roll; zombies cannot use ducts
 - Win by reaching the **center square** of the Helipad or reaching 25 kills
 
 ---
@@ -296,7 +351,7 @@ This project is a fan adaptation inspired by the physical board game series by *
 ## 🤝 Contributing
 
 Contributions welcome! Feel free to:
-- Report bugs or broken tile definitions
+- Report bugs via the in-game **Report a Bug** button or directly on GitHub Issues
 - Suggest new named tiles or event cards
 - Submit pull requests for rule clarifications or balance tweaks
 
