@@ -59,6 +59,16 @@ function updateButtons() {
   refs.combatBtn.disabled = state.step !== STEP.COMBAT || state.gameOver || !combatRequired;
   refs.drawEventsBtn.disabled = state.step !== STEP.DRAW_EVENTS || state.gameOver;
   refs.rollMoveBtn.disabled = state.step !== STEP.ROLL_MOVE || state.gameOver;
+  if (state.step === STEP.ROLL_MOVE && !state.gameOver) {
+    if (p.pendingDuctTeleport) {
+      const destTile = getTileAtSpace(p.pendingDuctTeleport.x, p.pendingDuctTeleport.y);
+      refs.rollMoveBtn.textContent = `Air Duct → ${destTile?.name || "store"}`;
+    } else {
+      refs.rollMoveBtn.textContent = "Roll Movement";
+    }
+  } else {
+    refs.rollMoveBtn.textContent = "Roll Movement";
+  }
   const mustExitBuilding = p.claustrophobiaActive && isSpaceBuilding(p.x, p.y);
   refs.endMoveBtn.disabled = state.step !== STEP.MOVE || state.gameOver || mustExitBuilding;
   refs.moveZombiesBtn.disabled = state.step !== STEP.MOVE_ZOMBIES || state.gameOver || state.zombies.size === 0;
