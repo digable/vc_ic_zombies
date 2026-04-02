@@ -166,9 +166,13 @@ function drawAndPlaceTile(deckId = "base") {
 
   if (tile.companionTiles && tile.companionTiles.length > 0) {
     tile.companionTiles.forEach(({ name }) => {
-      // Search current deck first, then all standalone decks.
+      // Search current deck first, then base deck, then all standalone decks.
       let idx = deck.findIndex((t) => t.name === name);
       let sourceDeck = deck;
+      if (idx === -1) {
+        const baseIdx = state.mapDeck.findIndex((t) => t.name === name);
+        if (baseIdx !== -1) { idx = baseIdx; sourceDeck = state.mapDeck; }
+      }
       if (idx === -1) {
         for (const sd of Object.values(state.standaloneDecks)) {
           const sdIdx = sd.findIndex((t) => t.name === name);

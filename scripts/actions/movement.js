@@ -73,8 +73,9 @@ function rollMovement() {
     return;
   }
 
-  // Duct check: offer the duct before rolling (only if no other turn-skipping effects)
-  if (!state._skipDuctCheck && !player.cannotMoveTurns && playerOnDuctSpace(player)) {
+  // Duct check: offer the duct before rolling (only if no other turn-skipping effects).
+  // The skipToRoll flag tells the panel that "skip" should continue the roll, not end the turn.
+  if (!rollMovement._skipDuctCheck && !player.cannotMoveTurns && !player.pendingDuctTeleport && playerOnDuctSpace(player)) {
     const destinations = findDuctDestinations(player);
     if (destinations.length > 0) {
       state.pendingDuctChoice = { playerId: player.id, destinations, skipToRoll: true };
@@ -231,6 +232,14 @@ function moveToZombiePhase(skipDuctCheck = false) {
   autoSkipZombieMoveIfClear();
 }
 
+// Called by both confirm and skip when the panel was shown at roll-time.
+// Bypasses the duct check so rollMovement doesn't loop back into the panel.
+function _resumeRollAfterDuctPanel() {
+  rollMovement._skipDuctCheck = true;
+  rollMovement();
+  rollMovement._skipDuctCheck = false;
+}
+
 function confirmDuctTeleport(destIndex) {
   const pdc = state.pendingDuctChoice;
   if (!pdc) return;
@@ -242,10 +251,8 @@ function confirmDuctTeleport(destIndex) {
   state.pendingDuctChoice = null;
   player.pendingDuctTeleport = { x: dest.sx, y: dest.sy };
   if (skipToRoll) {
-    // We're still in ROLL_MOVE — re-enter rollMovement to execute the teleport immediately
-    state._skipDuctCheck = true;
-    rollMovement();
-    state._skipDuctCheck = false;
+    // Still in ROLL_MOVE — re-enter to execute the teleport immediately
+    _resumeRollAfterDuctPanel();
   } else {
     logLine(`${player.name} will use the air duct next turn — destination: ${dest.tileName}.`);
     moveToZombiePhase(true);
@@ -261,11 +268,10 @@ function skipDuct() {
   state.pendingDuctChoice = null;
   if (player) logLine(`${player.name} chose not to use the air duct.`);
   if (skipToRoll) {
-    // Continue with the normal roll — bypass the duct check so we don't loop
-    state._skipDuctCheck = true;
-    rollMovement();
-    state._skipDuctCheck = false;
+    // Panel shown before rolling — continue with normal roll
+    _resumeRollAfterDuctPanel();
   } else {
+    // Panel shown after moving — proceed to zombie phase
     moveToZombiePhase(true);
     render();
   }

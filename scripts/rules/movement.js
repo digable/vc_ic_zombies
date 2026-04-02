@@ -106,32 +106,41 @@ function playerOnDuctSpace(player) {
   return (tile.subTiles?.[key(lx, ly)]?.airDucts?.length || 0) > 0;
 }
 
-// Returns all adjacent tiles (8-directional, including diagonal) that contain
-// at least one duct subtile.  Each result: { tileName, sx, sy }.
+// Returns all tiles adjacent (8-directional, including diagonal) to the player's
+// tile that contain at least one duct subtile.  Each result: { tileName, sx, sy }
+// points to the first duct subtile found in that tile.
 function findDuctDestinations(player) {
   const tx = spaceToTileCoord(player.x);
   const ty = spaceToTileCoord(player.y);
   const results = [];
+
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
       if (dx === 0 && dy === 0) continue;
       const adjTile = state.board.get(key(tx + dx, ty + dy));
       if (!adjTile?.subTiles) continue;
-      let found = false;
-      for (let aly = 0; aly < TILE_DIM && !found; aly++) {
-        for (let alx = 0; alx < TILE_DIM && !found; alx++) {
-          const sub = adjTile.subTiles[key(alx, aly)];
-          if (sub?.airDucts?.length) {
-            results.push({
-              tileName: adjTile.name,
-              sx: (tx + dx) * TILE_DIM + alx,
-              sy: (ty + dy) * TILE_DIM + aly
-            });
-            found = true;
-          }
-        }
+
+      // Find the first duct subtile in this adjacent tile
+      const ductSubTile = findFirstDuctSubTile(adjTile);
+      if (ductSubTile) {
+        results.push({
+          tileName: adjTile.name,
+          sx: (tx + dx) * TILE_DIM + ductSubTile.lx,
+          sy: (ty + dy) * TILE_DIM + ductSubTile.ly
+        });
       }
     }
   }
   return results;
+}
+
+function findFirstDuctSubTile(tile) {
+  for (let ly = 0; ly < TILE_DIM; ly++) {
+    for (let lx = 0; lx < TILE_DIM; lx++) {
+      if (tile.subTiles[key(lx, ly)]?.airDucts?.length) {
+        return { lx, ly };
+      }
+    }
+  }
+  return null;
 }

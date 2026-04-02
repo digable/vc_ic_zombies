@@ -589,7 +589,7 @@ const namedTiles = [
     firstDrawWhenSolo: true,
     companionDir: "S",
     zoneGatewayConnector: "N",
-    companionTiles: [{ name: "4-Way" }],
+    companionTiles: [{ name: "4-Way (mall)" }],
     subTilesTemplate: {
       "0,0": { walkable: false },
       "1,0": { walkable: true, type: "mall hallway" },
