@@ -425,9 +425,17 @@ function movePlayer(dir) {
 
   if (player.claustrophobiaActive) {
     if (!isSpaceBuilding(player.x, player.y)) {
+      // Outside building: cannot enter any building subtile
       if (isSpaceBuilding(player.x + d.x, player.y + d.y)) {
         const destTile = getTileAtSpace(player.x + d.x, player.y + d.y);
         logLine(`${player.name} cannot enter ${getTileDisplayName(destTile)} (Claustrophobia).`);
+        render();
+        return;
+      }
+    } else {
+      // Inside building: must exit by shortest path — cannot move deeper into more building subtiles
+      if (isSpaceBuilding(player.x + d.x, player.y + d.y)) {
+        logLine(`${player.name} must move toward the exit, not deeper into the building (Claustrophobia).`);
         render();
         return;
       }

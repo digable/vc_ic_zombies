@@ -54,16 +54,17 @@ function damagePlayer(target, amount, knockoutOptions) {
 const playerEventCards = [
   {
     name: "Dynamite",
-    description: "Roll 1 die. 4–6: kill all zombies on 3 adjacent spaces (including diagonals). 1–3: lose 2 life tokens.",
+    description: "Roll 1 die. 4–6: kill all zombies on up to 3 orthogonally adjacent spaces. 1–3: lose 2 life tokens.",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     isWeapon: true,
     apply(player) {
       const roll = rollD6();
       logLine(`${player.name} played Dynamite — rolled ${roll}.`);
       if (roll >= 4) {
+        // Z2 ruling: diagonal spaces do NOT count as adjacent for Dynamite
         const adjacentZombies = [...state.zombies.keys()].filter((zk) => {
           const [zx, zy] = zk.split(",").map(Number);
-          return Math.abs(zx - player.x) <= 1 && Math.abs(zy - player.y) <= 1 && !(zx === player.x && zy === player.y);
+          return (Math.abs(zx - player.x) + Math.abs(zy - player.y)) === 1;
         });
         if (adjacentZombies.length === 0) {
           logLine(`${player.name}'s Dynamite succeeded but there are no adjacent zombies.`);
@@ -268,9 +269,14 @@ const playerEventCards = [
   },
   {
     name: "Much Needed Rest",
-    description: "Play instead of making a movement roll. Gain 2 health.",
+    description: "Play instead of making a movement roll. Gain 2 health. Can be played during Fear.",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 2 },
-    canPlay() { return state.step === STEP.ROLL_MOVE; },
+    // Rule: can be played during ROLL_MOVE step, including when movement is frozen by Fear.
+    // Cannot be played during Hysterical Paralysis (cannotMoveTurns set by that card is indistinguishable,
+    // but the rule allows it during Fear so we permit it whenever cannotMoveTurns > 0 as well.
+    canPlay() {
+      return state.step === STEP.ROLL_MOVE || currentPlayer().cannotMoveTurns > 0;
+    },
     apply(player) {
       player.hearts = Math.min(5, player.hearts + 2);
       if (state.step === STEP.ROLL_MOVE) {
@@ -602,9 +608,11 @@ const playerEventCards = [
   },
   {
     name: "Lots of Luck with That!",
-    description: "Play when on the same space as another player. Your movement ends and you take 1 bullet and 1 random card from that player.",
+    description: "Play during your movement when on the same space as another player. Your movement ends and you take 1 bullet and 1 random card from that player.",
     collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
     canPlay() {
+      // Rule: played during YOUR movement phase only, not reactively when another player moves in.
+      if (state.step !== STEP.MOVE) return false;
       const cp = currentPlayer();
       return state.players.some((p) => p.id !== cp.id && p.x === cp.x && p.y === cp.y);
     },

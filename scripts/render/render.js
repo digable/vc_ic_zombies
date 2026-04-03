@@ -75,12 +75,18 @@ function updateButtons() {
   refs.discardBtn.disabled = state.step !== STEP.DISCARD || state.gameOver;
   refs.endTurnBtn.disabled = state.step !== STEP.END || state.gameOver;
 
+  const claustroInBuilding = p.claustrophobiaActive && isSpaceBuilding(p.x, p.y);
   refs.moveDirBtns.forEach((btn) => {
     const dir = btn.dataset.dir;
     const mover = state.pendingForcedMove
       ? state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId) ?? p
       : p;
-    const disabled = state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0 || !canMove(mover, dir);
+    let disabled = state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0 || !canMove(mover, dir);
+    // Claustrophobia: while inside a building, block directions leading to more building subtiles
+    if (!disabled && claustroInBuilding) {
+      const d = DIRS[dir];
+      if (isSpaceBuilding(mover.x + d.x, mover.y + d.y)) disabled = true;
+    }
     btn.disabled = disabled;
   });
 }

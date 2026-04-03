@@ -349,7 +349,13 @@ function renderMoveStatus() {
   const msgs = [];
   if (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) {
     if (p.cannotMoveTurns > 0)         msgs.push("Fear: you cannot move this turn.");
-    if (p.claustrophobiaActive)         msgs.push("Claustrophobia: cannot enter buildings. If in a building, exit by shortest route.");
+    if (p.claustrophobiaActive) {
+      if (isSpaceBuilding(p.x, p.y)) {
+        msgs.push("Claustrophobia: you must exit the building — only moves toward the exit are available.");
+      } else {
+        msgs.push("Claustrophobia: cannot enter any buildings this turn.");
+      }
+    }
     if (p.halfMovementNextTurn)         msgs.push("Your Shoe's Untied: movement roll will be halved.");
     if (p.brainCramp)                   msgs.push("Brain Cramp: an opponent will control your movement.");
     if (p.dieRollPenalty > 0)           msgs.push(`Abandon All Hope: -${p.dieRollPenalty} to all die rolls this turn.`);

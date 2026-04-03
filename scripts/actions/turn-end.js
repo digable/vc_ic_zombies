@@ -11,6 +11,8 @@ function endTurn() {
   }
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
+  outgoing.tileCombatBonus = 0;
+  outgoing.tileCombatBonusTile = null;
   outgoing.itemsUsedThisTurn = [];
   outgoing.dieRollPenalty = 0;
   outgoing.noCombatThisTurn = false;

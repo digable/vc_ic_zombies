@@ -176,7 +176,11 @@ const opponentEventCards = [
       player.hearts -= 1;
       target.x = 1;
       target.y = 1;
-      logLine(`${player.name} played Bad Sense of Direction — spent 1 life (${player.hearts} remaining) and sent ${target.name} back to Town Square.`);
+      collectTokensAtPlayerSpace(target);
+      const movingNote = (state.step === STEP.MOVE && state.movesRemaining > 0 && currentPlayer().id === target.id)
+        ? ` ${target.name} may continue moving (${state.movesRemaining} space(s) remaining).`
+        : "";
+      logLine(`${player.name} played Bad Sense of Direction — spent 1 life (${player.hearts} remaining) and sent ${target.name} back to Town Square.${movingNote}`);
     }
   },
   {
@@ -260,7 +264,12 @@ const opponentEventCards = [
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
-      target.cannotMoveTurns = Math.max(target.cannotMoveTurns, 1);
+      // Rule: if played during the target's own turn (mid-move), it takes effect NEXT turn.
+      // cannotMoveTurns is decremented at turn-end, so set 2 when it's currently the target's turn
+      // so one decrement is consumed this turn-end, leaving 1 for their next movement roll.
+      const targetIsActive = state.players[state.currentPlayerIndex]?.id === target.id;
+      const needed = targetIsActive ? 2 : 1;
+      target.cannotMoveTurns = Math.max(target.cannotMoveTurns, needed);
       logLine(`${player.name} played Fear on ${target.name} — ${target.name} cannot move next turn.`);
     }
   },
@@ -272,7 +281,9 @@ const opponentEventCards = [
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) return;
-      target.cannotMoveTurns = Math.max(target.cannotMoveTurns, 1);
+      const targetIsActive = state.players[state.currentPlayerIndex]?.id === target.id;
+      const needed = targetIsActive ? 2 : 1;
+      target.cannotMoveTurns = Math.max(target.cannotMoveTurns, needed);
       logLine(`${player.name} played Hysterical Paralysis on ${target.name}.`);
     }
   },

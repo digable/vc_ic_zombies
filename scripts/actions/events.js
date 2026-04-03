@@ -186,11 +186,17 @@ function resolveZombieDiceChallenge(action) {
 
   if (action === "ACCEPT") {
     const failing = pzdc.dice.filter((d) => d <= 3);
+    // Rule: if target has only 1 zombie on their space, both dice must still be rolled
+    // but they can only lose up to 1 kill (can't discard 2 zombies when there's only 1).
+    const targetSpaceKey = key(target.x, target.y);
+    const zombiesOnSpace = state.zombies.has(targetSpaceKey) ? 1 : 0;
+    const maxLoss = zombiesOnSpace <= 1 ? Math.min(1, pzdc.dice.length) : 2;
     state.pendingZombieDiceChallenge = null;
     if (failing.length > 0) {
-      const lost = Math.min(2, target.kills);
+      const lost = Math.min(maxLoss, target.kills);
       target.kills -= lost;
-      logLine(`${target.name} failed the dice challenge — lost ${lost} kill(s) (${target.kills} remaining).`);
+      const note = maxLoss === 1 ? " (capped at 1 — only 1 zombie on space)" : "";
+      logLine(`${target.name} failed the dice challenge — lost ${lost} kill(s) (${target.kills} remaining)${note}.`);
     } else {
       logLine(`${target.name} passed the dice challenge — no kills lost.`);
     }
@@ -594,6 +600,11 @@ function activateItem(index) {
   const player = currentPlayer();
   const card = player.items[index];
   if (!card) return;
+  if (card.canActivate && !card.canActivate(player)) {
+    logLine(`${player.name} cannot use ${card.name} from this space.`);
+    render();
+    return;
+  }
   player.items.splice(index, 1);
   card.activateItem(player, buildEventDeckHelpers());
   state.eventDiscardPile.push(card);

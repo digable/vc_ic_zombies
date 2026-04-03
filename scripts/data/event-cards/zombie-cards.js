@@ -24,6 +24,24 @@ const zombieEventCards = [
     apply(player) {
       logLine(`${player.name} placed Grenade in front of them.`);
     },
+    canActivate(player) {
+      // Rule: must be inside a building OR directly in front of a building door
+      const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
+      const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+      const tile = getTileAtSpace(player.x, player.y);
+      if (!tile) return false;
+      const subType = getSubTileType(tile, lx, ly);
+      if (subType === "building") return true;
+      // Check if any orthogonally adjacent subtile (same tile) is a building door facing this space
+      for (const [dir, d] of Object.entries(DIRS)) {
+        const nlx = lx + d.x;
+        const nly = ly + d.y;
+        if (nlx < 0 || nlx > 2 || nly < 0 || nly > 2) continue;
+        const sub = tile.subTiles?.[key(nlx, nly)];
+        if (sub?.doors?.includes(DIRS[dir].opposite)) return true;
+      }
+      return false;
+    },
     activateItem(player, helpers) {
       const tileX = spaceToTileCoord(player.x);
       const tileY = spaceToTileCoord(player.y);
