@@ -236,6 +236,23 @@
   pointer-events: none;
 }
 
+.micro-cell.water-subtile {
+  background: var(--subtile-water) !important;
+  box-shadow: 0 0 0 2px var(--subtile-water-border) inset !important;
+  position: relative;
+}
+
+.micro-cell.water-subtile::after {
+  content: "〜";
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85em;
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
 .micro-cell.road-subtile .lane {
   position: absolute;
   z-index: 0;

@@ -15,6 +15,8 @@
   --subtile-blocked: #ffd6d6;
   --subtile-grass: linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%);
   --subtile-grass-border: #4caf50;
+  --subtile-water: linear-gradient(135deg, #5ba8d4 60%, #2e86c1 100%);
+  --subtile-water-border: #1565c0;
 
   /* Font scale */
   --font-xs:  0.65rem;   /* tiny labels, tags */
