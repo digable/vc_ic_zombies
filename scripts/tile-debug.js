@@ -147,9 +147,29 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
 
   if (field === "connectors") {
     if (!tile) return;
-    const set = new Set(Array.isArray(tile.connectors) ? tile.connectors : []);
-    if (value) { set.add(dir); } else { set.delete(dir); }
-    tile.connectors = ["N", "E", "S", "W"].filter((d) => set.has(d));
+    const isObj = tile.connectors && !Array.isArray(tile.connectors);
+    if (isObj) {
+      const updated = { ...tile.connectors };
+      if (value) { updated[dir] = updated[dir] || "same"; } else { delete updated[dir]; }
+      tile.connectors = updated;
+    } else {
+      const set = new Set(getConnectorDirs(tile.connectors));
+      if (value) { set.add(dir); } else { set.delete(dir); }
+      tile.connectors = ["N", "E", "S", "W"].filter((d) => set.has(d));
+    }
+    scheduleRerenderCard(tileId);
+    return;
+  }
+
+  if (field === "connectorRule") {
+    if (!tile) return;
+    // Upgrade array to object format when setting a rule
+    if (!tile.connectors || Array.isArray(tile.connectors)) {
+      const dirs = getConnectorDirs(tile.connectors);
+      tile.connectors = Object.fromEntries(dirs.map((d) => [d, d === dir ? value : "same"]));
+    } else {
+      tile.connectors = { ...tile.connectors, [dir]: value };
+    }
     scheduleRerenderCard(tileId);
     return;
   }
@@ -211,9 +231,14 @@ function extractTileInputValues() {
     if (n > 0) collection[collKey] = n;
   });
 
-  const connectors = ["N", "E", "S", "W"].filter((dir) => {
-    return Boolean(document.getElementById(`newTileConnector${dir}`)?.checked);
-  });
+  const connectorDirs = ["N", "E", "S", "W"].filter((dir) =>
+    Boolean(document.getElementById(`newTileConnector${dir}`)?.checked)
+  );
+  const connectorRules = Object.fromEntries(
+    connectorDirs.map((dir) => [dir, document.getElementById(`newTileConnectorRule${dir}`)?.value || "same"])
+  );
+  const hasCustomRule = connectorDirs.some((dir) => connectorRules[dir] !== "same");
+  const connectors = hasCustomRule ? connectorRules : connectorDirs;
 
   const result = {
     name, type,
@@ -441,6 +466,10 @@ function attachTileDebugListeners() {
     }
     if (field === "connectors" && target instanceof HTMLInputElement && target.type === "checkbox") {
       updateMapDeckDebugEdit(tileId, null, field, target.checked, dir);
+      return;
+    }
+    if (field === "connectorRule" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, dir);
       return;
     }
     if ((field === "isStartTile" || field === "isWinTile" || field === "firstDrawWhenSolo") && target instanceof HTMLInputElement && target.type === "checkbox") {

@@ -262,7 +262,7 @@ function buildMicroGridHtml(tileForRender) {
       const lanes = lineDirs.map((dir) => `<span class="lane lane-${dir.toLowerCase()}"></span>`).join("");
       const wallDirs = getSubTileWallDirs(tileForRender, lx, ly);
       const walls = wallDirs.map((dir) => `<span class="wall wall-${dir.toLowerCase()}"></span>`).join("");
-      const isExit = (tileForRender.connectors || []).some((dir) => {
+      const isExit = getConnectorDirs(tileForRender.connectors).some((dir) => {
         const door = DOOR_LOCAL[dir];
         return door && door.x === lx && door.y === ly;
       });

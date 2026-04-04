@@ -441,7 +441,7 @@ const namedTiles = [
     name: "Front Gate",
     type: "town",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: "any", S: "same" },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
@@ -581,7 +581,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["N", "S"],
+    connectors: { N: "any", S: "same" },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3, },
     hearts: 0,
@@ -880,11 +880,53 @@ const namedTiles = [
   },
 
   // --- Zombies!!! 4: The End... ------------------------------------------
-  // Gateway tile: placed from base deck in mixed-collection games.
-  // Activates the Z4 standalone deck when placed. In solo Z4, this tile is
-  // skipped — Bridge is the pre-placed start tile from START_TILES instead.
-  
+  // Mixed-play tile: shuffled into the base deck when The End is enabled alongside another collection.
+  // In solo Z4 this tile is excluded — Bridge from START_TILES is pre-placed instead.
+  {
+    name: "Bridge",
+    type: "town",
+    collection: { [COLLECTIONS.THE_END]: 1 },
+    connectors: { N: "any", S: "same" },
+    zombieSpawnMode: "by_card",
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass", walls: ["S"] },
+      "1,0": { walkable: true, type: "road" },
+      "2,0": { walkable: true, type: "grass", walls: ["S"] },
+      "0,1": { walkable: true, type: "water", walls: ["N", "E", "S"] },
+      "1,1": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,1": { walkable: true, type: "water", walls: ["N", "S", "W"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+
   // --- Iowa City (custom expansion) ----------------------------------------
+  {
+    name: "Ped Mall",
+    type: "town",
+    collection: { [COLLECTIONS.IOWA_CITY]: 1 },
+    isStartTile: true,
+    connectors: { N: "any", E: "same", S: "same", W: "same" },
+    zombieSpawnMode: "by_card",
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 0,
+    bullets: 0,
+    zoneGatewayConnector: "N",
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "road" },
+      "2,0": { walkable: true, type: "grass", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "road" },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road" },
+      "0,2": { walkable: true, type: "grass", walls: ["S", "W"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["E", "S"] }
+    }
+  },
   {
     name: "The Deadwood",
     type: "named",
@@ -931,12 +973,11 @@ const namedTiles = [
     name: "College Street",
     type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: "same", S: "same" },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
     hearts: 0,
     bullets: 1,
-    zoneGatewayConnector: "N",
     subTilesTemplate: {
       "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "road" },
@@ -1217,9 +1258,9 @@ const START_TILES = [
   {
     name: "Town Square",
     type: "town",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     isStartTile: true,
-    connectors: ["N", "E", "S", "W"],
+    connectors: { N: "any", E: "any", S: "any", W: "any" },
     zombieSpawnMode: "by_card",
     hearts: 0,
     bullets: 0,
@@ -1236,11 +1277,69 @@ const START_TILES = [
     }
   },
   {
+    name: "Front Gate",
+    type: "town",
+    collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
+    connectors: { N: "any", S: "same" },
+    zombieSpawnMode: "by_card",
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 0,
+    bullets: 0,
+    // First tile drawn when Zombie Corps(e) is played solo.
+    firstDrawWhenSolo: true,
+    // Companions chain from the S side (compound interior).
+    // Front Gate [N connects to map] → [S] Straight [N] → [S] 4-Way
+    companionDir: "S",
+    zoneGatewayConnector: "N",   // N connector (map-facing side) accepts base-zone tiles
+    companionTiles: [
+      { name: "Straight" },
+      { name: "4-Way" }
+    ],
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "parking", walls: ["W"] },
+      "1,0": { walkable: true, type: "road" },
+      "2,0": { walkable: true, type: "building", walls: ["E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "road", doors: ["S"] },
+      "2,1": { walkable: true, type: "grass", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Front Door",
+    type: "town",
+    collection: {
+      [COLLECTIONS.MALL_WALKERS]: 1,
+    },
+    connectors: { N: "any", S: "same" },
+    zombieSpawnMode: "by_card",
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3, },
+    hearts: 0,
+    bullets: 0,
+    firstDrawWhenSolo: true,
+    companionDir: "S",
+    zoneGatewayConnector: "N",
+    companionTiles: [{ name: "4-Way (mall)" }],
+    subTilesTemplate: {
+      "0,0": { walkable: false },
+      "1,0": { walkable: true, type: "mall hallway" },
+      "2,0": { walkable: false },
+      "0,1": { walkable: false },
+      "1,1": { walkable: true, type: "mall hallway", doors: ["S"] },
+      "2,1": { walkable: false },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
     name: "Bridge",
     type: "town",
     collection: { [COLLECTIONS.THE_END]: 1 },
     isStartTile: true,
-    connectors: ["S"],
+    connectors: { N: "any", S: "same" },
     zombieSpawnMode: "by_card",
     hearts: 0,
     bullets: 0,
@@ -1262,11 +1361,12 @@ const START_TILES = [
     type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     isStartTile: true,
-    connectors: ["N", "E", "S", "W"],
+    connectors: { N: "any", E: "same", S: "same", W: "same" },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 0,
+    zoneGatewayConnector: "N",
     subTilesTemplate: {
       "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "road" },

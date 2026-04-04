@@ -220,10 +220,18 @@ function renderCard({ tile, deckIndex }) {
       </div>
       <div class="deck-tile-edit-line">
         <strong>Connectors</strong>
-        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="N" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("N") ? "checked" : ""}/>N</label>
-        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="E" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("E") ? "checked" : ""}/>E</label>
-        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="S" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("S") ? "checked" : ""}/>S</label>
-        <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="W" ${Array.isArray(tileForRender.connectors) && tileForRender.connectors.includes("W") ? "checked" : ""}/>W</label>
+        ${["N","E","S","W"].map((dir) => {
+          const isObj = tileForRender.connectors && !Array.isArray(tileForRender.connectors);
+          const checked = getConnectorDirs(tileForRender.connectors).includes(dir);
+          const rule = isObj ? (tileForRender.connectors[dir] || "same") : "same";
+          const ruleSelect = checked
+            ? `<select data-debug-tile-id="${tileId}" data-debug-field="connectorRule" data-debug-dir="${dir}" style="font-size:0.7em">` +
+              `<option value="same"${rule === "same" ? " selected" : ""}>same</option>` +
+              `<option value="any"${rule === "any" ? " selected" : ""}>any</option>` +
+              `</select>`
+            : "";
+          return `<label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="${dir}" ${checked ? "checked" : ""}>${dir}</label>${ruleSelect}`;
+        }).join("")}
       </div>
       <div class="deck-tile-edit-line">
         <strong>Flags</strong>

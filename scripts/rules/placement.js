@@ -1,5 +1,5 @@
 function hasRoad(tile, dir) {
-  return tile.connectors.includes(dir);
+  return getConnectorDirs(tile.connectors).includes(dir);
 }
 
 // Returns 1 or 2: the floor a tile placed at (x, y) with the given connectors would occupy.
@@ -12,7 +12,7 @@ function getFloorForPlacement(x, y, connectors) {
     if (!connectors.includes(dir)) continue;
     const nk = key(x + def.x, y + def.y);
     const neighbor = state.board.get(nk);
-    if (!neighbor || !neighbor.connectors.includes(def.opposite)) continue;
+    if (!neighbor || !getConnectorDirs(neighbor.connectors).includes(def.opposite)) continue;
     if (neighbor.name === "Escalator" && neighbor.floor2Connectors) {
       const rotatedFloor2 = neighbor.floor2Connectors.map(d => rotateDir(d, neighbor.placedRotation || 0));
       if (rotatedFloor2.includes(def.opposite)) return 2;
@@ -47,23 +47,27 @@ function normalizeZone(deck) {
 function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, incomingGatewayDirs) {
   const neighborDeck = normalizeZone(neighborTile.placedDeck);
   const incomingDeck = normalizeZone(tileDeck);
-  if (neighborDeck === incomingDeck) return true;
 
-  // Cross-zone allowed at the neighbor's gateway connector
+  // Gateway checks must run BEFORE the same-zone short-circuit.
+  // A gateway tile's zone-facing side (opposite of zoneGatewayConnector) must reject
+  // same-deck tiles (e.g. base tiles connecting to Bridge's S side) while allowing
+  // only the matching standalone collection through.
   const gwConn = neighborTile.zoneGatewayConnector;
   if (gwConn) {
-    const actualGwDir = rotateDir(gwConn, neighborTile.placedRotation || 0);
-    if (actualGwDir === neighborConnDir) return true;
-    // Cross-zone also allowed at the zone-facing side (opposite of gateway connector)
-    // when the incoming deck belongs to the gateway tile's standalone collection.
-    // This lets standalone tiles (e.g. Z4) connect directly to a gateway tile (e.g. Bridge)
-    // that has no companion tiles to act as the zone bridge.
+    const actualGwDir  = rotateDir(gwConn, neighborTile.placedRotation || 0);
     const zoneFacingDir = rotateDir(DIRS[gwConn].opposite, neighborTile.placedRotation || 0);
+
     if (zoneFacingDir === neighborConnDir) {
+      // Zone-facing side: only the standalone collection this gateway belongs to may connect.
       const neighborCols = Object.keys(resolveCollectionCounts(neighborTile));
-      if (neighborCols.includes(tileDeck)) return true;
+      return neighborCols.includes(tileDeck);
     }
+
+    // Map-facing gateway connector: allow cross-zone (base tiles connect here).
+    if (actualGwDir === neighborConnDir) return true;
   }
+
+  if (neighborDeck === incomingDeck) return true;
 
   // Cross-zone also allowed when the incoming tile's gateway faces this neighbor
   if (incomingGatewayDirs && incomingDir && incomingGatewayDirs.has(incomingDir)) return true;
@@ -71,7 +75,46 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
   return false;
 }
 
-function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false, requiresFloor2 = false, floor1OnlyDirs = null) {
+// ---------------------------------------------------------------------------
+// Connector rules — per-connector or per-collection connection restrictions.
+//
+// rule values:
+//   "any"  — connect to any collection (default)
+//   "same" — only connect to tiles in the same collection
+//   "<collectionKey>" — only connect to tiles in that specific collection
+//
+// Tile data fields:
+//   connectorRules: { N: "any", S: "same", ... }  — per-connector, unrotated tile space
+//   defaultConnectorRule: "same"                   — tile-level fallback
+//
+// COLLECTION_META may also define defaultConnectorRule to apply to all tiles in that collection.
+// ---------------------------------------------------------------------------
+
+// Default rule for all connectors unless overridden.
+function getDefaultConnectorRule() {
+  return "same";
+}
+
+// Returns the connector rule for a placed tile at the given (already-rotated) direction.
+// Placed tiles store pre-rotated rules in placedConnectorRules (set in setup.js at placement time).
+function getConnectorRule(tile, rotatedDir) {
+  return tile.placedConnectorRules?.[rotatedDir] ?? getDefaultConnectorRule();
+}
+
+// Returns the primary normalized collection key for a tile.
+function tilePrimaryCollection(tile) {
+  return normalizeZone(Object.keys(resolveCollectionCounts(tile))[0]);
+}
+
+// Returns true if rule permits thisTile to connect to otherTile.
+function connectorRuleAllows(rule, thisTile, otherTile) {
+  if (!rule || rule === "any") return true;
+  if (rule === "same") return tilePrimaryCollection(thisTile) === tilePrimaryCollection(otherTile);
+  // specific collection key — the other tile must belong to it
+  return tilePrimaryCollection(otherTile) === normalizeZone(rule);
+}
+
+function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false, requiresFloor2 = false, floor1OnlyDirs = null, incomingTile = null, incomingConnectorRules = null) {
   const here = key(x, y);
   if (state.board.has(here)) return false;
 
@@ -85,7 +128,7 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
     const themHas = hasRoad(neighbor, def.opposite);
     // Road-to-wall mismatch: never valid unless this is a win tile (helipad can abut any edge)
     if (!lenientMismatch && meHas !== themHas) return false;
-    // Road-to-road: check zone and count
+    // Road-to-road: check zone, connector rules, and count
     if (meHas && themHas) {
       // Standalone restriction: Town Square only accepts its first road neighbor.
       // In base/mixed play the base collection is active and Town Square is the hub — no restriction.
@@ -106,6 +149,17 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
       }
       if (floor1OnlyDirs && !floor1OnlyDirs.has(dir)) return false;
       if (tileDeck !== undefined && !isZoneCompatible(neighbor, def.opposite, tileDeck, dir, incomingGatewayDirs)) return false;
+      // Connector rule check (bidirectional).
+      // "any" on either side unlocks the connection — the gateway's open invitation overrides
+      // the neighbor's same-collection restriction. Only enforce rules when neither side is "any".
+      if (incomingTile) {
+        const incomingRule = incomingConnectorRules?.[dir] ?? getDefaultConnectorRule();
+        const neighborRule = getConnectorRule(neighbor, def.opposite);
+        if (incomingRule !== "any" && neighborRule !== "any") {
+          if (!connectorRuleAllows(incomingRule, incomingTile, neighbor)) return false;
+          if (!connectorRuleAllows(neighborRule, neighbor, incomingTile)) return false;
+        }
+      }
       roadMatches += 1;
     }
     // Wall-to-wall: allowed as long as a road match exists somewhere
@@ -155,7 +209,9 @@ function getPlacementOptions(tile, tileDeck = "base") {
       const floor1Dirs = tile.floor1Connectors
         ? new Set(tile.floor1Connectors.map(d => rotateDir(d, r)))
         : null;
-      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient, requiresFloor2, floor1Dirs)) {
+      // Extract and rotate per-connector rules from connectors property (object format only).
+      const rotatedRules = getRotatedConnectorRules(tile.connectors, r);
+      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient, requiresFloor2, floor1Dirs, tile, rotatedRules)) {
         options.push({ x, y, connectors, rotation: r });
       }
     }

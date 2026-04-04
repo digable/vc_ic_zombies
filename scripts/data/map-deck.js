@@ -176,8 +176,9 @@ function buildStartTile(filters = null) {
 }
 
 // Returns { collectionKey: tileCount } — count per collection when only that collection is enabled.
+// Includes start tiles (pre-placed at game start, not drawn from deck) in the total.
 function getMapTileCountsByCollection() {
-  const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
+  const allTiles = [...roadTiles, ...namedTiles, ...specialTiles, ...START_TILES];
   const counts = {};
   Object.values(COLLECTIONS).forEach((col) => {
     let total = 0;

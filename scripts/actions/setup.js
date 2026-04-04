@@ -258,9 +258,11 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
     const rotatedConnectors = getRotatedConnectors(companion.connectors, tileRotation);
     const sourceSubTiles = getTileSubTileMap(companion);
     const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, tileRotation);
+    const companionPlacedRules = getRotatedConnectorRules(companion.connectors, tileRotation);
     addTile(cx, cy, {
       ...companion,
       connectors: rotatedConnectors,
+      ...(companionPlacedRules ? { placedConnectorRules: companionPlacedRules } : {}),
       placedDeck: companionDeck,
       placedRotation: tileRotation,
       ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
@@ -298,11 +300,11 @@ function markFloor2FromEscalator(escX, escY, escTile) {
     const tile = state.board.get(cur);
     if (!tile || tile.name === "Escalator") continue;
     for (const [dir, def] of Object.entries(DIRS)) {
-      if (!tile.connectors.includes(dir)) continue;
+      if (!getConnectorDirs(tile.connectors).includes(dir)) continue;
       const nk = key(x + def.x, y + def.y);
       const neighbor = state.board.get(nk);
       if (!neighbor || state.floor2Tiles.has(nk) || neighbor.name === "Escalator") continue;
-      if (!neighbor.connectors.includes(def.opposite)) continue;
+      if (!getConnectorDirs(neighbor.connectors).includes(def.opposite)) continue;
       state.floor2Tiles.add(nk);
       queue.push(nk);
     }
@@ -339,9 +341,11 @@ function placePendingTileAt(x, y) {
   const sourceSubTiles = getTileSubTileMap(tile);
   const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, placement.rotation);
 
+  const placedConnectorRules = getRotatedConnectorRules(tile.connectors, placement.rotation);
   addTile(placement.x, placement.y, {
     ...tile,
     connectors: placement.connectors,
+    ...(placedConnectorRules ? { placedConnectorRules } : {}),
     placedDeck: state.pendingTileDeck || "base",
     placedRotation: placement.rotation,
     ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})

@@ -76,7 +76,7 @@ const COLLECTION_META = {
     version: "2.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 4 - The End... Director's Cut by Todd A. Breitenstein",
-    standaloneDeck: true
+    standaloneDeck: false
   },
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
@@ -335,12 +335,28 @@ function directionToArrow(dir) {
   return dir;
 }
 
+// Returns the direction keys from a connectors value (array or object).
+function getConnectorDirs(connectors) {
+  if (!connectors) return [];
+  return Array.isArray(connectors) ? connectors : Object.keys(connectors);
+}
+
+// Rotates connector directions, always returning a plain direction array.
 function getRotatedConnectors(connectors, rotation) {
   const order = ["N", "E", "S", "W"];
-  return (connectors || []).map((dir) => {
+  return getConnectorDirs(connectors).map((dir) => {
     const i = order.indexOf(dir);
     return order[(i + rotation) % 4];
   });
+}
+
+// Returns a rotated rule map { rotatedDir: rule } when connectors is object format, else null.
+function getRotatedConnectorRules(connectors, rotation) {
+  if (Array.isArray(connectors) || !connectors) return null;
+  const order = ["N", "E", "S", "W"];
+  return Object.fromEntries(
+    Object.entries(connectors).map(([dir, rule]) => [order[(order.indexOf(dir) + rotation) % 4], rule])
+  );
 }
 
 function rotateDir(dir, rotation) {
@@ -478,7 +494,7 @@ function buildInitialSubTileGrid(tile, customSubTiles) {
 
   const baseWalkable = (lx, ly) => {
     if (lx === 1 && ly === 1) return true;
-    return (tile.connectors || []).some((dir) => {
+    return getConnectorDirs(tile.connectors).some((dir) => {
       const d = DOOR_LOCAL[dir];
       return d.x === lx && d.y === ly;
     });
@@ -518,10 +534,11 @@ function applySubTileConnectivity(subTiles, tile, customSubTiles) {
       });
 
       // Edge exit cells can be entered from outside the tile if a connector exists.
-      if (lx === 1 && ly === 0 && (tile.connectors || []).includes("N")) { cell.enterFrom.N = true; cell.exitTo.N = true; }
-      if (lx === 2 && ly === 1 && (tile.connectors || []).includes("E")) { cell.enterFrom.E = true; cell.exitTo.E = true; }
-      if (lx === 1 && ly === 2 && (tile.connectors || []).includes("S")) { cell.enterFrom.S = true; cell.exitTo.S = true; }
-      if (lx === 0 && ly === 1 && (tile.connectors || []).includes("W")) { cell.enterFrom.W = true; cell.exitTo.W = true; }
+      const connDirs = getConnectorDirs(tile.connectors);
+      if (lx === 1 && ly === 0 && connDirs.includes("N")) { cell.enterFrom.N = true; cell.exitTo.N = true; }
+      if (lx === 2 && ly === 1 && connDirs.includes("E")) { cell.enterFrom.E = true; cell.exitTo.E = true; }
+      if (lx === 1 && ly === 2 && connDirs.includes("S")) { cell.enterFrom.S = true; cell.exitTo.S = true; }
+      if (lx === 0 && ly === 1 && connDirs.includes("W")) { cell.enterFrom.W = true; cell.exitTo.W = true; }
 
       const custom = customSubTiles?.[key(lx, ly)];
       if (custom) {
@@ -597,7 +614,7 @@ function isLocalWalkable(tile, lx, ly) {
     return true;
   }
 
-  return tile.connectors.some((dir) => {
+  return getConnectorDirs(tile.connectors).some((dir) => {
     const d = DOOR_LOCAL[dir];
     return d.x === lx && d.y === ly;
   });
@@ -718,7 +735,7 @@ function getZombieSpawnCountForPlacedTile(tile, connectors) {
     return Object.values(tile.zombies || {}).reduce((s, n) => s + n, 0);
   }
   if (mode === ZOMBIE_SPAWN_MODE.BY_EXITS) {
-    return Array.isArray(connectors) ? connectors.length : 0;
+    return getConnectorDirs(connectors).length;
   }
   if (mode === ZOMBIE_SPAWN_MODE.D6_ROLL) {
     return rollD6();
