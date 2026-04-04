@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Map deck build logic
 // ---------------------------------------------------------------------------
-// Tile definitions live in map-tiles.js (roadTiles, namedTiles, specialTiles, START_TILES).
+// Tile definitions live in map-tiles.js (roadTiles, namedTiles, specialTiles).
 // This file handles filtering, expanding, and shuffling those definitions into a playable deck.
 // resolveCollectionCounts() lives in core.js and is shared with event-deck.js.
 // ---------------------------------------------------------------------------
@@ -20,6 +20,9 @@ function ensureEscalatorBeforeHelipad(deck) {
 function buildMapDeck(filters = null) {
   const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
 
+  // The start tile is pre-placed at game start — exclude it from the drawable deck.
+  const startTileName = buildStartTile(filters)?.name;
+
   // Gateway tiles (DISABLE_ON_SOLO connector) from standalone collections are included in the
   // base deck when a base collection is also active so players can draw them to unlock the zone.
   const hasBaseCollection = filters && Object.entries(COLLECTION_META).some(
@@ -28,6 +31,7 @@ function buildMapDeck(filters = null) {
 
   const filtered = allTiles
     .filter((t) => {
+      if (startTileName && t.name === startTileName) return false; // start tile is pre-placed
       if (!filters) return true;
       const colCounts = resolveCollectionCounts(t);
       return Object.keys(colCounts).some((c) => {
@@ -157,11 +161,12 @@ function buildStandaloneDeck(collKey, filters = null) {
 }
 
 // Returns the start tile for the active collection set.
-// Finds the first START_TILES entry that belongs to an enabled base collection
-// (requiresBase === null). Falls back to START_TILES[0].
+// Finds the first isStartTile entry in namedTiles that belongs to an enabled base collection
+// (requiresBase === null). Falls back to the first isStartTile in namedTiles.
 function buildStartTile(filters = null) {
+  const allStartTiles = [...namedTiles, ...specialTiles].filter((t) => t.isStartTile);
   if (filters) {
-    const activeBase = START_TILES.find((st) => {
+    const activeBase = allStartTiles.find((st) => {
       const colCounts = resolveCollectionCounts(st);
       return Object.keys(colCounts).some((c) => {
         const meta = COLLECTION_META[c];
@@ -172,13 +177,13 @@ function buildStartTile(filters = null) {
     });
     if (activeBase) return { ...activeBase };
   }
-  return { ...START_TILES[0] };
+  return { ...allStartTiles[0] };
 }
 
 // Returns { collectionKey: tileCount } — count per collection when only that collection is enabled.
 // Includes start tiles (pre-placed at game start, not drawn from deck) in the total.
 function getMapTileCountsByCollection() {
-  const allTiles = [...roadTiles, ...namedTiles, ...specialTiles, ...START_TILES];
+  const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
   const counts = {};
   Object.values(COLLECTIONS).forEach((col) => {
     let total = 0;

@@ -71,6 +71,44 @@ function rebuildStandaloneDrawBtns() {
   });
 }
 
+// When an expansion without Z1 enabled is combined with another expansion,
+// auto-enable Z1 because expansions can only be mixed via Z1.
+// When an expansion is unchecked, uncheck any other expansions that can't be
+// paired without Z1.
+function enforceCollectionCompatibility() {
+  const z1Key = COLLECTIONS.DIRECTORS_CUT;
+  const z1Checkbox = document.querySelector(`[data-deck-coll="${z1Key}"][data-deck-state="enabled"]`);
+  if (!z1Checkbox) return;
+
+  const enabledKeys = [];
+  document.querySelectorAll("[data-deck-coll][data-deck-state='enabled']").forEach((el) => {
+    if (el.checked) enabledKeys.push(el.getAttribute("data-deck-coll"));
+  });
+
+  // Count standalone/expansion collections that are enabled (excluding Z1 itself)
+  const expansionsEnabled = enabledKeys.filter((c) => {
+    if (c === z1Key) return false;
+    const meta = COLLECTION_META[c];
+    return meta && meta.compatibleWith;
+  });
+
+  // If 2+ expansions are enabled and Z1 is not, auto-enable Z1
+  if (expansionsEnabled.length >= 2 && !z1Checkbox.checked) {
+    z1Checkbox.checked = true;
+  }
+
+  // If an expansion that only supports Z1 pairings is enabled alongside an
+  // incompatible expansion (and Z1 is not), warn by unchecking incompatible ones
+  if (!z1Checkbox.checked && expansionsEnabled.length >= 2) {
+    // uncheck all but the most recently toggled — we can't tell which that is,
+    // so leave the first and uncheck the rest
+    expansionsEnabled.slice(1).forEach((c) => {
+      const el = document.querySelector(`[data-deck-coll="${c}"][data-deck-state="enabled"]`);
+      if (el) el.checked = false;
+    });
+  }
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
@@ -95,7 +133,10 @@ function attachListeners() {
 
   const grid = document.getElementById("collectionGrid");
   if (grid) {
-    grid.addEventListener("change", updateDeckPreviewCounts);
+    grid.addEventListener("change", () => {
+      enforceCollectionCompatibility();
+      updateDeckPreviewCounts();
+    });
   }
 
   document.querySelectorAll("[data-event-requires-base][data-event-state='enabled']").forEach((el) => {

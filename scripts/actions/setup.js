@@ -117,8 +117,48 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   }
   startTile.placedRotation = 0;
   const startTilePlacedRules = getRotatedConnectorRules(startTile.connectors, 0);
-  if (startTilePlacedRules) startTile.placedConnectorRules = startTilePlacedRules;
+  if (startTilePlacedRules) {
+    // Only open DISABLE_ON_SOLO on the companion-facing side. Companions are always placed
+    // at setup regardless of solo/multi mode, so that side must stay walkable. Other
+    // DISABLE_ON_SOLO connectors (e.g. the map-road side of Front Door facing south) should
+    // remain closed in solo play.
+    const companionDir = startTile.companionDir || null;
+    startTile.placedConnectorRules = Object.fromEntries(
+      Object.entries(startTilePlacedRules).map(([dir, rule]) => [
+        dir,
+        (rule === CONNECTOR_RULE.DISABLE_ON_SOLO && dir === companionDir)
+          ? CONNECTOR_RULE.ANY
+          : rule
+      ])
+    );
+  }
   addTile(0, 0, startTile);
+
+  // Auto-place any companion tiles declared on the start tile (e.g. Front Gate → Straight → 4-Way).
+  if (startTile.companionTiles && startTile.companionTiles.length > 0) {
+    state.pendingCompanionTiles = [];
+    state.pendingTileDeck = startTile.placedDeck || "base";
+    startTile.companionTiles.forEach(({ name }) => {
+      let idx = -1;
+      let sourceDeck = null;
+      for (const deck of Object.values(state.standaloneDecks)) {
+        idx = deck.findIndex((t) => t.name === name);
+        if (idx !== -1) { sourceDeck = deck; break; }
+      }
+      if (idx === -1) {
+        idx = state.mapDeck.findIndex((t) => t.name === name);
+        if (idx !== -1) sourceDeck = state.mapDeck;
+      }
+      if (idx !== -1 && sourceDeck) {
+        state.pendingCompanionTiles.push(sourceDeck.splice(idx, 1)[0]);
+      } else {
+        logLine(`Note: companion tile "${name}" not found in any deck — skipped.`);
+      }
+    });
+    if (state.pendingCompanionTiles.length > 0) placeCompanionTilesFor(startTile, 0, 0, 0);
+    state.pendingCompanionTiles = [];
+    state.pendingTileDeck = null;
+  }
 
   const summaryParts = Object.entries(deckMeta).map(([name, m]) => `${name} ×${m.count}`).join(", ");
   logLine(`Tile deck: ${state.deckStartTotal} card(s) — ${summaryParts}`);
