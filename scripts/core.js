@@ -6,10 +6,10 @@ const DIRS = {
 };
 
 const DOOR_LOCAL = {
-  N: { x: 1, y: 0 },
-  E: { x: 2, y: 1 },
-  S: { x: 1, y: 2 },
-  W: { x: 0, y: 1 }
+  N: { x: Math.floor(TILE_DIM / 2), y: 0 },
+  E: { x: TILE_DIM - 1,             y: Math.floor(TILE_DIM / 2) },
+  S: { x: Math.floor(TILE_DIM / 2), y: TILE_DIM - 1 },
+  W: { x: 0,                        y: Math.floor(TILE_DIM / 2) }
 };
 
 const COLLECTIONS = {
@@ -23,6 +23,9 @@ const COLLECTIONS = {
 
 // requiresBase: null  → can be played without any other collection (standalone or add-on)
 // requiresBase: string → always requires that collection to be enabled
+// compatibleWith: string[] → other collections this can be mixed with in multi-deck play.
+//   Absent or empty means: solo only (no multi-deck pairing defined).
+//   The UI will auto-enable Z1 when two expansions with compatibleWith are combined.
 const COLLECTION_META = {
   [COLLECTIONS.DIRECTORS_CUT]: {
     label: "Director's Cut",
@@ -43,7 +46,8 @@ const COLLECTION_META = {
     version: "2nd Edition",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein",
-    standaloneDeck: true
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.MALL_WALKERS]: {
     label: "Mall Walkers",
@@ -54,7 +58,8 @@ const COLLECTION_META = {
     version: "1.0.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 3 - Mall Walkers by Todd A. Breitenstein",
-    standaloneDeck: true
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.NOT_DEAD_YET]: {
     label: "Not Dead Yet!",
@@ -76,7 +81,8 @@ const COLLECTION_META = {
     version: "2.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 4 - The End... Director's Cut by Todd A. Breitenstein",
-    standaloneDeck: false
+    standaloneDeck: false,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
@@ -87,7 +93,8 @@ const COLLECTION_META = {
     version: "0.1.0",
     description: "Iowa City themed locations. Playable standalone or alongside Director's Cut.",
     creator: "digable",
-    standaloneDeck: true
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   }
 };
 
@@ -343,29 +350,42 @@ function getConnectorDirs(connectors) {
 
 // Rotates connector directions, always returning a plain direction array.
 function getRotatedConnectors(connectors, rotation) {
-  const order = ["N", "E", "S", "W"];
   return getConnectorDirs(connectors).map((dir) => {
-    const i = order.indexOf(dir);
-    return order[(i + rotation) % 4];
+    const i = DIRECTION_ORDER.indexOf(dir);
+    return DIRECTION_ORDER[(i + rotation) % 4];
   });
 }
 
 // Returns a rotated rule map { rotatedDir: rule } when connectors is object format, else null.
 function getRotatedConnectorRules(connectors, rotation) {
   if (Array.isArray(connectors) || !connectors) return null;
-  const order = ["N", "E", "S", "W"];
   return Object.fromEntries(
-    Object.entries(connectors).map(([dir, rule]) => [order[(order.indexOf(dir) + rotation) % 4], rule])
+    Object.entries(connectors).map(([dir, rule]) => [DIRECTION_ORDER[(DIRECTION_ORDER.indexOf(dir) + rotation) % 4], rule])
   );
 }
 
+// Returns the unrotated gateway connector direction for a tile — the connector marked
+// CONNECTOR_RULE.DISABLE_ON_SOLO. Returns null if the tile has no gateway connector.
+function getGatewayConnectorDir(tile) {
+  const c = tile?.connectors;
+  if (!c || Array.isArray(c)) return null;
+  const entry = Object.entries(c).find(([, rule]) => rule === CONNECTOR_RULE.DISABLE_ON_SOLO);
+  return entry ? entry[0] : null;
+}
+
 function rotateDir(dir, rotation) {
-  const order = ["N", "E", "S", "W"];
-  const i = order.indexOf(dir);
-  if (i < 0) {
-    return dir;
-  }
-  return order[(i + rotation) % 4];
+  const i = DIRECTION_ORDER.indexOf(dir);
+  if (i < 0) return dir;
+  return DIRECTION_ORDER[(i + rotation) % 4];
+}
+
+// Returns the compass direction for a one-step tile delta (dx, dy).
+// Assumes exactly one of dx/dy is non-zero.
+function getDirFromDelta(dx, dy) {
+  if (dx === 1) return "E";
+  if (dx === -1) return "W";
+  if (dy === 1) return "S";
+  return "N";
 }
 
 function rotateLocalCoord(lx, ly, rotation) {
@@ -492,8 +512,9 @@ function buildInitialSubTileGrid(tile, customSubTiles) {
     return normalized.length > 0 ? normalized : null;
   };
 
+  const center = Math.floor(TILE_DIM / 2);
   const baseWalkable = (lx, ly) => {
-    if (lx === 1 && ly === 1) return true;
+    if (lx === center && ly === center) return true;
     return getConnectorDirs(tile.connectors).some((dir) => {
       const d = DOOR_LOCAL[dir];
       return d.x === lx && d.y === ly;
@@ -535,10 +556,12 @@ function applySubTileConnectivity(subTiles, tile, customSubTiles) {
 
       // Edge exit cells can be entered from outside the tile if a connector exists.
       const connDirs = getConnectorDirs(tile.connectors);
-      if (lx === 1 && ly === 0 && connDirs.includes("N")) { cell.enterFrom.N = true; cell.exitTo.N = true; }
-      if (lx === 2 && ly === 1 && connDirs.includes("E")) { cell.enterFrom.E = true; cell.exitTo.E = true; }
-      if (lx === 1 && ly === 2 && connDirs.includes("S")) { cell.enterFrom.S = true; cell.exitTo.S = true; }
-      if (lx === 0 && ly === 1 && connDirs.includes("W")) { cell.enterFrom.W = true; cell.exitTo.W = true; }
+      Object.entries(DOOR_LOCAL).forEach(([dir, doorCoord]) => {
+        if (lx === doorCoord.x && ly === doorCoord.y && connDirs.includes(dir)) {
+          cell.enterFrom[dir] = true;
+          cell.exitTo[dir] = true;
+        }
+      });
 
       const custom = customSubTiles?.[key(lx, ly)];
       if (custom) {

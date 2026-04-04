@@ -23,6 +23,16 @@ function populateZombieTypeDropdown() {
     .join("");
 }
 
+function populateConnectorRuleSelects() {
+  const options = Object.values(CONNECTOR_RULE)
+    .map((v) => `<option value="${v}"${v === CONNECTOR_RULE.SAME ? " selected" : ""}>${v}</option>`)
+    .join("");
+  DIRECTION_ORDER.forEach((dir) => {
+    const sel = document.getElementById(`newTileConnectorRule${dir}`);
+    if (sel) sel.innerHTML = options;
+  });
+}
+
 // Attach event listeners for subtile editor controls
 function attachNewTileSubtileEditorListeners() {
   const container = document.getElementById("newTileSubtileEditor");
@@ -150,7 +160,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     const isObj = tile.connectors && !Array.isArray(tile.connectors);
     if (isObj) {
       const updated = { ...tile.connectors };
-      if (value) { updated[dir] = updated[dir] || "same"; } else { delete updated[dir]; }
+      if (value) { updated[dir] = updated[dir] || CONNECTOR_RULE.SAME; } else { delete updated[dir]; }
       tile.connectors = updated;
     } else {
       const set = new Set(getConnectorDirs(tile.connectors));
@@ -166,7 +176,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     // Upgrade array to object format when setting a rule
     if (!tile.connectors || Array.isArray(tile.connectors)) {
       const dirs = getConnectorDirs(tile.connectors);
-      tile.connectors = Object.fromEntries(dirs.map((d) => [d, d === dir ? value : "same"]));
+      tile.connectors = Object.fromEntries(dirs.map((d) => [d, d === dir ? value : CONNECTOR_RULE.SAME]));
     } else {
       tile.connectors = { ...tile.connectors, [dir]: value };
     }
@@ -181,12 +191,6 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     return;
   }
 
-  if (field === "zoneGatewayConnector") {
-    if (!tile) return;
-    if (value) { tile.zoneGatewayConnector = value; } else { delete tile.zoneGatewayConnector; }
-    scheduleRerenderCard(tileId);
-    return;
-  }
 
   // Subtile-level fields
   const editedCells = mapDeckDebugEdits.get(tileId);
@@ -216,7 +220,6 @@ function extractTileInputValues() {
   const zombieType = (document.getElementById("newTileZombieType")?.value || ZOMBIE_TYPE.REGULAR);
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
-  const zoneGateway = document.getElementById("newTileZoneGateway")?.value || "";
   const companionDir = document.getElementById("newTileCompanionDir")?.value || "";
   const companionNamesRaw = (document.getElementById("newTileCompanionNames")?.value || "").trim();
   const companionNames = companionNamesRaw
@@ -235,9 +238,9 @@ function extractTileInputValues() {
     Boolean(document.getElementById(`newTileConnector${dir}`)?.checked)
   );
   const connectorRules = Object.fromEntries(
-    connectorDirs.map((dir) => [dir, document.getElementById(`newTileConnectorRule${dir}`)?.value || "same"])
+    connectorDirs.map((dir) => [dir, document.getElementById(`newTileConnectorRule${dir}`)?.value || CONNECTOR_RULE.SAME])
   );
-  const hasCustomRule = connectorDirs.some((dir) => connectorRules[dir] !== "same");
+  const hasCustomRule = connectorDirs.some((dir) => connectorRules[dir] !== CONNECTOR_RULE.SAME);
   const connectors = hasCustomRule ? connectorRules : connectorDirs;
 
   const result = {
@@ -251,7 +254,6 @@ function extractTileInputValues() {
   if (document.getElementById("newTileIsStartTile")?.checked) result.isStartTile = true;
   if (document.getElementById("newTileIsWinTile")?.checked) result.isWinTile = true;
   if (document.getElementById("newTileFirstDrawWhenSolo")?.checked) result.firstDrawWhenSolo = true;
-  if (zoneGateway) result.zoneGatewayConnector = zoneGateway;
   if (companionDir) result.companionDir = companionDir;
   if (companionNames.length > 0) result.companionTiles = companionNames.map((n) => ({ name: n }));
 
@@ -476,10 +478,6 @@ function attachTileDebugListeners() {
       updateMapDeckDebugEdit(tileId, null, field, target.checked, null);
       return;
     }
-    if (field === "zoneGatewayConnector" && target instanceof HTMLSelectElement) {
-      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
-      return;
-    }
     if (!coord) {
       return;
     }
@@ -503,6 +501,7 @@ state.mapDeck.push(buildTownSquareTile());
 populateTileTypeDropdown();
 populateSpawnModeDropdown();
 populateZombieTypeDropdown();
+populateConnectorRuleSelects();
 renderNewTileCollectionInputs();
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();

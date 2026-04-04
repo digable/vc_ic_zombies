@@ -456,8 +456,8 @@ const playerEventCards = [
       const ty = spaceToTileCoord(player.y);
       const tile = state.board.get(key(tx, ty));
 
-      const BUILDING_TYPES = new Set(["building", "mall store"]);
-      const OUTSIDE_TYPES  = new Set(["road", "grass", "parking", "mall hallway"]);
+      const BUILDING_TYPES = SUBTILE_BUILDING_TYPES;
+      const OUTSIDE_TYPES  = SUBTILE_OUTSIDE_TYPES;
       const ORTHO = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
       // Collect zombies from building/store subtiles only

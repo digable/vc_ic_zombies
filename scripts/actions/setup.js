@@ -115,7 +115,50 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
     });
     if (activeBaseKey) startTile.placedDeck = activeBaseKey;
   }
+  startTile.placedRotation = 0;
+  const startTilePlacedRules = getRotatedConnectorRules(startTile.connectors, 0);
+  if (startTilePlacedRules) {
+    // Only open DISABLE_ON_SOLO on the companion-facing side. Companions are always placed
+    // at setup regardless of solo/multi mode, so that side must stay walkable. Other
+    // DISABLE_ON_SOLO connectors (e.g. the map-road side of Front Door facing south) should
+    // remain closed in solo play.
+    const companionDir = startTile.companionDir || null;
+    startTile.placedConnectorRules = Object.fromEntries(
+      Object.entries(startTilePlacedRules).map(([dir, rule]) => [
+        dir,
+        (rule === CONNECTOR_RULE.DISABLE_ON_SOLO && dir === companionDir)
+          ? CONNECTOR_RULE.ANY
+          : rule
+      ])
+    );
+  }
   addTile(0, 0, startTile);
+
+  // Auto-place any companion tiles declared on the start tile (e.g. Front Gate → Straight → 4-Way).
+  if (startTile.companionTiles && startTile.companionTiles.length > 0) {
+    state.pendingCompanionTiles = [];
+    state.pendingTileDeck = startTile.placedDeck || "base";
+    startTile.companionTiles.forEach(({ name }) => {
+      let idx = -1;
+      let sourceDeck = null;
+      for (const deck of Object.values(state.standaloneDecks)) {
+        idx = deck.findIndex((t) => t.name === name);
+        if (idx !== -1) { sourceDeck = deck; break; }
+      }
+      if (idx === -1) {
+        idx = state.mapDeck.findIndex((t) => t.name === name);
+        if (idx !== -1) sourceDeck = state.mapDeck;
+      }
+      if (idx !== -1 && sourceDeck) {
+        state.pendingCompanionTiles.push(sourceDeck.splice(idx, 1)[0]);
+      } else {
+        logLine(`Note: companion tile "${name}" not found in any deck — skipped.`);
+      }
+    });
+    if (state.pendingCompanionTiles.length > 0) placeCompanionTilesFor(startTile, 0, 0, 0);
+    state.pendingCompanionTiles = [];
+    state.pendingTileDeck = null;
+  }
 
   const summaryParts = Object.entries(deckMeta).map(([name, m]) => `${name} ×${m.count}`).join(", ");
   logLine(`Tile deck: ${state.deckStartTotal} card(s) — ${summaryParts}`);
@@ -298,12 +341,12 @@ function markFloor2FromEscalator(escX, escY, escTile) {
     const cur = queue.shift();
     const { x, y } = parseKey(cur);
     const tile = state.board.get(cur);
-    if (!tile || tile.name === "Escalator") continue;
+    if (!tile || tile.name === TILE_NAME.ESCALATOR) continue;
     for (const [dir, def] of Object.entries(DIRS)) {
       if (!getConnectorDirs(tile.connectors).includes(dir)) continue;
       const nk = key(x + def.x, y + def.y);
       const neighbor = state.board.get(nk);
-      if (!neighbor || state.floor2Tiles.has(nk) || neighbor.name === "Escalator") continue;
+      if (!neighbor || state.floor2Tiles.has(nk) || neighbor.name === TILE_NAME.ESCALATOR) continue;
       if (!getConnectorDirs(neighbor.connectors).includes(def.opposite)) continue;
       state.floor2Tiles.add(nk);
       queue.push(nk);
@@ -342,10 +385,14 @@ function placePendingTileAt(x, y) {
   const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, placement.rotation);
 
   const placedConnectorRules = getRotatedConnectorRules(tile.connectors, placement.rotation);
+  const placedConnectorOnlyTarget = tile.connectorOnlyTarget
+    ? Object.fromEntries(Object.entries(tile.connectorOnlyTarget).map(([d, n]) => [rotateDir(d, placement.rotation), n]))
+    : null;
   addTile(placement.x, placement.y, {
     ...tile,
     connectors: placement.connectors,
     ...(placedConnectorRules ? { placedConnectorRules } : {}),
+    ...(placedConnectorOnlyTarget ? { placedConnectorOnlyTarget } : {}),
     placedDeck: state.pendingTileDeck || "base",
     placedRotation: placement.rotation,
     ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
@@ -387,7 +434,7 @@ function placePendingTileAt(x, y) {
   state.discardPile.push(tile);
 
   // Unlock standalone deck when a gateway tile is placed
-  if (tile.zoneGatewayConnector) {
+  if (getGatewayConnectorDir(tile)) {
     const tileCols = Object.keys(resolveCollectionCounts(tile));
     tileCols.forEach((collKey) => {
       if (state.standaloneDecks[collKey] && !state.activeStandaloneDecks.has(collKey)) {

@@ -128,8 +128,8 @@ function renderBoard() {
         const d = DIRS[dir];
         return state.board.get(key(x + d.x, y + d.y));
       };
-      if (getRoadLineDirs(tile, 1, 0, getAdjacentTile).includes("N")) cell.classList.add("connects-n");
-      if (getRoadLineDirs(tile, 1, 2, getAdjacentTile).includes("S")) cell.classList.add("connects-s");
+      if (getRoadLineDirs(tile, DOOR_LOCAL.N.x, DOOR_LOCAL.N.y, getAdjacentTile).includes("N")) cell.classList.add("connects-n");
+      if (getRoadLineDirs(tile, DOOR_LOCAL.S.x, DOOR_LOCAL.S.y, getAdjacentTile).includes("S")) cell.classList.add("connects-s");
 
       const occupantMap = buildOccupantMapForTile(x, y);
 
@@ -143,8 +143,8 @@ function renderBoard() {
           const lineDirs = getRoadLineDirs(tile, lx, ly, getAdjacentTile);
           const lanes = lineDirs
             .map((dir) => {
-              const isOuter = (dir === "N" && ly === 0) || (dir === "S" && ly === 2) ||
-                              (dir === "E" && lx === 2) || (dir === "W" && lx === 0);
+              const isOuter = (dir === "N" && ly === 0) || (dir === "S" && ly === TILE_DIM - 1) ||
+                              (dir === "E" && lx === TILE_DIM - 1) || (dir === "W" && lx === 0);
               return `<span class="lane lane-${dir.toLowerCase()}${isOuter ? " lane-connector" : ""}"></span>`;
             })
             .join("");

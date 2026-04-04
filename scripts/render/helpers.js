@@ -11,6 +11,9 @@ function formatTileCode(obj) {
   const zombieTypeReverse = Object.fromEntries(
     Object.entries(ZOMBIE_TYPE).map(([k, v]) => [v, `ZOMBIE_TYPE.${k}`])
   );
+  const connectorRuleReverse = Object.fromEntries(
+    Object.entries(CONNECTOR_RULE).map(([k, v]) => [v, `CONNECTOR_RULE.${k}`])
+  );
 
   function fmtKey(k) {
     return identRe.test(k) ? k : JSON.stringify(k);
@@ -39,6 +42,17 @@ function formatTileCode(obj) {
       return "{\n" + entries.map(([k, v]) => `${pad}${fmtComputedKey(k, reverseMap)}: ${fmt(v, depth + 1)}`).join(",\n") + ",\n" + close + "}";
     }
 
+    // connectors object: render rule values as CONNECTOR_RULE.* constants
+    if (fieldName === "connectors") {
+      const fmtRule = (v) => connectorRuleReverse[v] ?? JSON.stringify(v);
+      if (depth >= 2) {
+        return "{ " + entries.map(([k, v]) => `${fmtKey(k)}: ${fmtRule(v)}`).join(", ") + " }";
+      }
+      const pad = "  ".repeat(depth + 1);
+      const close = "  ".repeat(depth);
+      return "{\n" + entries.map(([k, v]) => `${pad}${fmtKey(k)}: ${fmtRule(v)}`).join(",\n") + "\n" + close + "}";
+    }
+
     if (depth >= 2) {
       return "{ " + entries.map(([k, v]) => `${fmtKey(k)}: ${fmt(v, depth + 1)}`).join(", ") + " }";
     }
@@ -57,7 +71,7 @@ function getRoadLineDirs(tileLike, lx, ly, getAdjacentTile) {
   Object.entries(DIRS).forEach(([dir, d]) => {
     const nx = lx + d.x;
     const ny = ly + d.y;
-    if (nx >= 0 && nx <= 2 && ny >= 0 && ny <= 2) {
+    if (nx >= 0 && nx < TILE_DIM && ny >= 0 && ny < TILE_DIM) {
       if (getSubTileType(tileLike, nx, ny) === "road") {
         dirs.push(dir);
       }
@@ -130,7 +144,7 @@ function getSubTileWallDirs(tileLike, lx, ly) {
     const d = DIRS[dir];
     const nx = lx + d.x;
     const ny = ly + d.y;
-    if (nx < 0 || nx > 2 || ny < 0 || ny > 2) {
+    if (nx < 0 || nx >= TILE_DIM || ny < 0 || ny >= TILE_DIM) {
       return true;
     }
 
@@ -248,14 +262,14 @@ function normalizeDirList(value) {
     : Object.entries(value)
       .filter(([, enabled]) => Boolean(enabled))
       .map(([dir]) => dir);
-  return ["N", "E", "S", "W"].filter((dir) => list.includes(dir));
+  return DIRECTION_ORDER.filter((dir) => list.includes(dir));
 }
 
 // Builds micro-grid HTML from an already-resolved tileForRender (subTiles already set).
 function buildMicroGridHtml(tileForRender) {
   const micro = [];
-  for (let ly = 0; ly < 3; ly += 1) {
-    for (let lx = 0; lx < 3; lx += 1) {
+  for (let ly = 0; ly < TILE_DIM; ly += 1) {
+    for (let lx = 0; lx < TILE_DIM; lx += 1) {
       const isWalkable = isLocalWalkable(tileForRender, lx, ly);
       const subType = getSubTileType(tileForRender, lx, ly);
       const lineDirs = getRoadLineDirs(tileForRender, lx, ly);

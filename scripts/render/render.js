@@ -1,6 +1,14 @@
 // render.js — Thin orchestrator. Wires updateButtons and the main render() call.
 // All rendering helpers live in render-helpers.js, render-board.js, render-panels.js, render-debug.js.
 
+function isPendingInteraction() {
+  return !!(state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace ||
+    state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement ||
+    state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget ||
+    state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood ||
+    state.pendingBreakthrough || state.pendingSpaceSelect || state.pendingDuctChoice);
+}
+
 function updateButtons() {
   // No game started yet — disable all action buttons
   if (!state.gameActive) {
@@ -24,7 +32,7 @@ function updateButtons() {
   }
   updateMpTurnBanner();
 
-  if (state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement || state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget || state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood || state.pendingBreakthrough || state.pendingSpaceSelect || state.pendingDuctChoice) {
+  if (isPendingInteraction()) {
     refs.drawTileBtn.disabled = true;
     document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
     refs.rotateLeftBtn.disabled = true;

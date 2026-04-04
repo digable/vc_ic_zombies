@@ -214,7 +214,7 @@ playerEventCards.push(
         return;
       }
       const roll = rollD6();
-      const BLDG = new Set(["building", "mall store"]);
+      const BLDG = SUBTILE_BUILDING_TYPES;
       logLine(`${player.name} played What could possibly be behind that door? — rolled ${roll}.`);
       if (roll >= 4) {
         let removed = 0;

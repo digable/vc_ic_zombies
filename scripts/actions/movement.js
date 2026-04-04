@@ -3,7 +3,7 @@
 function checkJeepDoorOffer(player) {
   if (player.hasJeep || state.pendingEventChoice || state.pendingCombatDecision) return;
   const tile = getTileAtSpace(player.x, player.y);
-  if (!tile || tile.name !== "Motor Pool") return;
+  if (!tile || tile.name !== TILE_NAME.MOTOR_POOL) return;
   const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
   const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
   const sub = tile.subTiles?.[key(lx, ly)];
@@ -192,7 +192,7 @@ function rollMovement() {
   }
   if (player.hasJeep) {
     const jeepTile = getTileAtSpace(player.x, player.y);
-    const onMotorPool = jeepTile && jeepTile.name === "Motor Pool";
+    const onMotorPool = jeepTile && jeepTile.name === TILE_NAME.MOTOR_POOL;
     if (!onMotorPool && isSpaceBuilding(player.x, player.y)) {
       player.hasJeep = false;
       logLine(`${player.name} lost their jeep — they're inside a building.`);

@@ -170,7 +170,6 @@ function renderCard({ tile, deckIndex }) {
 
   const zombieTotal = Object.values(tileForRender.zombies || {}).reduce((s, n) => s + n, 0);
   const currentZombieType = Object.keys(tileForRender.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
-  const gwConn = tileForRender.zoneGatewayConnector || "";
   const sc = getCollectionShortCode(tileForRender.collection);
   const scBadge = sc ? ` <span class="coll-short-code">${sc}</span>` : "";
 
@@ -223,11 +222,10 @@ function renderCard({ tile, deckIndex }) {
         ${["N","E","S","W"].map((dir) => {
           const isObj = tileForRender.connectors && !Array.isArray(tileForRender.connectors);
           const checked = getConnectorDirs(tileForRender.connectors).includes(dir);
-          const rule = isObj ? (tileForRender.connectors[dir] || "same") : "same";
+          const rule = isObj ? (tileForRender.connectors[dir] || CONNECTOR_RULE.SAME) : CONNECTOR_RULE.SAME;
           const ruleSelect = checked
             ? `<select data-debug-tile-id="${tileId}" data-debug-field="connectorRule" data-debug-dir="${dir}" style="font-size:0.7em">` +
-              `<option value="same"${rule === "same" ? " selected" : ""}>same</option>` +
-              `<option value="any"${rule === "any" ? " selected" : ""}>any</option>` +
+              Object.values(CONNECTOR_RULE).map((v) => `<option value="${v}"${rule === v ? " selected" : ""}>${v}</option>`).join("") +
               `</select>`
             : "";
           return `<label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="connectors" data-debug-dir="${dir}" ${checked ? "checked" : ""}>${dir}</label>${ruleSelect}`;
@@ -238,16 +236,6 @@ function renderCard({ tile, deckIndex }) {
         <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isStartTile" ${tileForRender.isStartTile ? "checked" : ""} />isStartTile</label>
         <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isWinTile" ${tileForRender.isWinTile ? "checked" : ""} />isWinTile</label>
         <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="firstDrawWhenSolo" ${tileForRender.firstDrawWhenSolo ? "checked" : ""} />firstDrawWhenSolo</label>
-      </div>
-      <div class="deck-tile-edit-line">
-        <strong>Zone Gateway</strong>
-        <select data-debug-tile-id="${tileId}" data-debug-field="zoneGatewayConnector">
-          <option value="" ${!gwConn ? "selected" : ""}>— none —</option>
-          <option value="N" ${gwConn === "N" ? "selected" : ""}>N</option>
-          <option value="E" ${gwConn === "E" ? "selected" : ""}>E</option>
-          <option value="S" ${gwConn === "S" ? "selected" : ""}>S</option>
-          <option value="W" ${gwConn === "W" ? "selected" : ""}>W</option>
-        </select>
       </div>
       <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
       <div class="small">Z${zombieTotal}, L${tileForRender.hearts || 0}, B${tileForRender.bullets || 0}</div>
