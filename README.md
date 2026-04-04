@@ -182,7 +182,7 @@ vc_ic_zombies/
 │   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
 │   │   └── board-bounds.js           # Dynamic board render bounds
 │   └── data/
-│       ├── map-tiles.js              # Tile definitions (roadTiles, namedTiles, specialTiles, START_TILES)
+│       ├── map-tiles.js              # Tile definitions (roadTiles, namedTiles, specialTiles)
 │       ├── map-deck.js               # buildMapDeck(), buildStartTile(), tile filtering/shuffling
 │       ├── event-deck.js             # Event deck builder
 │       └── event-cards/
@@ -269,15 +269,17 @@ Current collections:
 | Key | Value | Description |
 |-----|-------|-------------|
 | `DIRECTORS_CUT` | `"directors_cut"` | Base game — can be played standalone |
-| `IOWA_CITY` | `"iowa_city"` | Expansion — requires Director's Cut |
 | `ZOMBIE_CORPS_E_` | `"zombie_corps_e_"` | Standalone or expansion — playable alone or alongside Director's Cut; tiles form an isolated zone when mixed |
 | `MALL_WALKERS` | `"mall_walkers"` | Standalone or expansion — mall-themed tiles with 2-floor mechanics, air ducts, and companion tile placement; includes Escalator and a mall Helipad |
+| `NOT_DEAD_YET` | `"not_dead_yet"` | Event cards only — no map tiles; add to any game configuration |
+| `THE_END` | `"the_end"` | Standalone or expansion — playable alone or alongside Director's Cut; bridge-themed zone with its own gateway tile |
+| `IOWA_CITY` | `"iowa_city"` | Standalone or expansion — Iowa City themed locations; playable alone or alongside Director's Cut |
 
 Map tile and event card collections are configured **independently** in the setup panel. Both use the same collection keys defined in `COLLECTION_META` in `core.js`. Deck builders are in `map-deck.js` (`buildMapDeck`) and `event-deck.js` (`buildEventDeck`).
 
-Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTION_META`) get their own separate tile deck. When mixed with a base collection, their tiles can only be placed adjacent to tiles from the same collection — the one exception is the **gateway tile** (e.g. Front Gate, Front Door), whose `zoneGatewayConnector` side may touch base-zone tiles, and the gateway tile itself is shuffled into the base deck. The standalone deck button is locked in the UI until the gateway tile is placed. When played without a base collection, the standalone deck is available immediately and the gateway tile is the first tile drawn.
+Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTION_META`) get their own separate tile deck. When mixed with a base collection, their tiles can only be placed adjacent to tiles from the same collection — the one exception is the **gateway tile** (e.g. Front Gate, Front Door, Bridge, Ped Mall), which has a `CONNECTOR_RULE.DISABLE_ON_SOLO` connector on its map-facing side. That side acts as an open (`ANY`) connector in mixed play, allowing it to connect to base-zone tiles. The gateway tile is shuffled into the base deck and unlocks the standalone deck when placed. When played solo (no base collection), the gateway tile is pre-placed at (0,0) at game start with any companion tiles (e.g. Front Gate → Straight → 4-Way), and the standalone deck is immediately available.
 
-**Zone isolation in mixed play:** expansion tiles cannot connect to Town Square directly. Only the first tile drawn from the standalone deck may connect to Town Square; after that, all further expansion tiles must connect to other expansion tiles.
+**Zone isolation in mixed play:** standalone-deck tiles cannot connect to the base zone except through the gateway tile's `DISABLE_ON_SOLO` connector side. Base tiles connect to the gateway tile's open map-facing side; further standalone tiles connect only to other standalone tiles via `SAME` connectors. Town Square uses `SAME` on all sides, so only Z1 tiles can attach directly to it.
 
 | Property | Description |
 |----------|-------------|
@@ -289,6 +291,7 @@ Collections marked as **standalone decks** (`standaloneDeck: true` in `COLLECTIO
 | `creator` | Author or creator name |
 | `requiresBase` | `null` if the collection can be played without any other collection; `COLLECTIONS.X` if it always requires a specific base |
 | `standaloneDeck` | `true` if the collection's tiles form their own isolated deck and placement zone when active alongside a base collection |
+| `compatibleWith` | Array of `COLLECTIONS.*` keys this collection can be mixed with in multi-deck play. If two collections without a shared `compatibleWith` are both enabled, Z1 (Director's Cut) is auto-enabled to bridge them. |
 
 If a collection with `requiresBase` set is selected without its required base game, the map deck falls back to Director's Cut's Town Square (start tile) and Helipad (win tile). Event cards have no fallback — if no event collections are enabled you simply play with an empty event deck.
 
@@ -299,7 +302,8 @@ If a collection with `requiresBase` set is selected without its required base ga
 | `name` | Display name |
 | `type` | `"road"`, `"named"`, `"helipad"`, `"special"`, `"grass"`, `"mall hallway"`, `"mall store"`, `"escalator"` |
 | `collection` | Object keyed by `COLLECTIONS.*` with per-collection copy counts, e.g. `{ [COLLECTIONS.DIRECTORS_CUT]: 2 }` |
-| `connectors` | Array of `"N"`,`"E"`,`"S"`,`"W"` — road connection points |
+| `connectors` | Array `["N","S"]` or object `{ N: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.SAME }` — road connection points with optional per-direction rules. Array format defaults all directions to `SAME`. |
+| `connectors` — rule values | `ANY`: connect to any collection. `SAME`: same collection only (default). `DISABLE_ON_SOLO`: acts as `ANY` in mixed play; closed in solo play of own collection (gateway tiles). `ONLY`: connects only to the tile named in `connectorOnlyTarget`. |
 | `zombieSpawnMode` | `"by_card"` uses `zombies` counts; `"by_exits"` spawns one per connector |
 | `zombies` | Object keyed by zombie type with spawn counts, e.g. `{ [ZOMBIE_TYPE.REGULAR]: 2 }` |
 | `hearts` | Heart tokens placed on the tile when drawn |
@@ -309,7 +313,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 | `firstDrawWhenSolo` | `true` — tile is moved to position 0 in the shuffled deck when its collection is the only enabled collection. Ignored in mixed-collection games. |
 | `companionTiles` | Array of `{ name }` objects — tiles pulled from the deck and auto-placed in a chain when this tile is drawn. e.g. `[{ name: "Straight" }, { name: "4-Way (mall)" }]` |
 | `companionDir` | Which connector side companions chain from in the tile's unrotated orientation (default `"S"`). The opposite side is treated as the map-connection side. The engine auto-detects if the tile is placed reversed and flips the chain accordingly. |
-| `zoneGatewayConnector` | The connector (unrotated) that may touch base-zone tiles. All other connectors on this tile are zone-isolated. Only meaningful on standalone-deck tiles. |
+| `connectorOnlyTarget` | Object mapping connector direction to a tile name, e.g. `{ S: "Helipad" }`. Required when a connector uses `CONNECTOR_RULE.ONLY`. |
 | `floor1Connectors` | Connectors on this tile that belong to floor 1. Used by the Escalator tile to separate the two floor zones. |
 | `floor2Connectors` | Connectors on this tile that lead to floor 2 after traversal. Companions placed via these connectors are treated as floor 2 tiles. |
 
@@ -318,7 +322,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 ## 📋 Rule Summary
 
 - Players start at Town Square with 3 hearts and 3 bullets
-- Before starting, choose which tile collections and event card collections to include independently — if only an expansion is selected without its base game, Town Square and Helipad are used as fallbacks for the start and win tiles
+- Before starting, choose which tile collections and event card collections to include independently — each collection has its own start tile (`isStartTile: true`); the active base collection determines which one is placed at (0,0)
 - Tile placement requires connector alignment — roads must connect to roads
 - Helipad is shuffled into the second half of the deck
 - Zombies spawn on tiles when placed based on `zombieSpawnMode`
