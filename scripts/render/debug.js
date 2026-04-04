@@ -211,8 +211,7 @@ function renderCard({ tile, deckIndex }) {
         <strong>Zombies</strong>
         <input type="number" min="0" value="${zombieTotal}" data-debug-tile-id="${tileId}" data-debug-field="zombieCount" data-debug-dir="${currentZombieType}" class="deck-tile-count-input" />
         <select data-debug-tile-id="${tileId}" data-debug-field="zombieType">
-          <option value="${ZOMBIE_TYPE.REGULAR}" ${currentZombieType === ZOMBIE_TYPE.REGULAR ? "selected" : ""}>regular</option>
-          <option value="${ZOMBIE_TYPE.ENHANCED}" ${currentZombieType === ZOMBIE_TYPE.ENHANCED ? "selected" : ""}>enhanced</option>
+          ${Object.keys(ZOMBIE_TYPES).map((zt) => `<option value="${zt}" ${currentZombieType === zt ? "selected" : ""}>${zt}</option>`).join("")}
         </select>
       </div>
       <div class="deck-tile-edit-line">

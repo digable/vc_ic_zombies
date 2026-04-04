@@ -879,6 +879,33 @@ const namedTiles = [
     }
   },
 
+  // --- Zombies!!! 4: The End... ------------------------------------------
+  {
+    name: "Bridge",
+    type: "town",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: ["N", "S"],
+    zombieSpawnMode: "by_card",
+    hearts: 0,
+    bullets: 0,
+    firstDrawWhenSolo: true,
+    companionDir: "S",
+    zoneGatewayConnector: "N",
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass", walls: ["S"] },
+      "1,0": { walkable: true, type: "road" },
+      "2,0": { walkable: true, type: "grass", walls: ["S"] },
+      "0,1": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "1,1": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,1": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+
   // --- Iowa City (custom expansion) ----------------------------------------
   {
     name: "The Deadwood",
