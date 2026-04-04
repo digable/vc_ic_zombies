@@ -908,7 +908,7 @@ const namedTiles = [
     type: "town",
     collection: { [COLLECTIONS.THE_END]: 1 },
     isStartTile: true,
-    connectors: { N: CONNECTOR_RULE.DISABLE_ON_SOLO, S: CONNECTOR_RULE.ANY },
+    connectors: { N: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
     zombieSpawnMode: "by_card",
     hearts: 0,
     bullets: 0,

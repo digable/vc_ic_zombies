@@ -134,6 +134,18 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   }
   addTile(0, 0, startTile);
 
+  // For non-Z1 start tiles, players begin on the DISABLE_ON_SOLO connector subtile
+  // (the gateway side that faces the outside world).
+  // Z1's Town Square has no DISABLE_ON_SOLO connector so players stay at center (1,1).
+  if (startTile.connectors && typeof startTile.connectors === "object" && !Array.isArray(startTile.connectors)) {
+    const gwDir = Object.entries(startTile.connectors).find(([, rule]) => rule === CONNECTOR_RULE.DISABLE_ON_SOLO)?.[0];
+    if (gwDir && DOOR_LOCAL[gwDir]) {
+      const sx = DOOR_LOCAL[gwDir].x;
+      const sy = DOOR_LOCAL[gwDir].y;
+      state.players.forEach((p) => { p.x = sx; p.y = sy; });
+    }
+  }
+
   // Auto-place any companion tiles declared on the start tile (e.g. Front Gate → Straight → 4-Way).
   if (startTile.companionTiles && startTile.companionTiles.length > 0) {
     state.pendingCompanionTiles = [];
