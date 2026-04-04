@@ -6,7 +6,7 @@ function anyBuildingMatches(conditionFn) {
     let zombies = 0, empty = 0;
     for (let dlx = 0; dlx < 3; dlx++) {
       for (let dly = 0; dly < 3; dly++) {
-        if (getSubTileType(tile, dlx, dly) !== "building") continue;
+        if (!SUBTILE_BUILDING_TYPES.has(getSubTileType(tile, dlx, dly))) continue;
         if (!isLocalWalkable(tile, dlx, dly)) continue;
         state.zombies.has(key(tx * TILE_DIM + dlx, ty * TILE_DIM + dly)) ? zombies++ : empty++;
       }

@@ -21,14 +21,7 @@ function canStep(fromX, fromY, toX, toY) {
 
   const dx = toX - fromX;
   const dy = toY - fromY;
-  let moveDir = "N";
-  if (dx === 1) {
-    moveDir = "E";
-  } else if (dx === -1) {
-    moveDir = "W";
-  } else if (dy === 1) {
-    moveDir = "S";
-  }
+  const moveDir = getDirFromDelta(dx, dy);
   const enterFrom = DIRS[moveDir].opposite;
 
   if (!isLocalWalkable(fromTile, fromLocalX, fromLocalY)) {

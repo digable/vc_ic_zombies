@@ -1,5 +1,7 @@
 // Game rule constants — change these to tune game balance
 
+const DIRECTION_ORDER = ["N", "E", "S", "W"]; // canonical clockwise order used for rotation math
+
 const TILE_DIM          = 3;   // each map tile is a TILE_DIM × TILE_DIM subtile grid
 const WIN_KILLS         = 25;  // kills needed to trigger kill-count win condition
 const MAX_HEARTS        = 5;   // maximum heart tokens a player can hold
@@ -46,6 +48,23 @@ const TILE_TYPE = {
   HELIPAD:      "helipad",
 };
 
+// Connector rule values — used in connectors object format { N: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.SAME }
+const CONNECTOR_RULE = {
+  ANY:  "any",   // this connector accepts tiles from any collection (gateway-facing side)
+  SAME: "same",  // this connector only connects to tiles in the same collection (default)
+  ANY_FIRST: "any_first", // this connector accepts tiles from any collection, but only when the tile is first placed (starting tile side), then it is same
+  DISABLE_ON_SOLO: "disable_on_solo", // this connector is disabled if playing the map deck with only its own collection enabled (used for start tile connectors that would otherwise allow any tile to be placed first)
+  ONLY: "only",  // this connector only connects to tiles in a specific tile name (used for one-way connections like UIHC-to-helipad)
+};
+
+// Special tile names referenced in game logic (placement rules, movement, deck building)
+const TILE_NAME = {
+  ESCALATOR:   "Escalator",
+  TOWN_SQUARE: "Town Square",
+  MOTOR_POOL:  "Motor Pool",
+  HELIPAD:     "Helipad",
+};
+
 // Subtile types — used on individual subtiles within a tile's 3×3 grid (subtile.type)
 const SUBTILE_TYPE = {
   ROAD:         "road",
@@ -58,3 +77,7 @@ const SUBTILE_TYPE = {
   WATER:        "water",
   WOODED:       "wooded",
 };
+
+// Subtile type groupings used for event card and combat logic
+const SUBTILE_BUILDING_TYPES = new Set([SUBTILE_TYPE.BUILDING, SUBTILE_TYPE.MALL_STORE]);
+const SUBTILE_OUTSIDE_TYPES  = new Set([SUBTILE_TYPE.ROAD, SUBTILE_TYPE.GRASS, SUBTILE_TYPE.PARKING, SUBTILE_TYPE.MALL_HALLWAY]);

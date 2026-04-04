@@ -11,6 +11,9 @@ function formatTileCode(obj) {
   const zombieTypeReverse = Object.fromEntries(
     Object.entries(ZOMBIE_TYPE).map(([k, v]) => [v, `ZOMBIE_TYPE.${k}`])
   );
+  const connectorRuleReverse = Object.fromEntries(
+    Object.entries(CONNECTOR_RULE).map(([k, v]) => [v, `CONNECTOR_RULE.${k}`])
+  );
 
   function fmtKey(k) {
     return identRe.test(k) ? k : JSON.stringify(k);
@@ -37,6 +40,17 @@ function formatTileCode(obj) {
       const pad = "  ".repeat(depth + 1);
       const close = "  ".repeat(depth);
       return "{\n" + entries.map(([k, v]) => `${pad}${fmtComputedKey(k, reverseMap)}: ${fmt(v, depth + 1)}`).join(",\n") + ",\n" + close + "}";
+    }
+
+    // connectors object: render rule values as CONNECTOR_RULE.* constants
+    if (fieldName === "connectors") {
+      const fmtRule = (v) => connectorRuleReverse[v] ?? JSON.stringify(v);
+      if (depth >= 2) {
+        return "{ " + entries.map(([k, v]) => `${fmtKey(k)}: ${fmtRule(v)}`).join(", ") + " }";
+      }
+      const pad = "  ".repeat(depth + 1);
+      const close = "  ".repeat(depth);
+      return "{\n" + entries.map(([k, v]) => `${pad}${fmtKey(k)}: ${fmtRule(v)}`).join(",\n") + "\n" + close + "}";
     }
 
     if (depth >= 2) {

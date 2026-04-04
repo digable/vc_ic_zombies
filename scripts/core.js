@@ -343,29 +343,42 @@ function getConnectorDirs(connectors) {
 
 // Rotates connector directions, always returning a plain direction array.
 function getRotatedConnectors(connectors, rotation) {
-  const order = ["N", "E", "S", "W"];
   return getConnectorDirs(connectors).map((dir) => {
-    const i = order.indexOf(dir);
-    return order[(i + rotation) % 4];
+    const i = DIRECTION_ORDER.indexOf(dir);
+    return DIRECTION_ORDER[(i + rotation) % 4];
   });
 }
 
 // Returns a rotated rule map { rotatedDir: rule } when connectors is object format, else null.
 function getRotatedConnectorRules(connectors, rotation) {
   if (Array.isArray(connectors) || !connectors) return null;
-  const order = ["N", "E", "S", "W"];
   return Object.fromEntries(
-    Object.entries(connectors).map(([dir, rule]) => [order[(order.indexOf(dir) + rotation) % 4], rule])
+    Object.entries(connectors).map(([dir, rule]) => [DIRECTION_ORDER[(DIRECTION_ORDER.indexOf(dir) + rotation) % 4], rule])
   );
 }
 
+// Returns the unrotated gateway connector direction for a tile — the connector marked
+// CONNECTOR_RULE.DISABLE_ON_SOLO. Returns null if the tile has no gateway connector.
+function getGatewayConnectorDir(tile) {
+  const c = tile?.connectors;
+  if (!c || Array.isArray(c)) return null;
+  const entry = Object.entries(c).find(([, rule]) => rule === CONNECTOR_RULE.DISABLE_ON_SOLO);
+  return entry ? entry[0] : null;
+}
+
 function rotateDir(dir, rotation) {
-  const order = ["N", "E", "S", "W"];
-  const i = order.indexOf(dir);
-  if (i < 0) {
-    return dir;
-  }
-  return order[(i + rotation) % 4];
+  const i = DIRECTION_ORDER.indexOf(dir);
+  if (i < 0) return dir;
+  return DIRECTION_ORDER[(i + rotation) % 4];
+}
+
+// Returns the compass direction for a one-step tile delta (dx, dy).
+// Assumes exactly one of dx/dy is non-zero.
+function getDirFromDelta(dx, dy) {
+  if (dx === 1) return "E";
+  if (dx === -1) return "W";
+  if (dy === 1) return "S";
+  return "N";
 }
 
 function rotateLocalCoord(lx, ly, rotation) {

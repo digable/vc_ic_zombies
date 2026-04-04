@@ -9,18 +9,18 @@
 // Ensures the Escalator is always drawn before the Helipad in Mall Walkers games.
 // If the Helipad lands at or before the Escalator after shuffling, move it to just after.
 function ensureEscalatorBeforeHelipad(deck) {
-  const helIdx = deck.findIndex((t) => t.name === "Helipad");
-  const escIdx = deck.findIndex((t) => t.name === "Escalator");
+  const helIdx = deck.findIndex((t) => t.name === TILE_NAME.HELIPAD);
+  const escIdx = deck.findIndex((t) => t.name === TILE_NAME.ESCALATOR);
   if (escIdx === -1 || helIdx === -1 || escIdx < helIdx) return;
   const [helipad] = deck.splice(helIdx, 1);
-  const newEscIdx = deck.findIndex((t) => t.name === "Escalator");
+  const newEscIdx = deck.findIndex((t) => t.name === TILE_NAME.ESCALATOR);
   deck.splice(newEscIdx + 1, 0, helipad);
 }
 
 function buildMapDeck(filters = null) {
   const allTiles = [...roadTiles, ...namedTiles, ...specialTiles];
 
-  // Gateway tiles (zoneGatewayConnector) from standalone collections are included in the
+  // Gateway tiles (DISABLE_ON_SOLO connector) from standalone collections are included in the
   // base deck when a base collection is also active so players can draw them to unlock the zone.
   const hasBaseCollection = filters && Object.entries(COLLECTION_META).some(
     ([c, meta]) => meta.requiresBase === null && !meta.standaloneDeck && filters[c]?.enabled
@@ -36,7 +36,7 @@ function buildMapDeck(filters = null) {
         const isSA = COLLECTION_META[c]?.standaloneDeck;
         if (isSA) {
           // Gateway tiles go into the base deck when mixed with a base collection.
-          return hasBaseCollection && !!t.zoneGatewayConnector
+          return hasBaseCollection && !!getGatewayConnectorDir(t)
             ? (rule.enabled ?? false)
             : false;
         }
@@ -53,7 +53,7 @@ function buildMapDeck(filters = null) {
         const isSA = COLLECTION_META[c]?.standaloneDeck;
         if (isSA) {
           // Only include gateway tiles when mixed with a base collection.
-          return hasBaseCollection && !!t.zoneGatewayConnector && filters[c]?.enabled ? sum + n : sum;
+          return hasBaseCollection && !!getGatewayConnectorDir(t) && filters[c]?.enabled ? sum + n : sum;
         }
         if (filters[c]?.enabled) return sum + n;
         return sum;
@@ -118,7 +118,7 @@ function buildStandaloneDeck(collKey, filters = null) {
 
   const filtered = allTiles
     .filter((t) => {
-      if (hasBaseCollection && t.zoneGatewayConnector) return false; // gateway goes to base deck when mixed
+      if (hasBaseCollection && getGatewayConnectorDir(t)) return false; // gateway goes to base deck when mixed
       if (t.name === startTileName) return false; // start tile is pre-placed, not drawn
       const colCounts = resolveCollectionCounts(t);
       if (!colCounts[collKey]) return false;

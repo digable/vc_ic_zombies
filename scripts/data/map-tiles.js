@@ -36,9 +36,9 @@
 //                                        map-connection side (N for "S", W for "E", etc.).
 //                                        The engine auto-detects if the tile is placed reversed and flips
 //                                        the chain direction accordingly.
-//   zoneGatewayConnector {string}        On standalone-deck tiles only. The connector (in unrotated
-//                                        orientation) that faces the base map and may touch base-zone
-//                                        tiles. All other connectors are standalone-zone only.
+//   connectorOnlyTarget  {object}        Parallel to connectors — maps direction to tile name for
+//                                        CONNECTOR_RULE.ONLY connectors. e.g. { S: "Helipad" }
+//                                        means the S connector only accepts the tile named "Helipad".
 //
 // subTilesTemplate — 3×3 movement grid, keyed by "lx,ly" (0–2 each axis):
 //   walkable  {bool}      true = players/zombies can enter; false = solid (walls, grass)
@@ -187,7 +187,7 @@ const namedTiles = [
     name: "Army Surplus",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
     hearts: 0,
@@ -208,7 +208,7 @@ const namedTiles = [
     name: "Gas Station",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "S", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -229,7 +229,7 @@ const namedTiles = [
     name: "Police Station",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 2,
@@ -250,7 +250,7 @@ const namedTiles = [
     name: "Hospital",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 4,
@@ -271,7 +271,7 @@ const namedTiles = [
     name: "Drug Store",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 3,
@@ -292,7 +292,7 @@ const namedTiles = [
     name: "Fire Station",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["S", "W"],
+    connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 4,
@@ -313,7 +313,7 @@ const namedTiles = [
     name: "Toy Store",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "S"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -334,7 +334,7 @@ const namedTiles = [
     name: "Skate Shop",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "S", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
@@ -355,7 +355,7 @@ const namedTiles = [
     name: "Florist",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "S", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -376,7 +376,7 @@ const namedTiles = [
     name: "Sporting Goods Store",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 2,
@@ -397,7 +397,7 @@ const namedTiles = [
     name: "Lawn & Garden Store",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 2,
@@ -418,7 +418,7 @@ const namedTiles = [
     name: "Hardware Store",
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
-    connectors: ["E", "S"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -441,7 +441,7 @@ const namedTiles = [
     name: "Front Gate",
     type: "town",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: { N: "any", S: "same" },
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
@@ -451,7 +451,6 @@ const namedTiles = [
     // Companions chain from the S side (compound interior).
     // Front Gate [N connects to map] → [S] Straight [N] → [S] 4-Way
     companionDir: "S",
-    zoneGatewayConnector: "N",   // N connector (map-facing side) accepts base-zone tiles
     companionTiles: [
       { name: "Straight" },
       { name: "4-Way" }
@@ -472,7 +471,7 @@ const namedTiles = [
     name: "Top Secret Lab",
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.ENHANCED]: 6 },
     hearts: 0,
@@ -493,7 +492,7 @@ const namedTiles = [
     name: "Mess Hall",
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: ["E", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 2,
@@ -514,7 +513,7 @@ const namedTiles = [
     name: "Barracks",
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -535,7 +534,7 @@ const namedTiles = [
     name: "Armory",
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 0,
@@ -556,7 +555,7 @@ const namedTiles = [
     name: "Motor Pool",
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 1,
@@ -581,14 +580,13 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: { N: "any", S: "same" },
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.ANY },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3, },
     hearts: 0,
     bullets: 0,
     firstDrawWhenSolo: true,
     companionDir: "S",
-    zoneGatewayConnector: "N",
     companionTiles: [{ name: "4-Way (mall)" }],
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -608,7 +606,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["E", "S", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 1,
@@ -633,7 +631,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["E", "S", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 1,
@@ -658,7 +656,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["E", "S"],
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 5,
@@ -683,7 +681,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["S", "W"],
+    connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
@@ -706,7 +704,7 @@ const namedTiles = [
     name: "Escalator",
     type: "named",
     // S connector is floor 1 (placement side); N/E/W connectors lead to floor 2 after placement
-    floor1Connectors: ["S"],
+    floor1connectors: { S: CONNECTOR_RULE.SAME },
     floor2Connectors: ["N", "E", "W"],
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
@@ -734,7 +732,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 4,
@@ -759,7 +757,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 7,
@@ -784,7 +782,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -809,7 +807,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 2,
@@ -834,7 +832,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
@@ -859,7 +857,7 @@ const namedTiles = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
@@ -886,7 +884,7 @@ const namedTiles = [
     name: "Bridge",
     type: "town",
     collection: { [COLLECTIONS.THE_END]: 1 },
-    connectors: { N: "any", S: "same" },
+    connectors: { N: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     hearts: 0,
     bullets: 0,
@@ -909,12 +907,11 @@ const namedTiles = [
     type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     isStartTile: true,
-    connectors: { N: "any", E: "same", S: "same", W: "same" },
+    connectors: { N: CONNECTOR_RULE.DISABLE_ON_SOLO, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 0,
-    zoneGatewayConnector: "N",
     subTilesTemplate: {
       "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "road" },
@@ -931,7 +928,7 @@ const namedTiles = [
     name: "The Deadwood",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 4 },
     hearts: 2,
@@ -952,7 +949,7 @@ const namedTiles = [
     name: "Hamburg Inn",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["S", "W"],
+    connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 3,
@@ -973,7 +970,7 @@ const namedTiles = [
     name: "College Street",
     type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: { N: "same", S: "same" },
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
     hearts: 0,
@@ -1015,7 +1012,7 @@ const namedTiles = [
     name: "Kinnick Stadium",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 10 },
     hearts: 3,
@@ -1057,7 +1054,7 @@ const namedTiles = [
     name: "Oakland Cemetery",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 1,
@@ -1078,7 +1075,7 @@ const namedTiles = [
     name: "City Park",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "E", "S", "W"],
+    connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 2,
@@ -1099,7 +1096,7 @@ const namedTiles = [
     name: "Sanctuary",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["S"],
+    connectors: { S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -1141,7 +1138,7 @@ const namedTiles = [
     name: "FilmScene",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["S", "W"],
+    connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
@@ -1162,7 +1159,8 @@ const namedTiles = [
     name: "UIHC",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "S"],
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.ONLY },
+    connectorOnlyTarget: { S: TILE_NAME.HELIPAD },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
     hearts: 6,
@@ -1183,7 +1181,7 @@ const namedTiles = [
     name: "IMU",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["E", "W"],
+    connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 4 },
     hearts: 2,
@@ -1231,7 +1229,7 @@ const specialTiles = [
     name: "Helipad",
     type: "helipad",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: ["N", "E", "S", "W"],
+    connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
     hearts: 0,
@@ -1260,7 +1258,7 @@ const START_TILES = [
     type: "town",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     isStartTile: true,
-    connectors: { N: "any", E: "any", S: "any", W: "any" },
+    connectors: { N: CONNECTOR_RULE.ANY, E: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.ANY, W: CONNECTOR_RULE.ANY },
     zombieSpawnMode: "by_card",
     hearts: 0,
     bullets: 0,
@@ -1280,7 +1278,7 @@ const START_TILES = [
     name: "Front Gate",
     type: "town",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
-    connectors: { N: "any", S: "same" },
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
@@ -1290,7 +1288,6 @@ const START_TILES = [
     // Companions chain from the S side (compound interior).
     // Front Gate [N connects to map] → [S] Straight [N] → [S] 4-Way
     companionDir: "S",
-    zoneGatewayConnector: "N",   // N connector (map-facing side) accepts base-zone tiles
     companionTiles: [
       { name: "Straight" },
       { name: "4-Way" }
@@ -1313,14 +1310,13 @@ const START_TILES = [
     collection: {
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
-    connectors: { N: "any", S: "same" },
+    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3, },
     hearts: 0,
     bullets: 0,
     firstDrawWhenSolo: true,
     companionDir: "S",
-    zoneGatewayConnector: "N",
     companionTiles: [{ name: "4-Way (mall)" }],
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -1339,11 +1335,10 @@ const START_TILES = [
     type: "town",
     collection: { [COLLECTIONS.THE_END]: 1 },
     isStartTile: true,
-    connectors: { N: "any", S: "same" },
+    connectors: { N: CONNECTOR_RULE.DISABLE_ON_SOLO, S: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     hearts: 0,
     bullets: 0,
-    zoneGatewayConnector: "N",
     subTilesTemplate: {
       "0,0": { walkable: true, type: "grass", walls: ["S"] },
       "1,0": { walkable: true, type: "road" },
@@ -1361,12 +1356,11 @@ const START_TILES = [
     type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     isStartTile: true,
-    connectors: { N: "any", E: "same", S: "same", W: "same" },
+    connectors: { N: CONNECTOR_RULE.DISABLE_ON_SOLO, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: "by_card",
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 0,
-    zoneGatewayConnector: "N",
     subTilesTemplate: {
       "0,0": { walkable: true, type: "grass", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "road" },

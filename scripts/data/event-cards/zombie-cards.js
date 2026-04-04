@@ -31,7 +31,7 @@ const zombieEventCards = [
       const tile = getTileAtSpace(player.x, player.y);
       if (!tile) return false;
       const subType = getSubTileType(tile, lx, ly);
-      if (subType === "building") return true;
+      if (SUBTILE_BUILDING_TYPES.has(subType)) return true;
       // Check if any orthogonally adjacent subtile (same tile) is a building door facing this space
       for (const [dir, d] of Object.entries(DIRS)) {
         const nlx = lx + d.x;

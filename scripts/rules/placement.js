@@ -1,6 +1,29 @@
 function hasRoad(tile, dir) {
-  return getConnectorDirs(tile.connectors).includes(dir);
+  if (!getConnectorDirs(tile.connectors).includes(dir)) return false;
+  const rule = tile.placedConnectorRules?.[dir];
+  if (rule === CONNECTOR_RULE.DISABLE_ON_SOLO && isDisabledBySolo(tile.collection)) return false;
+  return true;
 }
+
+// Returns true when no collection other than the tile's own is currently enabled.
+// Used by DISABLE_ON_SOLO to suppress gateway connectors in pure-solo play.
+function isDisabledBySolo(tileCollection) {
+  if (!state.deckFilters) return false;
+  const tileColKeys = new Set(Object.keys(resolveCollectionCounts({ collection: tileCollection })));
+  return !Object.entries(state.deckFilters).some(([c, r]) => r.enabled && !tileColKeys.has(c));
+}
+
+// Returns the already-rotated gateway connector direction for a placed tile.
+// Checks placedConnectorRules first (fastest path), falls back to definition + rotation.
+function getPlacedGatewayDir(tile) {
+  if (tile.placedConnectorRules) {
+    const entry = Object.entries(tile.placedConnectorRules).find(([, r]) => r === CONNECTOR_RULE.DISABLE_ON_SOLO);
+    if (entry) return entry[0];
+  }
+  const unrotated = getGatewayConnectorDir(tile);
+  return unrotated ? rotateDir(unrotated, tile.placedRotation || 0) : null;
+}
+
 
 // Returns 1 or 2: the floor a tile placed at (x, y) with the given connectors would occupy.
 // A tile is floor 2 if it road-connects to:
@@ -13,7 +36,7 @@ function getFloorForPlacement(x, y, connectors) {
     const nk = key(x + def.x, y + def.y);
     const neighbor = state.board.get(nk);
     if (!neighbor || !getConnectorDirs(neighbor.connectors).includes(def.opposite)) continue;
-    if (neighbor.name === "Escalator" && neighbor.floor2Connectors) {
+    if (neighbor.name === TILE_NAME.ESCALATOR && neighbor.floor2Connectors) {
       const rotatedFloor2 = neighbor.floor2Connectors.map(d => rotateDir(d, neighbor.placedRotation || 0));
       if (rotatedFloor2.includes(def.opposite)) return 2;
     } else if (state.floor2Tiles.has(nk)) {
@@ -26,10 +49,10 @@ function getFloorForPlacement(x, y, connectors) {
 // Returns true if the tile must be placed on floor 2.
 // Only applies to the mall helipad (Mall Walkers collection active + Escalator on the board).
 function mustBeFloor2(tile) {
-  if (!tile.isWinTile || tile.type !== "helipad") return false;
+  if (!tile.isWinTile || tile.type !== TILE_TYPE.HELIPAD) return false;
   if (!state.deckFilters?.[COLLECTIONS.MALL_WALKERS]?.enabled) return false;
   let hasEscalator = false;
-  state.board.forEach((t) => { if (t.name === "Escalator") hasEscalator = true; });
+  state.board.forEach((t) => { if (t.name === TILE_NAME.ESCALATOR) hasEscalator = true; });
   return hasEscalator;
 }
 
@@ -49,13 +72,12 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
   const incomingDeck = normalizeZone(tileDeck);
 
   // Gateway checks must run BEFORE the same-zone short-circuit.
-  // A gateway tile's zone-facing side (opposite of zoneGatewayConnector) must reject
+  // A gateway tile's zone-facing side (opposite of its DISABLE_ON_SOLO connector) must reject
   // same-deck tiles (e.g. base tiles connecting to Bridge's S side) while allowing
   // only the matching standalone collection through.
-  const gwConn = neighborTile.zoneGatewayConnector;
-  if (gwConn) {
-    const actualGwDir  = rotateDir(gwConn, neighborTile.placedRotation || 0);
-    const zoneFacingDir = rotateDir(DIRS[gwConn].opposite, neighborTile.placedRotation || 0);
+  const actualGwDir = getPlacedGatewayDir(neighborTile);
+  if (actualGwDir) {
+    const zoneFacingDir = DIRS[actualGwDir].opposite;
 
     if (zoneFacingDir === neighborConnDir) {
       // Zone-facing side: only the standalone collection this gateway belongs to may connect.
@@ -78,21 +100,22 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
 // ---------------------------------------------------------------------------
 // Connector rules — per-connector or per-collection connection restrictions.
 //
-// rule values:
-//   "any"  — connect to any collection (default)
-//   "same" — only connect to tiles in the same collection
+// rule values (CONNECTOR_RULE.*):
+//   "any"             — connect to any collection
+//   "same"            — only connect to tiles in the same collection (default)
+//   "any_first"       — reserved; not yet assigned to any tile
+//   "disable_on_solo" — gateway connector: ANY in mixed play, disabled in solo play of own collection
+//   "only"            — only connect to the tile named in connectorOnlyTarget for this direction
 //   "<collectionKey>" — only connect to tiles in that specific collection
 //
 // Tile data fields:
-//   connectorRules: { N: "any", S: "same", ... }  — per-connector, unrotated tile space
-//   defaultConnectorRule: "same"                   — tile-level fallback
-//
-// COLLECTION_META may also define defaultConnectorRule to apply to all tiles in that collection.
+//   connectors:           { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO }  (object format)
+//   connectorOnlyTarget:  { S: "Helipad" }  — required when a connector uses CONNECTOR_RULE.ONLY
 // ---------------------------------------------------------------------------
 
 // Default rule for all connectors unless overridden.
 function getDefaultConnectorRule() {
-  return "same";
+  return CONNECTOR_RULE.SAME;
 }
 
 // Returns the connector rule for a placed tile at the given (already-rotated) direction.
@@ -107,14 +130,16 @@ function tilePrimaryCollection(tile) {
 }
 
 // Returns true if rule permits thisTile to connect to otherTile.
-function connectorRuleAllows(rule, thisTile, otherTile) {
-  if (!rule || rule === "any") return true;
-  if (rule === "same") return tilePrimaryCollection(thisTile) === tilePrimaryCollection(otherTile);
+// onlyTarget: the tile name required when rule is CONNECTOR_RULE.ONLY.
+function connectorRuleAllows(rule, thisTile, otherTile, onlyTarget) {
+  if (!rule || rule === CONNECTOR_RULE.ANY || rule === CONNECTOR_RULE.DISABLE_ON_SOLO) return true;
+  if (rule === CONNECTOR_RULE.SAME) return tilePrimaryCollection(thisTile) === tilePrimaryCollection(otherTile);
+  if (rule === CONNECTOR_RULE.ONLY) return onlyTarget ? otherTile.name === onlyTarget : false;
   // specific collection key — the other tile must belong to it
   return tilePrimaryCollection(otherTile) === normalizeZone(rule);
 }
 
-function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false, requiresFloor2 = false, floor1OnlyDirs = null, incomingTile = null, incomingConnectorRules = null) {
+function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenientMismatch = false, requiresFloor2 = false, floor1OnlyDirs = null, incomingTile = null, incomingConnectorRules = null, incomingOnlyTarget = null) {
   const here = key(x, y);
   if (state.board.has(here)) return false;
 
@@ -124,40 +149,28 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
     const neighbor = state.board.get(key(x + def.x, y + def.y));
     if (!neighbor) continue;
     touching += 1;
-    const meHas = connectors.includes(dir);
+    const incomingRule = incomingConnectorRules?.[dir] ?? getDefaultConnectorRule();
+    const isDisabledGateway = incomingRule === CONNECTOR_RULE.DISABLE_ON_SOLO && incomingTile && isDisabledBySolo(incomingTile.collection);
+    const meHas = connectors.includes(dir) && !isDisabledGateway;
     const themHas = hasRoad(neighbor, def.opposite);
     // Road-to-wall mismatch: never valid unless this is a win tile (helipad can abut any edge)
     if (!lenientMismatch && meHas !== themHas) return false;
     // Road-to-road: check zone, connector rules, and count
     if (meHas && themHas) {
-      // Standalone restriction: Town Square only accepts its first road neighbor.
-      // In base/mixed play the base collection is active and Town Square is the hub — no restriction.
-      if (neighbor.isStartTile && neighbor.name === "Town Square") {
-        const hasBaseCollection = !!(state.deckFilters?.[COLLECTIONS.DIRECTORS_CUT]?.enabled);
-        if (!hasBaseCollection) {
-          // Check if Town Square already has any road-connected neighbor
-          const ntx = x + def.x;
-          const nty = y + def.y;
-          let alreadyConnected = false;
-          for (const [nd, ndef] of Object.entries(DIRS)) {
-            if (!hasRoad(neighbor, nd)) continue;
-            const adj = state.board.get(key(ntx + ndef.x, nty + ndef.y));
-            if (adj && hasRoad(adj, ndef.opposite)) { alreadyConnected = true; break; }
-          }
-          if (alreadyConnected) return false;
-        }
-      }
       if (floor1OnlyDirs && !floor1OnlyDirs.has(dir)) return false;
       if (tileDeck !== undefined && !isZoneCompatible(neighbor, def.opposite, tileDeck, dir, incomingGatewayDirs)) return false;
       // Connector rule check (bidirectional).
-      // "any" on either side unlocks the connection — the gateway's open invitation overrides
-      // the neighbor's same-collection restriction. Only enforce rules when neither side is "any".
+      // If either side is open (ANY or DISABLE_ON_SOLO), skip all rule checks — the open
+      // connector's invitation always overrides the other side's SAME restriction.
       if (incomingTile) {
-        const incomingRule = incomingConnectorRules?.[dir] ?? getDefaultConnectorRule();
         const neighborRule = getConnectorRule(neighbor, def.opposite);
-        if (incomingRule !== "any" && neighborRule !== "any") {
-          if (!connectorRuleAllows(incomingRule, incomingTile, neighbor)) return false;
-          if (!connectorRuleAllows(neighborRule, neighbor, incomingTile)) return false;
+        const incomingOpen = incomingRule === CONNECTOR_RULE.ANY || incomingRule === CONNECTOR_RULE.DISABLE_ON_SOLO;
+        const neighborOpen = neighborRule === CONNECTOR_RULE.ANY || neighborRule === CONNECTOR_RULE.DISABLE_ON_SOLO;
+        if (!incomingOpen && !neighborOpen) {
+          const incomingOnly = incomingOnlyTarget?.[dir];
+          const neighborOnly = neighbor.placedConnectorOnlyTarget?.[def.opposite];
+          if (!connectorRuleAllows(incomingRule, incomingTile, neighbor, incomingOnly)) return false;
+          if (!connectorRuleAllows(neighborRule, neighbor, incomingTile, neighborOnly)) return false;
         }
       }
       roadMatches += 1;
@@ -177,7 +190,7 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
       const nk = key(x + def.x, y + def.y);
       const neighbor = state.board.get(nk);
       if (!neighbor || !hasRoad(neighbor, def.opposite)) continue;
-      if (neighbor.name === "Escalator") continue; // escalator bridges both floors
+      if (neighbor.name === TILE_NAME.ESCALATOR) continue; // escalator bridges both floors
       const neighborFloor = state.floor2Tiles.has(nk) ? 2 : 1;
       if (incomingFloor !== neighborFloor) return false;
     }
@@ -203,15 +216,16 @@ function getPlacementOptions(tile, tileDeck = "base") {
     const { x, y } = parseKey(k);
     for (let r = 0; r < 4; r += 1) {
       const connectors = getRotatedConnectors(tile.connectors, r);
-      const gwDirs = tile.zoneGatewayConnector
-        ? new Set([rotateDir(tile.zoneGatewayConnector, r)])
-        : null;
+      const unrotatedGw = getGatewayConnectorDir(tile);
+      const gwDirs = unrotatedGw ? new Set([rotateDir(unrotatedGw, r)]) : null;
       const floor1Dirs = tile.floor1Connectors
         ? new Set(tile.floor1Connectors.map(d => rotateDir(d, r)))
         : null;
-      // Extract and rotate per-connector rules from connectors property (object format only).
       const rotatedRules = getRotatedConnectorRules(tile.connectors, r);
-      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient, requiresFloor2, floor1Dirs, tile, rotatedRules)) {
+      const rotatedOnlyTarget = tile.connectorOnlyTarget
+        ? Object.fromEntries(Object.entries(tile.connectorOnlyTarget).map(([d, n]) => [rotateDir(d, r), n]))
+        : null;
+      if (isValidPlacement(x, y, connectors, tileDeck, gwDirs, lenient, requiresFloor2, floor1Dirs, tile, rotatedRules, rotatedOnlyTarget)) {
         options.push({ x, y, connectors, rotation: r });
       }
     }
