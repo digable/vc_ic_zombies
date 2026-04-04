@@ -125,7 +125,10 @@ function getConnectorRule(tile, rotatedDir) {
 }
 
 // Returns the primary normalized collection key for a tile.
+// Prefers placedDeck (the deck the tile was drawn from) over the first collection key,
+// so shared road tiles (e.g. Straight in both Z1 and Z2) resolve to their actual zone.
 function tilePrimaryCollection(tile) {
+  if (tile.placedDeck) return normalizeZone(tile.placedDeck);
   return normalizeZone(Object.keys(resolveCollectionCounts(tile))[0]);
 }
 
@@ -169,8 +172,11 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
         if (!incomingOpen && !neighborOpen) {
           const incomingOnly = incomingOnlyTarget?.[dir];
           const neighborOnly = neighbor.placedConnectorOnlyTarget?.[def.opposite];
-          if (!connectorRuleAllows(incomingRule, incomingTile, neighbor, incomingOnly)) return false;
-          if (!connectorRuleAllows(neighborRule, neighbor, incomingTile, neighborOnly)) return false;
+          // Give the incoming tile a placedDeck so tilePrimaryCollection resolves to the
+          // correct zone for shared tiles (e.g. Straight in both Z1 and Z2).
+          const effectiveIncoming = tileDeck ? { ...incomingTile, placedDeck: tileDeck } : incomingTile;
+          if (!connectorRuleAllows(incomingRule, effectiveIncoming, neighbor, incomingOnly)) return false;
+          if (!connectorRuleAllows(neighborRule, neighbor, effectiveIncoming, neighborOnly)) return false;
         }
       }
       roadMatches += 1;
