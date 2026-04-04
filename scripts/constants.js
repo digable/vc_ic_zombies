@@ -35,10 +35,7 @@ const TILE_TYPE = {
   NAMED:        "named",
   BUILDING:     "building",
   ROAD:         "road",
-  GRASS:        "grass",
-  MALL_HALLWAY: "mall hallway",
-  MALL_STORE:   "mall store",
-  ESCALATOR:    "escalator",
+  WOODS:        "woods",
   HELIPAD:      "helipad",
 };
 
@@ -51,4 +48,6 @@ const SUBTILE_TYPE = {
   MALL_HALLWAY: "mall hallway",
   MALL_STORE:   "mall store",
   ESCALATOR:    "escalator",
+  WATER:        "water",
+  WOODED:       "wooded",
 };
