@@ -9,14 +9,19 @@ const MAX_LOG_ENTRIES   = 120; // how many log lines to keep in memory
 const ZOMBIE_TYPE = {
   REGULAR:  "regular",
   ENHANCED: "government_enhanced",
+  DOG:      "dog",
 };
 
 // Per-type zombie stats. Add new types here — combat and movement read from this table.
-// killRoll: minimum d6 total (after bonuses) needed to kill this zombie type.
-// movement: spaces moved per turn slot.
+// killRoll:    minimum d6 total (after bonuses) needed to kill this zombie type.
+// movement:    spaces moved per turn slot.
+// maxPerSpace: how many of this type can share a subtile (dogs can stack up to 2).
+// halfHeartDamage: if true, losing combat costs ½ heart instead of a full knockout.
+// halfHeartReroll: if true, player can spend ½ heart tokens to reroll in combat.
 const ZOMBIE_TYPES = {
-  [ZOMBIE_TYPE.REGULAR]:  { movement: 1, killRoll: 4 },
-  [ZOMBIE_TYPE.ENHANCED]: { movement: 2, killRoll: 5 },
+  [ZOMBIE_TYPE.REGULAR]:  { movement: 1, killRoll: 4, maxPerSpace: 1, halfHeartDamage: false, halfHeartReroll: false },
+  [ZOMBIE_TYPE.ENHANCED]: { movement: 2, killRoll: 5, maxPerSpace: 1, halfHeartDamage: false, halfHeartReroll: false },
+  [ZOMBIE_TYPE.DOG]:      { movement: 2, killRoll: 5, maxPerSpace: 2, halfHeartDamage: true,  halfHeartReroll: true  },
 };
 
 const INITIAL_HEARTS    = 3;   // starting hearts for a new/respawned player

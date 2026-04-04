@@ -115,7 +115,7 @@ function resolvePendingCombatDecision(actionCode) {
     const lsCard = player.hand.splice(lsIndex, 1)[0];
     state.eventDiscardPile.push(lsCard);
     player.bullets -= 1;
-    state.zombies.delete(playerSpaceKey);
+    decrementZombieAt(playerSpaceKey);
     player.kills += 1;
     state.lastCombatResult = "Lucky Shot";
     state.recentKillKey = playerSpaceKey;
@@ -151,13 +151,13 @@ function resolvePendingCombatDecision(actionCode) {
     logLine(`${player.name} spent 1 bullet. Combat roll is now ${pending.modifiedRoll}.`);
 
     if (pending.modifiedRoll >= pending.killRoll) {
-      state.zombies.delete(playerSpaceKey);
+      decrementZombieAt(playerSpaceKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = playerSpaceKey;
-    state.recentKillByPlayerId = player.id;
+      state.recentKillByPlayerId = player.id;
       const bonusText = ` (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus})`;
-      const zombieLabel = pending.isEnhanced ? "government-enhanced zombie" : "zombie";
+      const zombieLabel = pending.isDog ? "zombie dog" : pending.isEnhanced ? "government-enhanced zombie" : "zombie";
       logLine(`${player.name} raised the roll to ${pending.modifiedRoll}${bonusText} and killed the ${zombieLabel}.`, "kill");
 
       const options = pending.options;
@@ -168,6 +168,22 @@ function resolvePendingCombatDecision(actionCode) {
       return;
     }
 
+    render();
+    return;
+  }
+
+  if (actionCode === "HH") {
+    // Spend ½ heart to reroll (only available vs zombie dogs)
+    if (player.hearts < 0.5) {
+      logLine(`${player.name} has no hearts left to spend.`);
+      render();
+      return;
+    }
+    player.hearts -= 0.5;
+    logLine(`${player.name} spent ½ heart and chose to reroll (${player.hearts} heart(s) remaining).`);
+    const optHH = pending.options;
+    state.pendingCombatDecision = null;
+    resolveCombatForPlayer(player, optHH);
     render();
     return;
   }
@@ -254,12 +270,12 @@ function resolvePendingCombatDecision(actionCode) {
     }
 
     if (pending.modifiedRoll >= pending.killRoll) {
-      state.zombies.delete(pending.pKey);
+      decrementZombieAt(pending.pKey);
       player.kills += 1;
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = pending.pKey;
       state.recentKillByPlayerId = player.id;
-      const zombieLabel = pending.isEnhanced ? "government-enhanced zombie" : "zombie";
+      const zombieLabel = pending.isDog ? "zombie dog" : pending.isEnhanced ? "government-enhanced zombie" : "zombie";
       logLine(`${player.name} raised the roll to ${pending.modifiedRoll} and killed the ${zombieLabel}.`, "kill");
       const options = pending.options;
       state.pendingCombatDecision = null;
@@ -271,13 +287,34 @@ function resolvePendingCombatDecision(actionCode) {
   }
 
   if (actionCode === "L") {
-    state.lastCombatResult = `Knocked Out (${pending.modifiedRoll})`;
-    logLine(`${player.name} lost the fight and was knocked out.`);
     const options = pending.options;
-    state.pendingCombatDecision = null;
-    handleKnockout(player, { endStep: options.endStepOnKnockout });
-    if (!options.endStepOnKnockout && options.resumeStepAfterPending && state.step !== STEP.END) {
-      state.step = options.resumeStepAfterPending;
+    if (pending.isDog) {
+      // Dog damage: lose ½ heart instead of full knockout
+      state.lastCombatResult = `Dog Hit (${pending.modifiedRoll})`;
+      state.pendingCombatDecision = null;
+      player.hearts -= 0.5;
+      logLine(`${player.name} was bitten by a zombie dog — lost ½ heart (${player.hearts} heart(s) remaining).`);
+      if (player.hearts <= 0) {
+        handleKnockout(player, { endStep: options.endStepOnKnockout });
+        if (!options.endStepOnKnockout && options.resumeStepAfterPending && state.step !== STEP.END) {
+          state.step = options.resumeStepAfterPending;
+        }
+      } else {
+        // Dog stays; force-advance past this combat encounter
+        if (options.resumeStepAfterPending) {
+          state.step = options.resumeStepAfterPending;
+        } else if (state.step === STEP.COMBAT) {
+          state.step = STEP.DRAW_EVENTS;
+        }
+      }
+    } else {
+      state.lastCombatResult = `Knocked Out (${pending.modifiedRoll})`;
+      logLine(`${player.name} lost the fight and was knocked out.`);
+      state.pendingCombatDecision = null;
+      handleKnockout(player, { endStep: options.endStepOnKnockout });
+      if (!options.endStepOnKnockout && options.resumeStepAfterPending && state.step !== STEP.END) {
+        state.step = options.resumeStepAfterPending;
+      }
     }
     render();
   }
@@ -319,6 +356,7 @@ function resolveCombatForPlayer(player, options = {}) {
     ? Math.max(zombieTypeProps.killRoll, 5)
     : zombieTypeProps.killRoll;
   const isEnhanced = zombieData?.type === ZOMBIE_TYPE.ENHANCED;
+  const isDog = zombieData?.type === ZOMBIE_TYPE.DOG;
 
   const permanentBonus = player.attack || 0;
   const tempBonus = player.tempCombatBonus || 0;
@@ -338,10 +376,10 @@ function resolveCombatForPlayer(player, options = {}) {
   const macheteBonus = (player.items || []).some((c) => c.name === "Machete") ? 1 : 0;
   const baseCombatRoll = roll - diePenalty + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus;
   const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""})`;
-  const zombieLabel = isEnhanced ? "government-enhanced zombie" : "zombie";
+  const zombieLabel = isDog ? "zombie dog" : isEnhanced ? "government-enhanced zombie" : "zombie";
 
   if (baseCombatRoll >= killRoll) {
-    state.zombies.delete(playerSpaceKey);
+    decrementZombieAt(playerSpaceKey);
     player.kills += 1;
     state.lastCombatResult = `Success (${baseCombatRoll})`;
     state.recentKillKey = playerSpaceKey;
@@ -357,6 +395,7 @@ function resolveCombatForPlayer(player, options = {}) {
     pKey: playerSpaceKey,
     killRoll,
     isEnhanced,
+    isDog,
     roll,
     baseRoll: baseCombatRoll,
     modifiedRoll: baseCombatRoll,

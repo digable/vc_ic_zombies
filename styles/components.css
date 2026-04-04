@@ -455,6 +455,11 @@
   outline: 1px solid #c084fc;
 }
 
+.mark.zombie.zombie-dog {
+  background: #7a4a1e;
+  outline: 1px solid #f59e0b;
+}
+
 .mark.token {
   background: #8f6b40;
 }

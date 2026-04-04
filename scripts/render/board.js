@@ -137,7 +137,7 @@ function renderBoard() {
       for (let ly = 0; ly < TILE_DIM; ly += 1) {
         for (let lx = 0; lx < TILE_DIM; lx += 1) {
           const isWalkable = isLocalWalkable(tile, lx, ly);
-          const data = occupantMap.get(key(lx, ly)) || { players: [], zombieType: null, hearts: 0, bullets: 0 };
+          const data = occupantMap.get(key(lx, ly)) || { players: [], zombieType: null, zombieCount: 1, hearts: 0, bullets: 0 };
           const parts = [];
           const subType = getSubTileType(tile, lx, ly);
           const lineDirs = getRoadLineDirs(tile, lx, ly, getAdjacentTile);
@@ -173,8 +173,13 @@ function renderBoard() {
             });
           }
           if (data.zombieType) {
-            const zombieCls = data.zombieType === ZOMBIE_TYPE.ENHANCED ? "mark zombie zombie-enhanced" : "mark zombie";
-            parts.push(`<span class="${zombieCls}">Z</span>`);
+            if (data.zombieType === ZOMBIE_TYPE.DOG) {
+              const label = data.zombieCount > 1 ? `D×${data.zombieCount}` : "D";
+              parts.push(`<span class="mark zombie zombie-dog">${label}</span>`);
+            } else {
+              const zombieCls = data.zombieType === ZOMBIE_TYPE.ENHANCED ? "mark zombie zombie-enhanced" : "mark zombie";
+              parts.push(`<span class="${zombieCls}">Z</span>`);
+            }
           }
           if (data.hearts > 0) {
             parts.push(`<span class="mark token">H${data.hearts}</span>`);
@@ -260,7 +265,7 @@ function buildOccupantMapForTile(tileX, tileY) {
   const ensureCell = (lx, ly) => {
     const k = key(lx, ly);
     if (!occupantMap.has(k)) {
-      occupantMap.set(k, { players: [], zombieType: null, hearts: 0, bullets: 0 });
+      occupantMap.set(k, { players: [], zombieType: null, zombieCount: 1, hearts: 0, bullets: 0 });
     }
     return occupantMap.get(k);
   };
@@ -278,7 +283,9 @@ function buildOccupantMapForTile(tileX, tileY) {
     const { x: zx, y: zy } = parseKey(zk);
     if (spaceToTileCoord(zx) === tileX && spaceToTileCoord(zy) === tileY) {
       const { lx, ly } = getSpaceLocalCoords(zx, zy);
-      ensureCell(lx, ly).zombieType = zdata.type;
+      const cell = ensureCell(lx, ly);
+      cell.zombieType = zdata.type;
+      cell.zombieCount = zdata.count ?? 1;
     }
   });
 

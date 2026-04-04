@@ -300,7 +300,7 @@ function renderCombatDecision() {
 
   const WIN = pending.killRoll;
   const roll = pending.modifiedRoll;
-  const zombieLabel = pending.isEnhanced ? "Government-Enhanced Zombie" : "Zombie";
+  const zombieLabel = pending.isDog ? "Zombie Dog" : pending.isEnhanced ? "Government-Enhanced Zombie" : "Zombie";
 
   function actionWrap(btnHtml, hintText, hintClass) {
     const hint = hintText ? `<span class="combat-hint ${hintClass || ""}">${hintText}</span>` : "";
@@ -339,6 +339,14 @@ function renderCombatDecision() {
     rerollHintClass
   );
 
+  const halfHeartRerollBtn = pending.isDog && player.hearts >= 0.5
+    ? actionWrap(
+        `<button data-combat-action="HH">Spend ½ Heart (Reroll) — ${player.hearts} left</button>`,
+        "half the cost of a full heart reroll",
+        "muted"
+      )
+    : "";
+
   const fakBtn = player.items && player.items.some((c) => c.name === "First Aid Kit")
     ? actionWrap(`<button data-combat-action="FAK">Use First Aid Kit (free reroll)</button>`, "no cost", "muted")
     : "";
@@ -376,9 +384,12 @@ function renderCombatDecision() {
       }).join("")
     : "";
 
+  const loseBtnHint = pending.isDog
+    ? "lose ½ heart token — dog stays on space"
+    : "respawns at Town Square — loses half your kills";
   const loseBtn = actionWrap(
     `<button data-combat-action="L">Lose Combat</button>`,
-    "respawns at Town Square — loses half your kills",
+    loseBtnHint,
     "muted"
   );
 
@@ -391,7 +402,7 @@ function renderCombatDecision() {
     </div>
     <div class="combat-resources"><span class="bullet-icon">⬤</span> ${player.bullets}&ensp;·&ensp;❤️ ${player.hearts}${jammed ? `&ensp;·&ensp;<span class="warn">🚫 Weapons Jammed</span>` : ""}</div>
     <div class="combat-decision-actions">
-      ${bulletBtn}${rerollBtn}${fakBtn}${luckyShotBtn}${weaponBtns}${loseBtn}
+      ${bulletBtn}${rerollBtn}${halfHeartRerollBtn}${fakBtn}${luckyShotBtn}${weaponBtns}${loseBtn}
     </div>
   `;
 }

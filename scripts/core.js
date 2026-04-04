@@ -17,6 +17,7 @@ const COLLECTIONS = {
   ZOMBIE_CORPS_E_: "zombie_corps_e_",
   MALL_WALKERS: "mall_walkers",
   NOT_DEAD_YET: "not_dead_yet",
+  THE_END: "the_end",
   IOWA_CITY: "iowa_city"
 };
 
@@ -65,6 +66,17 @@ const COLLECTION_META = {
     description: "Event cards only — no map tiles. Add to any standalone or base game collection.",
     creator: "Based on the Twilight Creations Zombies!!! 3.5 - Not Dead Yet! by Todd A. Breitenstein",
     standaloneDeck: false
+  },
+  [COLLECTIONS.THE_END]: {
+    label: "The End... Director's Cut",
+    shortCode: "Z4",
+    requiresBase: null,
+    year: 2004,
+    type: "Standalone / Expansion",
+    version: "2.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 4 - The End... Director's Cut by Todd A. Breitenstein",
+    standaloneDeck: true
   },
   [COLLECTIONS.IOWA_CITY]: {
     label: "Iowa City",
@@ -264,6 +276,30 @@ function playerKey(player) {
 
 function isSpaceOccupiedByZombie(spaceKey) {
   return state.zombies.has(spaceKey);
+}
+
+// Returns true if a zombie of `type` can be placed at `spaceKey`.
+// Same-type dogs can share up to maxPerSpace; other types never share.
+function isSpaceAvailableForZombie(spaceKey, type) {
+  if (!state.zombies.has(spaceKey)) return true;
+  const existing = state.zombies.get(spaceKey);
+  if (existing.type !== type) return false;
+  const maxPerSpace = ZOMBIE_TYPES[type]?.maxPerSpace ?? 1;
+  return (existing.count ?? 1) < maxPerSpace;
+}
+
+// Decrement zombie count at spaceKey; deletes entry when count reaches 0.
+// Returns the zombie data that was there (useful for callers that track what was killed).
+function decrementZombieAt(spaceKey) {
+  const zdata = state.zombies.get(spaceKey);
+  if (!zdata) return null;
+  const count = zdata.count ?? 1;
+  if (count <= 1) {
+    state.zombies.delete(spaceKey);
+  } else {
+    state.zombies.set(spaceKey, { ...zdata, count: count - 1 });
+  }
+  return zdata;
 }
 
 function manhattanDist(x1, y1, x2, y2) {
@@ -594,7 +630,7 @@ function isBuildingSubtileOpen(tile, lx, ly) {
   return !walls || walls.length < 4;
 }
 
-function findSpawnSpaceOnTile(tx, ty) {
+function findSpawnSpaceOnTile(tx, ty, type = ZOMBIE_TYPE.REGULAR) {
   const tile = state.board.get(key(tx, ty));
   if (!tile) {
     return null;
@@ -609,7 +645,7 @@ function findSpawnSpaceOnTile(tx, ty) {
 
   for (const [lx, ly] of [...building, ...others]) {
     const sk = key(tx * TILE_DIM + lx, ty * TILE_DIM + ly);
-    if (!state.zombies.has(sk)) {
+    if (isSpaceAvailableForZombie(sk, type)) {
       return { x: tx * TILE_DIM + lx, y: ty * TILE_DIM + ly };
     }
   }
@@ -622,13 +658,20 @@ function spawnZombieOnTile(tx, ty, sourceName, type = ZOMBIE_TYPE.REGULAR) {
     return false;
   }
 
-  const spawn = findSpawnSpaceOnTile(tx, ty);
+  const spawn = findSpawnSpaceOnTile(tx, ty, type);
   if (!spawn) {
     logLine(`No open zombie space on ${sourceName || tile.name}.`);
     return false;
   }
 
-  state.zombies.set(key(spawn.x, spawn.y), { type });
+  const spawnKey = key(spawn.x, spawn.y);
+  if (state.zombies.has(spawnKey)) {
+    // Stacking (only dogs can reach this path via isSpaceAvailableForZombie)
+    const existing = state.zombies.get(spawnKey);
+    state.zombies.set(spawnKey, { ...existing, count: (existing.count ?? 1) + 1 });
+  } else {
+    state.zombies.set(spawnKey, { type, count: 1 });
+  }
   return true;
 }
 
@@ -652,8 +695,13 @@ function spawnZombiesOnRoadExits(tx, ty, connectors, type = ZOMBIE_TYPE.REGULAR)
     const sx = tx * TILE_DIM + door.x;
     const sy = ty * TILE_DIM + door.y;
     const sk = key(sx, sy);
-    if (!state.zombies.has(sk)) {
-      state.zombies.set(sk, { type });
+    if (isSpaceAvailableForZombie(sk, type)) {
+      if (state.zombies.has(sk)) {
+        const existing = state.zombies.get(sk);
+        state.zombies.set(sk, { ...existing, count: (existing.count ?? 1) + 1 });
+      } else {
+        state.zombies.set(sk, { type, count: 1 });
+      }
       placed += 1;
     }
   });

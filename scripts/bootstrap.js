@@ -29,7 +29,7 @@ function buildCollectionRows() {
       mapInput.type = "checkbox";
       mapInput.setAttribute("data-deck-coll", collKey);
       mapInput.setAttribute("data-deck-state", "enabled");
-      if (isBase && !meta.standaloneDeck) mapInput.checked = true;
+      if (collKey === COLLECTIONS.DIRECTORS_CUT) mapInput.checked = true;
       if (!isBase) mapInput.setAttribute("data-requires-base", meta.requiresBase);
       grid.appendChild(mapInput);
     } else {
@@ -41,7 +41,7 @@ function buildCollectionRows() {
       eventInput.type = "checkbox";
       eventInput.setAttribute("data-event-coll", collKey);
       eventInput.setAttribute("data-event-state", "enabled");
-      if (isBase && !meta.standaloneDeck) eventInput.checked = true;
+      if (collKey === COLLECTIONS.DIRECTORS_CUT) eventInput.checked = true;
       if (!isBase) eventInput.setAttribute("data-event-requires-base", meta.requiresBase);
       grid.appendChild(eventInput);
     } else {
