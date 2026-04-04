@@ -7,6 +7,22 @@ function populateTileTypeDropdown() {
     .join("");
 }
 
+function populateSpawnModeDropdown() {
+  const sel = document.getElementById("newTileSpawnMode");
+  if (!sel) return;
+  sel.innerHTML = Object.values(ZOMBIE_SPAWN_MODE)
+    .map((v) => `<option value="${v}"${v === ZOMBIE_SPAWN_MODE.BY_CARD ? " selected" : ""}>${v}</option>`)
+    .join("");
+}
+
+function populateZombieTypeDropdown() {
+  const sel = document.getElementById("newTileZombieType");
+  if (!sel) return;
+  sel.innerHTML = Object.values(ZOMBIE_TYPE)
+    .map((v) => `<option value="${v}"${v === ZOMBIE_TYPE.REGULAR ? " selected" : ""}>${v}</option>`)
+    .join("");
+}
+
 // Attach event listeners for subtile editor controls
 function attachNewTileSubtileEditorListeners() {
   const container = document.getElementById("newTileSubtileEditor");
@@ -175,7 +191,7 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
 function extractTileInputValues() {
   const name = (document.getElementById("newTileName")?.value || "New Tile").trim();
   const type = (document.getElementById("newTileType")?.value || "named").trim();
-  const zombieSpawnMode = (document.getElementById("newTileSpawnMode")?.value || "by_card").trim();
+  const zombieSpawnMode = (document.getElementById("newTileSpawnMode")?.value || ZOMBIE_SPAWN_MODE.BY_CARD).trim();
   const zombieCount = Number(document.getElementById("newTileZombieCount")?.value || 0);
   const zombieType = (document.getElementById("newTileZombieType")?.value || ZOMBIE_TYPE.REGULAR);
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
@@ -456,6 +472,8 @@ refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 state.mapDeck = buildMapDeck(null);
 state.mapDeck.push(buildTownSquareTile());
 populateTileTypeDropdown();
+populateSpawnModeDropdown();
+populateZombieTypeDropdown();
 renderNewTileCollectionInputs();
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();

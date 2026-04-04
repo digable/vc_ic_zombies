@@ -713,12 +713,15 @@ function getZombieSpawnCountForPlacedTile(tile, connectors) {
     return 0;
   }
 
-  const mode = tile.zombieSpawnMode || "none";
-  if (mode === "by_card") {
+  const mode = tile.zombieSpawnMode || ZOMBIE_SPAWN_MODE.NONE;
+  if (mode === ZOMBIE_SPAWN_MODE.BY_CARD) {
     return Object.values(tile.zombies || {}).reduce((s, n) => s + n, 0);
   }
-  if (mode === "by_exits") {
+  if (mode === ZOMBIE_SPAWN_MODE.BY_EXITS) {
     return Array.isArray(connectors) ? connectors.length : 0;
+  }
+  if (mode === ZOMBIE_SPAWN_MODE.D6_ROLL) {
+    return rollD6();
   }
   return 0;
 }

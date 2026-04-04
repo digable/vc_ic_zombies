@@ -79,6 +79,11 @@
   color: #fff;
 }
 
+.tile-woods {
+  background: linear-gradient(135deg, #2d6a2d 0%, #1a4a1a 100%);
+  color: #d4f5c0;
+}
+
 .tile-helipad {
   background: var(--helipad);
   color: #fff;
@@ -250,6 +255,22 @@
   bottom: 1px;
   right: 3px;
   opacity: 0.8;
+  pointer-events: none;
+}
+
+.micro-cell.wooded-subtile {
+  background: var(--subtile-wooded);
+  box-shadow: 0 0 0 2px var(--subtile-wooded-border) inset;
+  position: relative;
+}
+
+.micro-cell.wooded-subtile::after {
+  content: "🌲";
+  font-size: 0.75em;
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  opacity: 0.85;
   pointer-events: none;
 }
 

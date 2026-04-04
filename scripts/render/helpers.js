@@ -198,6 +198,7 @@ function getTileBackgroundStyle(type) {
     helipad:        "#2f9e44",
     town:           "linear-gradient(135deg, #f7c88f 0%, #ebb36e 100%)",
     grass:          "linear-gradient(135deg, #b6e7a7 60%, #7fd97f 100%)",
+    woods:          "linear-gradient(135deg, #2d6a2d 0%, #1a4a1a 100%)",
     "mall hallway": "#b0b8c1",
     "mall store":   "#d4b896",
     escalator:      "#7eafc9",

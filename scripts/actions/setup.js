@@ -124,7 +124,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
     const isUnlocked = state.activeStandaloneDecks.has(collKey);
     logLine(`${label} deck: ${deck.length} tile(s) — ${isUnlocked ? "ready to draw." : "locked until gateway tile is placed."}`);
   });
-  logLine("Town Square deployed. No zombies are auto-placed at setup.");
+  logLine(`${startTile.name} deployed. No zombies are auto-placed at setup.`);
   logLine(`${currentPlayer().name} goes first (most recent zombie movie watcher).`);
 
   render();
@@ -268,7 +268,7 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
     stampFloorForPlacedTile(cx, cy);
 
     const spawnCount = getZombieSpawnCountForPlacedTile(companion, rotatedConnectors);
-    if (companion.zombieSpawnMode === "by_exits") {
+    if (companion.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_EXITS) {
       const exitType = Object.keys(companion.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
       const placed = spawnZombiesOnRoadExits(cx, cy, rotatedConnectors, exitType);
       if (placed > 0) logLine(`${placed} zombie(s) placed on ${companion.name} from ${spawnCount} access point(s).`);
@@ -353,23 +353,29 @@ function placePendingTileAt(x, y) {
 
   const spawnCount = getZombieSpawnCountForPlacedTile(tile, placement.connectors);
   let placed = 0;
-  if (tile.zombieSpawnMode === "by_exits") {
+  if (tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_EXITS) {
     const exitType = Object.keys(tile.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
     placed = spawnZombiesOnRoadExits(placement.x, placement.y, placement.connectors, exitType);
+  } else if (tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.D6_ROLL) {
+    const rollType = Object.keys(tile.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
+    placed = spawnZombiesOnTile(placement.x, placement.y, spawnCount, placedName, rollType);
   } else {
     Object.entries(tile.zombies || { [ZOMBIE_TYPE.REGULAR]: spawnCount }).forEach(([type, count]) => {
       placed += spawnZombiesOnTile(placement.x, placement.y, count, placedName, type);
     });
   }
 
-  if (spawnCount > 0 && tile.zombieSpawnMode === "by_exits") {
+  if (spawnCount > 0 && tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_EXITS) {
     logLine(`${placed} zombie(s) placed on non-named tile from ${spawnCount} access point(s).`);
   }
-  if (spawnCount > 0 && tile.zombieSpawnMode === "by_card") {
+  if (spawnCount > 0 && tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_CARD) {
     logLine(`${placed} zombie(s) placed inside ${placedName} from card value.`);
   }
+  if (spawnCount > 0 && tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.D6_ROLL) {
+    logLine(`${placed} zombie(s) placed on ${placedName} (d6 roll: ${spawnCount}).`);
+  }
 
-  if (tile.zombieSpawnMode === "by_card" && ((tile.hearts || 0) > 0 || (tile.bullets || 0) > 0)) {
+  if ((tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_CARD || tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.D6_ROLL) && ((tile.hearts || 0) > 0 || (tile.bullets || 0) > 0)) {
     placeBuildingTokens(placement.x, placement.y, tile.hearts || 0, tile.bullets || 0);
     logLine(`${placedName} received item tokens (H${tile.hearts || 0}, B${tile.bullets || 0}).`);
   }

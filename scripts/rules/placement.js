@@ -54,6 +54,15 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
   if (gwConn) {
     const actualGwDir = rotateDir(gwConn, neighborTile.placedRotation || 0);
     if (actualGwDir === neighborConnDir) return true;
+    // Cross-zone also allowed at the zone-facing side (opposite of gateway connector)
+    // when the incoming deck belongs to the gateway tile's standalone collection.
+    // This lets standalone tiles (e.g. Z4) connect directly to a gateway tile (e.g. Bridge)
+    // that has no companion tiles to act as the zone bridge.
+    const zoneFacingDir = rotateDir(DIRS[gwConn].opposite, neighborTile.placedRotation || 0);
+    if (zoneFacingDir === neighborConnDir) {
+      const neighborCols = Object.keys(resolveCollectionCounts(neighborTile));
+      if (neighborCols.includes(tileDeck)) return true;
+    }
   }
 
   // Cross-zone also allowed when the incoming tile's gateway faces this neighbor

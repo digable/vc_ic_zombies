@@ -112,9 +112,14 @@ function buildStandaloneDeck(collKey, filters = null) {
     ([c, meta]) => meta.requiresBase === null && !meta.standaloneDeck && filters[c]?.enabled
   );
 
+  // The start tile for this collection is pre-placed and must not appear in the deck.
+  const startTile = buildStartTile(filters);
+  const startTileName = startTile?.name;
+
   const filtered = allTiles
     .filter((t) => {
       if (hasBaseCollection && t.zoneGatewayConnector) return false; // gateway goes to base deck when mixed
+      if (t.name === startTileName) return false; // start tile is pre-placed, not drawn
       const colCounts = resolveCollectionCounts(t);
       if (!colCounts[collKey]) return false;
       return rule?.enabled ?? true;

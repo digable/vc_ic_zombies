@@ -202,9 +202,7 @@ function renderCard({ tile, deckIndex }) {
       <div class="deck-tile-edit-line">
         <strong>Spawn Mode</strong>
         <select data-debug-tile-id="${tileId}" data-debug-field="zombieSpawnMode">
-          <option value="by_card" ${(tileForRender.zombieSpawnMode || "by_card") === "by_card" ? "selected" : ""}>by_card</option>
-          <option value="by_exits" ${tileForRender.zombieSpawnMode === "by_exits" ? "selected" : ""}>by_exits</option>
-          <option value="none" ${tileForRender.zombieSpawnMode === "none" ? "selected" : ""}>none</option>
+          ${Object.values(ZOMBIE_SPAWN_MODE).map((m) => `<option value="${m}" ${(tileForRender.zombieSpawnMode || ZOMBIE_SPAWN_MODE.BY_CARD) === m ? "selected" : ""}>${m}</option>`).join("")}
         </select>
       </div>
       <div class="deck-tile-edit-line">

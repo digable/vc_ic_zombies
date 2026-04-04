@@ -6,6 +6,13 @@ const MAX_HEARTS        = 5;   // maximum heart tokens a player can hold
 const D6_SIDES          = 6;   // die face count (used in rollD6)
 const MAX_LOG_ENTRIES   = 120; // how many log lines to keep in memory
 
+const ZOMBIE_SPAWN_MODE = {
+  BY_CARD:  "by_card",   // spawn count from tile's zombies object
+  BY_EXITS: "by_exits",  // one zombie per road connector
+  D6_ROLL:  "d6_roll",   // roll a d6 on placement to determine count
+  NONE:     "none",
+};
+
 const ZOMBIE_TYPE = {
   REGULAR:  "regular",
   ENHANCED: "government_enhanced",
