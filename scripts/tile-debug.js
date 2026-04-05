@@ -240,8 +240,7 @@ function extractTileInputValues() {
   const connectorRules = Object.fromEntries(
     connectorDirs.map((dir) => [dir, document.getElementById(`newTileConnectorRule${dir}`)?.value || CONNECTOR_RULE.SAME])
   );
-  const hasCustomRule = connectorDirs.some((dir) => connectorRules[dir] !== CONNECTOR_RULE.SAME);
-  const connectors = hasCustomRule ? connectorRules : connectorDirs;
+  const connectors = connectorDirs.length > 0 ? connectorRules : connectorDirs;
 
   const result = {
     name, type,
