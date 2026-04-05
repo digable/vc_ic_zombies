@@ -81,7 +81,7 @@ const COLLECTION_META = {
     version: "2.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 4 - The End... Director's Cut by Todd A. Breitenstein",
-    standaloneDeck: false,
+    standaloneDeck: true,
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.IOWA_CITY]: {
