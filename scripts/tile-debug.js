@@ -247,7 +247,9 @@ function extractTileInputValues() {
     name, type,
     collection: Object.keys(collection).length > 0 ? collection : { [getBaseCollection()]: 1 },
     connectors, zombieSpawnMode,
-    zombies: zombieCount > 0 ? { [zombieType]: zombieCount } : {},
+    zombies: zombieSpawnMode === ZOMBIE_SPAWN_MODE.D6_ROLL
+      ? { [zombieType]: -1 }
+      : (zombieCount > 0 ? { [zombieType]: zombieCount } : {}),
     hearts, bullets,
   };
 
@@ -286,7 +288,21 @@ const newTileGeneratorCells = {};
 
 
 
+function syncZombieCountToSpawnMode() {
+  const modeEl = document.getElementById("newTileSpawnMode");
+  const countEl = document.getElementById("newTileZombieCount");
+  if (!modeEl || !countEl) return;
+  const isD6Roll = modeEl.value === ZOMBIE_SPAWN_MODE.D6_ROLL;
+  countEl.disabled = isD6Roll;
+  if (isD6Roll) {
+    countEl.value = "-1";
+  } else if (Number(countEl.value) < 0) {
+    countEl.value = "0";
+  }
+}
+
 function refreshNewTilePreview() {
+  syncZombieCountToSpawnMode();
   const outputEl = document.getElementById("newTileCodeOutput");
   const statusEl = document.getElementById("newTileCodeStatus");
   const previewEl = document.getElementById("newTileLivePreview");

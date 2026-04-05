@@ -76,6 +76,8 @@ const SUBTILE_TYPE = {
   ESCALATOR:    "escalator",
   WATER:        "water",
   WOODED:       "wooded",
+  ALTAR:        "altar",
+  CAVE:         "cave",
 };
 
 // Subtile type groupings used for event card and combat logic

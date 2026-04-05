@@ -14,6 +14,9 @@ function formatTileCode(obj) {
   const connectorRuleReverse = Object.fromEntries(
     Object.entries(CONNECTOR_RULE).map(([k, v]) => [v, `CONNECTOR_RULE.${k}`])
   );
+  const zombieSpawnModeReverse = Object.fromEntries(
+    Object.entries(ZOMBIE_SPAWN_MODE).map(([k, v]) => [v, `ZOMBIE_SPAWN_MODE.${k}`])
+  );
 
   function fmtKey(k) {
     return identRe.test(k) ? k : JSON.stringify(k);
@@ -26,7 +29,10 @@ function formatTileCode(obj) {
   // fieldName is the parent property name, used to pick the right key formatter
   function fmt(val, depth, fieldName) {
     if (val === null) return "null";
-    if (typeof val === "string") return JSON.stringify(val);
+    if (typeof val === "string") {
+      if (fieldName === "zombieSpawnMode" && zombieSpawnModeReverse[val]) return zombieSpawnModeReverse[val];
+      return JSON.stringify(val);
+    }
     if (typeof val !== "object") return String(val);
     if (Array.isArray(val)) {
       return "[" + val.map((v) => fmt(v, depth + 1)).join(", ") + "]";

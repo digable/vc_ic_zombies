@@ -168,7 +168,8 @@ function renderCard({ tile, deckIndex }) {
     subtileSection = `<button type="button" class="deck-expand-btn" data-debug-expand-tile="${tileId}">Edit Subtiles ▼</button>`;
   }
 
-  const zombieTotal = Object.values(tileForRender.zombies || {}).reduce((s, n) => s + n, 0);
+  const isD6Roll = (tileForRender.zombieSpawnMode || ZOMBIE_SPAWN_MODE.BY_CARD) === ZOMBIE_SPAWN_MODE.D6_ROLL;
+  const zombieTotal = isD6Roll ? -1 : Object.values(tileForRender.zombies || {}).reduce((s, n) => s + n, 0);
   const currentZombieType = Object.keys(tileForRender.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
   const sc = getCollectionShortCode(tileForRender.collection);
   const scBadge = sc ? ` <span class="coll-short-code">${sc}</span>` : "";
@@ -206,7 +207,7 @@ function renderCard({ tile, deckIndex }) {
       </div>
       <div class="deck-tile-edit-line">
         <strong>Zombies</strong>
-        <input type="number" min="0" value="${zombieTotal}" data-debug-tile-id="${tileId}" data-debug-field="zombieCount" data-debug-dir="${currentZombieType}" class="deck-tile-count-input" />
+        <input type="number" min="-1" value="${zombieTotal}" data-debug-tile-id="${tileId}" data-debug-field="zombieCount" data-debug-dir="${currentZombieType}" class="deck-tile-count-input"${isD6Roll ? " disabled" : ""} />
         <select data-debug-tile-id="${tileId}" data-debug-field="zombieType">
           ${Object.keys(ZOMBIE_TYPES).map((zt) => `<option value="${zt}" ${currentZombieType === zt ? "selected" : ""}>${zt}</option>`).join("")}
         </select>

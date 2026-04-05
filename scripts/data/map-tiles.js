@@ -64,7 +64,7 @@ const roadTiles = [
     type: "road",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "S"],
-    zombieSpawnMode: "by_exits",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -84,7 +84,7 @@ const roadTiles = [
     type: "road",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "E"],
-    zombieSpawnMode: "by_exits",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -104,7 +104,7 @@ const roadTiles = [
     type: "road",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 4, [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "E", "W"],
-    zombieSpawnMode: "by_exits",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -123,7 +123,7 @@ const roadTiles = [
     type: "road",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_exits",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -142,7 +142,7 @@ const roadTiles = [
     type: "road",
     collection: { [COLLECTIONS.MALL_WALKERS]: 3 },
     connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_exits",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
     subTilesTemplate: {
       "0,0": { walkable: false },
@@ -162,7 +162,7 @@ const roadTiles = [
     type: "road",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: ["N", "S", "E", "W"],
-    zombieSpawnMode: "by_exits",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
     subTilesTemplate: {
       "0,0": { walkable: true, type: "parking", walls: ["N", "W"] },
@@ -189,7 +189,7 @@ const namedTiles = [
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     isStartTile: true,
     connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     hearts: 0,
     bullets: 0,
     subTilesTemplate: {
@@ -209,7 +209,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
     hearts: 0,
     bullets: 2,
@@ -230,7 +230,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 2,
@@ -251,7 +251,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 2,
     bullets: 4,
@@ -272,7 +272,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 4,
     bullets: 0,
@@ -293,7 +293,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 3,
     bullets: 0,
@@ -314,7 +314,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 4,
     bullets: 2,
@@ -335,7 +335,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 1,
@@ -356,7 +356,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 1,
@@ -377,7 +377,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 1,
@@ -398,7 +398,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 2,
     bullets: 4,
@@ -419,7 +419,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 2,
     bullets: 3,
@@ -440,7 +440,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 2,
@@ -464,7 +464,7 @@ const namedTiles = [
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     isStartTile: true,
     connectors: { N: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 0,
@@ -494,7 +494,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.ENHANCED]: 6 },
     hearts: 0,
     bullets: 0,
@@ -515,7 +515,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 2,
     bullets: 0,
@@ -536,7 +536,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 1,
@@ -557,7 +557,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 0,
     bullets: 6,
@@ -578,7 +578,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 1,
     bullets: 1,
@@ -604,7 +604,7 @@ const namedTiles = [
     },
     isStartTile: true,
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3, },
     hearts: 0,
     bullets: 0,
@@ -630,7 +630,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 1,
     },
@@ -655,7 +655,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 1,
     },
@@ -680,7 +680,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 5,
     },
@@ -705,7 +705,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
     },
@@ -733,7 +733,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {},
     hearts: 0,
     bullets: 0,
@@ -756,7 +756,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 4,
     },
@@ -781,7 +781,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 7,
     },
@@ -806,7 +806,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
     },
@@ -831,7 +831,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 2,
     },
@@ -856,7 +856,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
     },
@@ -881,7 +881,7 @@ const namedTiles = [
       [COLLECTIONS.MALL_WALKERS]: 1,
     },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
     },
@@ -909,7 +909,7 @@ const namedTiles = [
     collection: { [COLLECTIONS.THE_END]: 1 },
     isStartTile: true,
     connectors: { N: CONNECTOR_RULE.ANY, S: CONNECTOR_RULE.DISABLE_ON_SOLO },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     hearts: 0,
     bullets: 0,
     subTilesTemplate: {
@@ -924,7 +924,724 @@ const namedTiles = [
       "2,2": { walkable: true, type: "grass", walls: ["N"] }
     }
   },
-
+  {
+    name: "Cabin",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 9,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["S"] },
+      "1,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Altar",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 3,
+    },
+    hearts: 2,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "altar" },
+      "1,0": { walkable: true, type: "altar" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "altar" },
+      "1,1": { walkable: true, type: "altar" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Boathouse",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.ANY,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 3,
+    },
+    hearts: 1,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,1": { walkable: true, type: "building", walls: ["N", "S"], doors: ["E"] },
+      "2,1": { walkable: true, type: "building" },
+      "0,2": { walkable: true, type: "water" },
+      "1,2": { walkable: true, type: "water" },
+      "2,2": { walkable: true, type: "water" }
+    }
+  },
+  {
+    name: "Burnt Cabin",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 4,
+    },
+    hearts: 1,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"], doors: ["S"] },
+      "1,1": { walkable: true, type: "building" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Campground",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 6,
+    },
+    hearts: 2,
+    bullets: 3,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Abandonded Cars",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 3,
+    },
+    hearts: 2,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass" },
+      "1,0": { walkable: true, type: "parking" },
+      "2,0": { walkable: true, type: "parking" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "wooded" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Shed",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 3,
+    },
+    hearts: 1,
+    bullets: 3,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["S"] },
+      "1,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "wooded" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Ranger Post",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {},
+    hearts: 3,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "E", "W"] },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "wooded" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Pet Cemetery",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 3,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Outhouse",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 3,
+    },
+    hearts: 1,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"], doors: ["W"] },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "building", walls: ["N", "E", "S"], doors: ["W"] },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Cave",
+    type: "named",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.ANY,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: 6,
+    },
+    hearts: 3,
+    bullets: 3,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "cave", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "cave", walls: ["N"] },
+      "2,0": { walkable: true, type: "cave", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "cave", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "cave", doors: ["S"] },
+      "2,1": { walkable: true, type: "cave", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 01",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 02",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "wooded" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Woods 03",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 04",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 05",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 06",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 2,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "wooded" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Woods 07",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Woods 08",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "wooded" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 09",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 10",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Woods 11",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "wooded" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "wooded" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Woods 12",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "wooded" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "wooded" },
+      "1,1": { walkable: true, type: "wooded" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
+  {
+    name: "Woods 13",
+    type: "woods",
+    collection: {
+      [COLLECTIONS.THE_END]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.D6_ROLL,
+    zombies: {
+      [ZOMBIE_TYPE.DOG]: -1,
+    },
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "wooded" },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "grass" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "wooded" },
+      "2,1": { walkable: true, type: "wooded" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "wooded" },
+      "2,2": { walkable: true, type: "wooded" }
+    }
+  },
   // --- Iowa City (custom expansion) ----------------------------------------
   {
     name: "Ped Mall",
@@ -932,7 +1649,7 @@ const namedTiles = [
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     isStartTile: true,
     connectors: { N: CONNECTOR_RULE.DISABLE_ON_SOLO, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 0,
     bullets: 0,
@@ -953,7 +1670,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 4 },
     hearts: 2,
     bullets: 2,
@@ -974,7 +1691,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 3,
     bullets: 0,
@@ -995,7 +1712,7 @@ const namedTiles = [
     type: "town",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
     hearts: 0,
     bullets: 1,
@@ -1016,7 +1733,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S", "W"],
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
     hearts: 1,
     bullets: 3,
@@ -1037,7 +1754,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 10 },
     hearts: 3,
     bullets: 4,
@@ -1058,7 +1775,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E"],
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 4 },
     hearts: 2,
     bullets: 1,
@@ -1079,7 +1796,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 1,
     bullets: 2,
@@ -1100,7 +1817,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 2,
     bullets: 0,
@@ -1121,7 +1838,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 1,
@@ -1142,7 +1859,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E"],
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
     hearts: 0,
     bullets: 1,
@@ -1163,7 +1880,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
     hearts: 1,
     bullets: 0,
@@ -1185,7 +1902,7 @@ const namedTiles = [
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.ONLY },
     connectorOnlyTarget: { S: TILE_NAME.HELIPAD },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
     hearts: 6,
     bullets: 0,
@@ -1206,7 +1923,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 4 },
     hearts: 2,
     bullets: 1,
@@ -1227,7 +1944,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: ["N", "E", "S"],
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 5 },
     hearts: 4,
     bullets: 1,
@@ -1254,7 +1971,7 @@ const specialTiles = [
     type: "helipad",
     collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
-    zombieSpawnMode: "by_card",
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
     hearts: 0,
     bullets: 0,

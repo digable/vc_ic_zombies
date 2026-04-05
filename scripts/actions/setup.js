@@ -329,6 +329,16 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
       const exitType = Object.keys(companion.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
       const placed = spawnZombiesOnRoadExits(cx, cy, rotatedConnectors, exitType);
       if (placed > 0) logLine(`${placed} zombie(s) placed on ${companion.name} from ${spawnCount} access point(s).`);
+    } else if (companion.zombieSpawnMode === ZOMBIE_SPAWN_MODE.D6_ROLL) {
+      const rollType = Object.keys(companion.zombies || {})[0] || ZOMBIE_TYPE.REGULAR;
+      const placed = spawnZombiesOnTile(cx, cy, spawnCount, companion.name, rollType);
+      if (placed > 0) logLine(`${placed} zombie(s) placed on ${companion.name} (d6 roll: ${spawnCount}).`);
+    } else if (spawnCount > 0) {
+      let placed = 0;
+      Object.entries(companion.zombies || { [ZOMBIE_TYPE.REGULAR]: spawnCount }).forEach(([type, count]) => {
+        placed += spawnZombiesOnTile(cx, cy, count, companion.name, type);
+      });
+      if (placed > 0) logLine(`${placed} zombie(s) placed on ${companion.name} from card value.`);
     }
 
     state.discardPile.push(companion);
