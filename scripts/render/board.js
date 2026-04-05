@@ -174,8 +174,10 @@ function renderBoard() {
           }
           if (data.zombieType) {
             if (data.zombieType === ZOMBIE_TYPE.DOG) {
-              const label = data.zombieCount > 1 ? `D×${data.zombieCount}` : "D";
-              parts.push(`<span class="mark zombie zombie-dog">${label}</span>`);
+              const dogCount = data.zombieCount ?? 1;
+              for (let i = 0; i < dogCount; i++) {
+                parts.push(`<span class="mark zombie zombie-dog">D</span>`);
+              }
             } else {
               const zombieCls = data.zombieType === ZOMBIE_TYPE.ENHANCED ? "mark zombie zombie-enhanced" : "mark zombie";
               parts.push(`<span class="${zombieCls}">Z</span>`);
