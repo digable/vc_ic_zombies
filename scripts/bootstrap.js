@@ -190,21 +190,19 @@ function attachListeners() {
     }
 
     const playIndex = target.getAttribute("data-play-index");
-    if (playIndex !== null) {
-      playEvent(Number(playIndex));
-      return;
-    }
+    if (playIndex !== null) { playEvent(Number(playIndex)); return; }
+
+    const stageIndex = target.getAttribute("data-stage-index");
+    if (stageIndex !== null) { stagePage(Number(stageIndex)); return; }
+
+    const usePageIndex = target.getAttribute("data-use-page-index");
+    if (usePageIndex !== null) { usePage(Number(usePageIndex)); return; }
 
     const selectIndex = target.getAttribute("data-select-index");
-    if (selectIndex !== null) {
-      toggleHandSelection(Number(selectIndex));
-      return;
-    }
+    if (selectIndex !== null) { toggleHandSelection(Number(selectIndex)); return; }
 
     const activateIndex = target.getAttribute("data-activate-item-index");
-    if (activateIndex !== null) {
-      activateItem(Number(activateIndex));
-    }
+    if (activateIndex !== null) { activateItem(Number(activateIndex)); }
   });
 
   // Board click — routes to whichever pending interaction is active.

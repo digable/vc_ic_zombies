@@ -52,6 +52,7 @@ function endTurn() {
   if (outgoing.extraTurnPending) {
     outgoing.extraTurnPending = false;
     outgoing.eventUsedThisRound = false;
+    outgoing.pageRemovedThisRound = false;
     outgoing.knockedOut = false;
     outgoing.dieRollPenalty = outgoing.nextTurnDieRollPenalty || 0;
     outgoing.nextTurnDieRollPenalty = 0;
@@ -70,6 +71,7 @@ function endTurn() {
   const player = currentPlayer();
   player.knockedOut = false;
   player.eventUsedThisRound = false;
+  player.pageRemovedThisRound = false;
   player.dieRollPenalty = player.nextTurnDieRollPenalty || 0;
   player.nextTurnDieRollPenalty = 0;
   if (player.dieRollPenalty > 0) {

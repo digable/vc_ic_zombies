@@ -1,5 +1,6 @@
 function buildEventDeck(filters = null) {
-  const all = [...playerEventCards, ...opponentEventCards, ...zombieEventCards];
+  const pageCards = (typeof pageEventCards !== "undefined") ? pageEventCards : [];
+  const all = [...playerEventCards, ...opponentEventCards, ...zombieEventCards, ...pageCards];
 
   const applyFilter = (filterSet) =>
     all
@@ -26,7 +27,8 @@ function buildEventDeck(filters = null) {
 
 // Returns { collectionKey: cardCount } using all event cards, ignoring enabled flags.
 function getEventCardCountsByCollection() {
-  const all = [...playerEventCards, ...opponentEventCards, ...zombieEventCards];
+  const pageCards = (typeof pageEventCards !== "undefined") ? pageEventCards : [];
+  const all = [...playerEventCards, ...opponentEventCards, ...zombieEventCards, ...pageCards];
   const counts = {};
   all.forEach((c) => {
     const colCounts = resolveCollectionCounts(c);

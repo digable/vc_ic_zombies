@@ -38,6 +38,11 @@ const INITIAL_BULLETS   = 3;   // starting bullets for a new/respawned player
 const MAX_HAND_SIZE     = 3;   // maximum event cards in hand at end of turn
 const BREAKTHROUGH_SEP  = "\u2192"; // separator used in breakthrough connection keys
 
+const CARD_TYPE = {
+  EVENT: "event",
+  PAGE:  "page"
+};
+
 // Tile-level types — used on the tile object itself (tile.type)
 const TILE_TYPE = {
   TOWN:         "town",

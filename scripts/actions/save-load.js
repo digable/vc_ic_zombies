@@ -15,6 +15,7 @@ function getAllEventCardDefs() {
   if (typeof playerEventCards   !== "undefined") all.push(...playerEventCards);
   if (typeof opponentEventCards !== "undefined") all.push(...opponentEventCards);
   if (typeof zombieEventCards   !== "undefined") all.push(...zombieEventCards);
+  if (typeof pageEventCards     !== "undefined") all.push(...pageEventCards);
   return all;
 }
 
@@ -35,7 +36,8 @@ function serializeState() {
   const serializePlayer = (p) => ({
     ...p,
     hand:  p.hand.map((c) => c.name),
-    items: p.items.map((c) => c.name)
+    items: p.items.map((c) => c.name),
+    pages: (p.pages || []).map((c) => c.name)
   });
 
   return {
@@ -99,7 +101,9 @@ function deserializeState(data) {
   state.players = data.players.map((p) => ({
     ...p,
     hand:  restoreCards(p.hand),
-    items: restoreCards(p.items)
+    items: restoreCards(p.items),
+    pages: restoreCards(p.pages || []),
+    pageRemovedThisRound: p.pageRemovedThisRound ?? false
   }));
 
   state.currentPlayerIndex = data.currentPlayerIndex;

@@ -250,21 +250,44 @@ function renderHand() {
       el.classList.add("selected");
     }
 
-    const canPlay = isCardPlayable(card);
-    el.classList.add(canPlay ? "playable" : "blocked");
+    const isPage = card.cardType === CARD_TYPE.PAGE;
+    const canPlay = !isPage && isCardPlayable(card);
+    const canStage = isPage && !globallyBlocked;
+    el.classList.add((canPlay || canStage) ? "playable" : "blocked");
 
-    const playDisabled = !canPlay || globallyBlocked;
-    const showSelect = state.step === STEP.DISCARD && !state.pendingCombatDecision;
+    const showSelect = !isPage && state.step === STEP.DISCARD && !state.pendingCombatDecision;
     const cardShortCode = getCollectionShortCode(card.collection);
     el.innerHTML = `
-      <strong>${card.name}</strong>${cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : ""}<br />
+      <strong>${card.name}</strong>${cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : ""}${isPage ? ` <span class="coll-short-code">PAGE</span>` : ""}<br />
       <span class="small">${card.description}</span><br />
-      <button ${playDisabled ? "disabled" : ""} data-play-index="${index}">Play</button>
+      ${isPage
+        ? `<button ${canStage ? "" : "disabled"} data-stage-index="${index}">Stage</button>`
+        : `<button ${canPlay ? "" : "disabled"} data-play-index="${index}">Play</button>`}
       ${showSelect ? `<button data-select-index="${index}">Select</button>` : ""}
     `;
 
     refs.handList.appendChild(el);
   });
+
+  if (player.pages && player.pages.length > 0) {
+    const divider = document.createElement("div");
+    divider.className = "hand-items-divider";
+    divider.textContent = "Pages in front of you:";
+    refs.handList.appendChild(divider);
+
+    const useDisabled = state.gameOver || player.pageRemovedThisRound ||
+      Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice);
+    player.pages.forEach((card, index) => {
+      const el = document.createElement("div");
+      el.className = "hand-card hand-item";
+      el.innerHTML = `
+        <strong>${card.name}</strong> <span class="coll-short-code">PAGE</span><br />
+        <span class="small">${card.description}</span><br />
+        <button ${useDisabled ? "disabled" : ""} data-use-page-index="${index}">Use &amp; Discard</button>
+      `;
+      refs.handList.appendChild(el);
+    });
+  }
 
   if (player.items && player.items.length > 0) {
     const divider = document.createElement("div");

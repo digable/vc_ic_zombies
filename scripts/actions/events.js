@@ -54,13 +54,19 @@ function playEvent(index) {
     return;
   }
   if (player.eventUsedThisRound) {
-    logLine("Only one event card may be played from the start of your turn to the start of your next turn.");
+    logLine("Only one event or page card may be played per turn.");
     render();
     return;
   }
 
   const card = player.hand[index];
   if (!card) {
+    return;
+  }
+
+  if (card.cardType === CARD_TYPE.PAGE) {
+    logLine(`${card.name} is a page card — use "Stage" to put it in front of you.`);
+    render();
     return;
   }
 
@@ -153,6 +159,43 @@ function playEvent(index) {
     resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
   }
 
+  checkWin(player);
+  render();
+}
+
+function stagePage(index) {
+  if (state.gameOver) return;
+  const player = currentPlayer();
+  if (state.players[state.currentPlayerIndex] !== player) return;
+  if (player.cannotPlayCardTurns > 0) {
+    logLine(`${player.name} cannot play cards this turn.`); render(); return;
+  }
+  if (player.eventUsedThisRound) {
+    logLine("Only one event or page card may be played per turn."); render(); return;
+  }
+  const card = player.hand[index];
+  if (!card || card.cardType !== CARD_TYPE.PAGE) return;
+  player.hand.splice(index, 1);
+  player.pages.push(card);
+  player.eventUsedThisRound = true;
+  logLine(`${player.name} staged page card: ${card.name}.`);
+  render();
+}
+
+function usePage(index) {
+  if (state.gameOver) return;
+  const player = currentPlayer();
+  if (state.players[state.currentPlayerIndex] !== player) return;
+  if (player.pageRemovedThisRound) {
+    logLine(`${player.name} can only remove one page card per round.`); render(); return;
+  }
+  const card = player.pages[index];
+  if (!card) return;
+  player.pages.splice(index, 1);
+  player.pageRemovedThisRound = true;
+  card.apply(player, buildEventDeckHelpers());
+  state.eventDiscardPile.push(card);
+  logLine(`${player.name} used page card: ${card.name}.`);
   checkWin(player);
   render();
 }
