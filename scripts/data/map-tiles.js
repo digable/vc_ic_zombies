@@ -993,7 +993,6 @@ const namedTiles = [
     connectors: {
       N: CONNECTOR_RULE.SAME,
       E: CONNECTOR_RULE.SAME,
-      S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.SAME
     },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
@@ -1093,7 +1092,7 @@ const namedTiles = [
     hearts: 2,
     bullets: 1,
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "grass" },
+      "0,0": { walkable: true, type: "parking" },
       "1,0": { walkable: true, type: "parking" },
       "2,0": { walkable: true, type: "parking" },
       "0,1": { walkable: true, type: "wooded" },
@@ -1143,8 +1142,7 @@ const namedTiles = [
     connectors: {
       N: CONNECTOR_RULE.SAME,
       E: CONNECTOR_RULE.SAME,
-      S: CONNECTOR_RULE.SAME,
-      W: CONNECTOR_RULE.SAME
+      S: CONNECTOR_RULE.SAME
     },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {},
@@ -1200,7 +1198,6 @@ const namedTiles = [
     },
     connectors: {
       N: CONNECTOR_RULE.SAME,
-      E: CONNECTOR_RULE.SAME,
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.SAME
     },
@@ -1229,7 +1226,6 @@ const namedTiles = [
       [COLLECTIONS.THE_END]: 2,
     },
     connectors: {
-      N: CONNECTOR_RULE.ANY,
       E: CONNECTOR_RULE.SAME,
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.SAME
