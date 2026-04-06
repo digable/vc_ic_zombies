@@ -333,15 +333,18 @@ function renderCombatDecision() {
     : player.hearts === 1 ? "last heart ⚠"
     : `${heartsAfterReroll} heart${heartsAfterReroll !== 1 ? "s" : ""} left`;
   const rerollHintClass = player.hearts === 1 ? "warn" : "muted";
-  const rerollBtn = actionWrap(
-    `<button data-combat-action="H" ${player.hearts > 0 ? "" : "disabled"}>Spend 1 Life Token (Reroll)</button>`,
-    rerollHint,
-    rerollHintClass
-  );
-
-  const halfHeartRerollBtn = pending.isDog && player.hearts >= 0.5
+  const rerollBtn = !pending.isDog
     ? actionWrap(
-        `<button data-combat-action="HH">Spend ½ Heart (Reroll) — ${player.hearts} left</button>`,
+        `<button data-combat-action="H" ${player.hearts > 0 ? "" : "disabled"}>Spend 1 Life Token (Reroll)</button>`,
+        rerollHint,
+        rerollHintClass
+      )
+    : "";
+
+  const halfHeartsLeft = player.hearts * 2;
+  const halfHeartRerollBtn = pending.isDog
+    ? actionWrap(
+        `<button data-combat-action="HH" ${player.hearts >= 0.5 ? "" : "disabled"}>Spend ½ Heart (Reroll) — ${halfHeartsLeft} half-heart${halfHeartsLeft !== 1 ? "s" : ""} left</button>`,
         "half the cost of a full heart reroll",
         "muted"
       )
@@ -661,7 +664,7 @@ function renderKnockoutBanner() {
     <span class="knockout-banner-icon">💀</span>
     <span class="knockout-banner-body">
       <strong>${ko.playerName} was knocked out</strong>
-      <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at Town Square with ❤️ 3 &ensp; <span class="bullet-icon">⬤</span> 3</span>
+      <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at ${ko.respawnName ?? "Town Square"} with ❤️ 3 &ensp; <span class="bullet-icon">⬤</span> 3</span>
     </span>
     <button class="knockout-banner-dismiss" onclick="state.knockoutBanner=null;render()">✕</button>
   `;

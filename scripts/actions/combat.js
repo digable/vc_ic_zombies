@@ -27,11 +27,13 @@ function handleKnockout(player, options = {}) {
       logLine(`${player.name}'s Meat Cleaver was lost on knockout.`);
     }
   }
+  const respawnTile = getTileAtSpace(player.x, player.y);
+  const respawnName = respawnTile ? getTileDisplayName(respawnTile) : `(${player.x}, ${player.y})`;
   if (endStep) {
     state.step = STEP.END;
   }
-  logLine(`${player.name} was knocked out, lost ${lostKills} kill(s), and respawned at Town Square.`, "knockout");
-  state.knockoutBanner = { playerName: player.name, lostKills };
+  logLine(`${player.name} was knocked out, lost ${lostKills} kill(s), and respawned at ${respawnName}.`, "knockout");
+  state.knockoutBanner = { playerName: player.name, lostKills, respawnName };
   setTimeout(() => {
     state.knockoutBanner = null;
     render();
