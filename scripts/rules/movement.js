@@ -38,43 +38,21 @@ function canStep(fromX, fromY, toX, toY) {
     return true;
   }
 
-  const canCrossTileEdge = (exitDir, expected) => {
-    if (
-      fromLocalX !== expected.fromX ||
-      fromLocalY !== expected.fromY ||
-      toLocalX !== expected.toX ||
-      toLocalY !== expected.toY
-    ) {
-      return false;
-    }
-
+  const canCrossTileEdge = (exitDir) => {
     const enterDir = DIRS[exitDir].opposite;
-    if (!hasRoad(fromTile, exitDir) || !hasRoad(toTile, enterDir)) {
-      return false;
-    }
-
-    if (!canExitSubTile(fromTile, fromLocalX, fromLocalY, exitDir)) {
-      return false;
-    }
-
+    // Validate the subtile is on the correct edge and the mirror subtile lines up
+    if (exitDir === "N" && (fromLocalY !== 0 || toLocalY !== 2 || fromLocalX !== toLocalX)) return false;
+    if (exitDir === "S" && (fromLocalY !== 2 || toLocalY !== 0 || fromLocalX !== toLocalX)) return false;
+    if (exitDir === "E" && (fromLocalX !== 2 || toLocalX !== 0 || fromLocalY !== toLocalY)) return false;
+    if (exitDir === "W" && (fromLocalX !== 0 || toLocalX !== 2 || fromLocalY !== toLocalY)) return false;
+    if (!canExitSubTile(fromTile, fromLocalX, fromLocalY, exitDir)) return false;
     return canEnterSubTile(toTile, toLocalX, toLocalY, enterDir);
   };
 
-  if (toTileX === fromTileX + 1 && toTileY === fromTileY) {
-    return canCrossTileEdge("E", { fromX: 2, fromY: 1, toX: 0, toY: 1 });
-  }
-
-  if (toTileX === fromTileX - 1 && toTileY === fromTileY) {
-    return canCrossTileEdge("W", { fromX: 0, fromY: 1, toX: 2, toY: 1 });
-  }
-
-  if (toTileY === fromTileY + 1 && toTileX === fromTileX) {
-    return canCrossTileEdge("S", { fromX: 1, fromY: 2, toX: 1, toY: 0 });
-  }
-
-  if (toTileY === fromTileY - 1 && toTileX === fromTileX) {
-    return canCrossTileEdge("N", { fromX: 1, fromY: 0, toX: 1, toY: 2 });
-  }
+  if (toTileX === fromTileX + 1 && toTileY === fromTileY) return canCrossTileEdge("E");
+  if (toTileX === fromTileX - 1 && toTileY === fromTileY) return canCrossTileEdge("W");
+  if (toTileY === fromTileY + 1 && toTileX === fromTileX) return canCrossTileEdge("S");
+  if (toTileY === fromTileY - 1 && toTileX === fromTileX) return canCrossTileEdge("N");
 
   // Breakthrough: permanent cross-tile path created by the card
   if (state.breakthroughConnections?.has(`${key(fromX, fromY)}\u2192${moveDir}`)) {

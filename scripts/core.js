@@ -543,7 +543,7 @@ function buildInitialSubTileGrid(tile, customSubTiles) {
 }
 
 // Pass 2: fill in connectivity (enterFrom/exitTo) and apply any custom overrides.
-function applySubTileConnectivity(subTiles, tile, customSubTiles) {
+function applySubTileConnectivity(subTiles, customSubTiles) {
   for (let ly = 0; ly < TILE_DIM; ly += 1) {
     for (let lx = 0; lx < TILE_DIM; lx += 1) {
       const cell = subTiles[key(lx, ly)];
@@ -552,19 +552,16 @@ function applySubTileConnectivity(subTiles, tile, customSubTiles) {
       Object.entries(DIRS).forEach(([dir, d]) => {
         const srcX = lx + d.x;
         const srcY = ly + d.y;
-        if (srcX < 0 || srcX > TILE_DIM - 1 || srcY < 0 || srcY > TILE_DIM - 1) return;
+        if (srcX < 0 || srcX > TILE_DIM - 1 || srcY < 0 || srcY > TILE_DIM - 1) {
+          // Edge-facing direction: default open so any walkable edge subtile can
+          // cross to an adjacent tile. Custom walls (applied below) will close it.
+          cell.enterFrom[dir] = true;
+          cell.exitTo[dir] = true;
+          return;
+        }
         const neighborWalkable = Boolean(subTiles[key(srcX, srcY)]?.walkable);
         cell.enterFrom[dir] = neighborWalkable;
         cell.exitTo[dir] = neighborWalkable;
-      });
-
-      // Edge exit cells can be entered from outside the tile if a connector exists.
-      const connDirs = getConnectorDirs(tile.connectors);
-      Object.entries(DOOR_LOCAL).forEach(([dir, doorCoord]) => {
-        if (lx === doorCoord.x && ly === doorCoord.y && connDirs.includes(dir)) {
-          cell.enterFrom[dir] = true;
-          cell.exitTo[dir] = true;
-        }
       });
 
       const custom = customSubTiles?.[key(lx, ly)];
@@ -602,7 +599,7 @@ function applySubTileConnectivity(subTiles, tile, customSubTiles) {
 function buildSubTilesForTile(tile) {
   const customSubTiles = getTileSubTileMap(tile);
   const subTiles = buildInitialSubTileGrid(tile, customSubTiles);
-  applySubTileConnectivity(subTiles, tile, customSubTiles);
+  applySubTileConnectivity(subTiles, customSubTiles);
   return subTiles;
 }
 
