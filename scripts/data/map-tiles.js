@@ -913,15 +913,15 @@ const namedTiles = [
     hearts: 0,
     bullets: 0,
     subTilesTemplate: {
-      "0,0": { walkable: true, type: "grass", walls: ["S"] },
-      "1,0": { walkable: true, type: "road" },
-      "2,0": { walkable: true, type: "grass", walls: ["S"] },
-      "0,1": { walkable: true, type: "water", walls: ["N", "E", "S"] },
-      "1,1": { walkable: true, type: "road", walls: ["E", "W"] },
-      "2,1": { walkable: true, type: "water", walls: ["N", "S", "W"] },
-      "0,2": { walkable: true, type: "grass", walls: ["N"] },
-      "1,2": { walkable: true, type: "road" },
-      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    "0,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+    "1,0": { walkable: true, type: "road" },
+    "2,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+    "0,1": { walkable: true, type: "water", walls: ["N", "E", "S", "W"] },
+    "1,1": { walkable: true, type: "road" },
+    "2,1": { walkable: true, type: "water", walls: ["N", "E", "S", "W"] },
+    "0,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+    "1,2": { walkable: true, type: "road" },
+    "2,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] }
     }
   },
   {
@@ -992,7 +992,7 @@ const namedTiles = [
     },
     connectors: {
       N: CONNECTOR_RULE.SAME,
-      E: CONNECTOR_RULE.ANY,
+      E: CONNECTOR_RULE.SAME,
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.SAME
     },
@@ -1009,9 +1009,9 @@ const namedTiles = [
       "0,1": { walkable: true, type: "building", walls: ["N", "S", "W"] },
       "1,1": { walkable: true, type: "building", walls: ["N", "S"], doors: ["E"] },
       "2,1": { walkable: true, type: "building" },
-      "0,2": { walkable: true, type: "water" },
-      "1,2": { walkable: true, type: "water" },
-      "2,2": { walkable: true, type: "water" }
+      "0,2": { walkable: true, type: "water", walls: ["N", "E", "S", "W"] },
+      "1,2": { walkable: true, type: "water", walls: ["N", "E", "S", "W"] },
+      "2,2": { walkable: true, type: "water", walls: ["N", "E", "S", "W"] }
     }
   },
   {
