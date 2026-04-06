@@ -491,10 +491,11 @@ function movePlayer(dir) {
     }
 
     logLine(`${player.name} encountered a zombie and must fight immediately.`);
+    state.combatMoveResume = state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES;
     resolveCombatForPlayer(player, {
       advanceStepWhenClear: false,
       endStepOnKnockout: true,
-      resumeStepAfterPending: state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES
+      resumeStepAfterPending: state.combatMoveResume
     });
     if (state.step === STEP.END) {
       render();

@@ -199,7 +199,7 @@ function renderBoard() {
             zombieClass = " zombie-kill-flash";
           }
           const pzm = state.pendingZombieMovement;
-          if (pzm && data.zombieType && !pzm.movedKeys.has(spaceKey) && !pzm.stuckKeys.has(spaceKey)) {
+          if (pzm && data.zombieType && isAvailableForMove(pzm, spaceKey)) {
             zombieClass = " zombie-selectable";
           } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
             zombieClass = " zombie-target";

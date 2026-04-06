@@ -187,6 +187,8 @@ const state = {
   recentKillKey: null,
   recentKillByPlayerId: null,
   zombieMovedSpaces: new Set(), // space keys where zombies arrived this turn — cleared at turn end
+  combatMoveResume: null,        // STEP to return to after clearing all zombies mid-movement (MOVE or MOVE_ZOMBIES); null at start of turn
+  combatZombiePhaseResume: null, // STEP to return to after clearing zombies during zombie phase (MOVE_ZOMBIES or DISCARD); null otherwise
   zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
   logs: [],
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
@@ -238,6 +240,8 @@ function resetStepProgress(nextStep = STEP.DRAW_TILE) {
   state.currentZombieRoll = null;
   state.selectedHandIndex = null;
   state.pendingCombatDecision = null;
+  state.combatMoveResume = null;
+  state.combatZombiePhaseResume = null;
   state.movementBonus = 0;
   state.moveFloorThisTurn = 0;
 }

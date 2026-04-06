@@ -215,9 +215,16 @@ function attachListeners() {
     if (!(target instanceof HTMLElement)) return;
 
     if (state.pendingZombieMovement) {
-      const mc = target.closest(".micro-cell");
-      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
-        manualMoveZombie(key(Number(mc.dataset.sx), Number(mc.dataset.sy)));
+      const blockedByOther = !!(state.pendingCombatDecision || state.pendingEventChoice ||
+        state.pendingZombieReplace || state.pendingZombieDiceChallenge || state.pendingZombiePlace ||
+        state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget ||
+        state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood ||
+        state.pendingBreakthrough || state.pendingSpaceSelect || state.pendingDuctChoice);
+      if (!blockedByOther) {
+        const mc = target.closest(".micro-cell");
+        if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+          manualMoveZombie(key(Number(mc.dataset.sx), Number(mc.dataset.sy)));
+        }
       }
       return;
     }

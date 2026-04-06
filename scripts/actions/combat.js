@@ -46,6 +46,8 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   }
 
   if (resumeStepAfterPending && !state.zombies.has(playerSpaceKey)) {
+    state.combatMoveResume = null;
+    state.combatZombiePhaseResume = null;
     checkJeepDoorOffer(player);
 
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
@@ -75,6 +77,8 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   }
 
   if (state.step === STEP.COMBAT && !state.zombies.has(playerSpaceKey)) {
+    state.combatMoveResume = null;
+    state.combatZombiePhaseResume = null;
     state.step = STEP.DRAW_EVENTS;
   }
 }
@@ -295,12 +299,16 @@ function resolvePendingCombatDecision(actionCode) {
       player.hearts -= 0.5;
       logLine(`${player.name} was bitten by a zombie dog — lost ½ heart (${player.hearts} heart(s) remaining).`);
       if (player.hearts <= 0) {
+        state.combatMoveResume = null;
+        state.combatZombiePhaseResume = null;
         handleKnockout(player, { endStep: options.endStepOnKnockout });
         if (!options.endStepOnKnockout && options.resumeStepAfterPending && state.step !== STEP.END) {
           state.step = options.resumeStepAfterPending;
         }
       } else {
         // Dog stays; force-advance past this combat encounter
+        state.combatMoveResume = null;
+        state.combatZombiePhaseResume = null;
         if (options.resumeStepAfterPending) {
           state.step = options.resumeStepAfterPending;
         } else if (state.step === STEP.COMBAT) {
@@ -311,6 +319,8 @@ function resolvePendingCombatDecision(actionCode) {
       state.lastCombatResult = `Knocked Out (${pending.modifiedRoll})`;
       logLine(`${player.name} lost the fight and was knocked out.`);
       state.pendingCombatDecision = null;
+      state.combatMoveResume = null;
+      state.combatZombiePhaseResume = null;
       handleKnockout(player, { endStep: options.endStepOnKnockout });
       if (!options.endStepOnKnockout && options.resumeStepAfterPending && state.step !== STEP.END) {
         state.step = options.resumeStepAfterPending;
@@ -425,10 +435,13 @@ function resolveCombatOnCurrentTile() {
   }
 
   const player = currentPlayer();
+  const resumeStep = state.combatMoveResume
+    ?? state.combatZombiePhaseResume
+    ?? (state.step === STEP.MOVE ? (state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES) : null);
   resolveCombatForPlayer(player, {
     advanceStepWhenClear: true,
     endStepOnKnockout: true,
-    resumeStepAfterPending: state.step === STEP.MOVE ? (state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES) : null
+    resumeStepAfterPending: resumeStep
   });
   render();
 }

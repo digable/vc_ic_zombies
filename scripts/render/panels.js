@@ -537,7 +537,7 @@ function renderZombieReplacePanel() {
   const pzm = state.pendingZombieMovement;
   if (pzm) {
     const animating = Boolean(state.zombieAnimationTimer);
-    const available = [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+    const available = [...state.zombies.keys()].filter((zk) => isAvailableForMove(pzm, zk));
     panel.classList.remove("hidden");
     panel.innerHTML = `
       <div class="combat-decision-title">Zombie Movement — ${pzm.remaining} move(s) remaining</div>

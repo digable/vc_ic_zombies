@@ -1,13 +1,28 @@
 // ---------------------------------------------------------------------------
 // Zombie movement phase
 // ---------------------------------------------------------------------------
-// pendingZombieMovement = { remaining, movedKeys: Set, stuckKeys: Set }
-//   remaining  — moves left this phase
-//   movedKeys  — zombies that have already moved (won't move again this phase)
-//   stuckKeys  — zombies with no valid moves THIS pass; cleared after any zombie
-//                successfully moves so previously stuck zombies are re-evaluated
-//                (e.g. a zombie blocking a path moves away, un-sticking a neighbour)
+// pendingZombieMovement = { remaining, movedFromCounts: Map<key,n>, stuckKeys: Set, snapshot: Map<key,count> }
+//   remaining       — move slots left this phase (capped by total individual zombie count)
+//   movedFromCounts — how many zombies have been moved FROM each space key this turn;
+//                     a space is available if snapshot[key] - movedFromCounts[key] > 0
+//   snapshot        — zombie counts per space at the START of this movement phase;
+//                     prevents newly-arrived zombies from being moved again this turn
+//   stuckKeys       — spaces where the zombie couldn't move THIS pass; cleared after any
+//                     zombie successfully moves so previously stuck zombies are re-evaluated
 // ---------------------------------------------------------------------------
+
+function totalZombieCount() {
+  let n = 0;
+  state.zombies.forEach((zdata) => { n += zdata.count ?? 1; });
+  return n;
+}
+
+function isAvailableForMove(pzm, zk) {
+  if (pzm.stuckKeys.has(zk)) return false;
+  const snap = pzm.snapshot.get(zk) ?? 0;
+  const moved = pzm.movedFromCounts.get(zk) ?? 0;
+  return snap - moved > 0;
+}
 
 function chooseZombieCombatTarget(playersOnSpace, options = {}) {
   const { specifiedPlayerId = null } = options;
@@ -149,18 +164,24 @@ function startZombieMovement() {
 
   const roll = rollD6();
   state.currentZombieRoll = roll;
-  const moveLimit = Math.min(roll, state.zombies.size);
+  const total = totalZombieCount();
+  const moveLimit = Math.min(roll, total);
+
+  const snapshot = new Map();
+  state.zombies.forEach((zdata, zk) => snapshot.set(zk, zdata.count ?? 1));
 
   logLine(`${currentPlayer().name} rolled ${roll} for zombie movement — ${moveLimit} zombie(s) to move. Select zombies manually or auto-move.`);
-  state.pendingZombieMovement = { remaining: moveLimit, movedKeys: new Set(), stuckKeys: new Set() };
+  state.pendingZombieMovement = { remaining: moveLimit, movedFromCounts: new Map(), stuckKeys: new Set(), snapshot };
   render();
 }
 
-// Moves a zombie its full movement allowance for one turn slot, respecting
-// multi-step movement for enhanced types. Returns { finalKey, moved, combatPending }.
-// Updates pzm.movedKeys and pzm.stuckKeys. Does NOT touch pzm.remaining.
+// Moves ONE zombie (from a potentially stacked group) its full movement allowance
+// for one turn slot. Returns { finalKey, moved, combatPending }.
+// Updates pzm.movedFromCounts and pzm.stuckKeys. Does NOT touch pzm.remaining.
 function moveZombieAllSteps(startKey, pzm) {
-  const zTypeProps = ZOMBIE_TYPES[state.zombies.get(startKey)?.type] ?? ZOMBIE_TYPES[ZOMBIE_TYPE.REGULAR];
+  const zdata = state.zombies.get(startKey);
+  if (!zdata) return { finalKey: startKey, moved: false, combatPending: false };
+  const zTypeProps = ZOMBIE_TYPES[zdata.type] ?? ZOMBIE_TYPES[ZOMBIE_TYPE.REGULAR];
   const steps = zTypeProps.movement;
   let currentKey = startKey;
   let movedAtLeastOnce = false;
@@ -170,18 +191,32 @@ function moveZombieAllSteps(startKey, pzm) {
     const next = moveZombieOneStep(currentKey);
     if (next === currentKey) break;
 
-    const zdata = state.zombies.get(currentKey);
-    state.zombies.delete(currentKey);
-    state.zombies.set(next, zdata);
+    // Move exactly 1 zombie from currentKey to next (split the stack if count > 1)
+    const src = state.zombies.get(currentKey);
+    if (!src) break;
+    const srcCount = src.count ?? 1;
+    if (srcCount <= 1) {
+      state.zombies.delete(currentKey);
+    } else {
+      state.zombies.set(currentKey, { ...src, count: srcCount - 1 });
+    }
+    const dest = state.zombies.get(next);
+    if (dest) {
+      state.zombies.set(next, { ...dest, count: (dest.count ?? 1) + 1 });
+    } else {
+      state.zombies.set(next, { type: src.type, count: 1 });
+    }
     state.zombieMovedSpaces.add(next);
-    if (!movedAtLeastOnce) pzm.movedKeys.add(startKey);
-    pzm.movedKeys.add(next);
     pzm.stuckKeys.clear();
     movedAtLeastOnce = true;
     currentKey = next;
 
     combatPending = handleZombieEnteringPlayerSpace(next);
-    if (combatPending) break;
+    if (combatPending || !state.zombies.has(currentKey)) break;
+  }
+
+  if (movedAtLeastOnce) {
+    pzm.movedFromCounts.set(startKey, (pzm.movedFromCounts.get(startKey) ?? 0) + 1);
   }
 
   return { finalKey: currentKey, moved: movedAtLeastOnce, combatPending };
@@ -193,19 +228,27 @@ function finalizeZombieAutoMove(combatPending) {
   state.zombieAnimationTimer = null;
   const pzm = state.pendingZombieMovement;
   if (combatPending) {
+    const resumeAfter = (pzm && pzm.remaining > 0) ? STEP.MOVE_ZOMBIES : STEP.DISCARD;
     if (pzm && pzm.remaining <= 0) state.pendingZombieMovement = null;
     logLine(`${currentPlayer().name} must resolve combat.`);
     state.step = STEP.COMBAT;
+    state.combatZombiePhaseResume = resumeAfter;
   } else {
     state.pendingZombieMovement = null;
-    logLine(`Zombie auto-movement complete.`);
-    state.step = STEP.DISCARD;
+    if (isCombatRequiredForCurrentPlayer()) {
+      logLine(`Zombie auto-movement complete. ${currentPlayer().name} must resolve combat.`);
+      state.step = STEP.COMBAT;
+      state.combatZombiePhaseResume = STEP.DISCARD;
+    } else {
+      logLine(`Zombie auto-movement complete.`);
+      state.step = STEP.DISCARD;
+    }
   }
   render();
 }
 
 function availableZombiesForMove(pzm) {
-  return [...state.zombies.keys()].filter((zk) => !pzm.movedKeys.has(zk) && !pzm.stuckKeys.has(zk));
+  return [...state.zombies.keys()].filter((zk) => isAvailableForMove(pzm, zk));
 }
 
 // Stepped (animated) auto-move — moves one zombie per tick.
@@ -270,7 +313,7 @@ function flushZombieMovement() {
 function manualMoveZombie(zKey) {
   const pzm = state.pendingZombieMovement;
   if (!pzm || pzm.remaining <= 0) return;
-  if (!state.zombies.has(zKey) || pzm.movedKeys.has(zKey) || pzm.stuckKeys.has(zKey)) return;
+  if (!state.zombies.has(zKey) || !isAvailableForMove(pzm, zKey)) return;
 
   const { finalKey, moved, combatPending } = moveZombieAllSteps(zKey, pzm);
 
@@ -291,8 +334,10 @@ function manualMoveZombie(zKey) {
   logLine(`Zombie moved to ${finalKey}. (${pzm.remaining} move(s) remaining)`);
 
   if (combatPending) {
+    const resumeAfter = pzm.remaining > 0 ? STEP.MOVE_ZOMBIES : STEP.DISCARD;
     if (pzm.remaining <= 0) state.pendingZombieMovement = null;
     state.step = STEP.COMBAT;
+    state.combatZombiePhaseResume = resumeAfter;
     logLine(`${currentPlayer().name} must resolve combat.`);
     render();
     return;
@@ -300,8 +345,14 @@ function manualMoveZombie(zKey) {
 
   if (pzm.remaining <= 0) {
     state.pendingZombieMovement = null;
-    state.step = STEP.DISCARD;
-    logLine(`Zombie movement complete.`);
+    if (isCombatRequiredForCurrentPlayer()) {
+      logLine(`Zombie movement complete. ${currentPlayer().name} must resolve combat.`);
+      state.step = STEP.COMBAT;
+      state.combatZombiePhaseResume = STEP.DISCARD;
+    } else {
+      logLine(`Zombie movement complete.`);
+      state.step = STEP.DISCARD;
+    }
   }
   render();
 }
