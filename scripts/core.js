@@ -193,7 +193,8 @@ const state = {
   zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
   logs: [],
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
-  multiplayerSession: null      // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
+  multiplayerSession: null,     // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
+  isoView: false                // when true, board renders tiles in isometric projection
 };
 
 const refs = {

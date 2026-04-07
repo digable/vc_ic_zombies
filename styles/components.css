@@ -1046,3 +1046,17 @@
   color: #1a5276;
 }
 .hidden { display: none; }
+
+/* ── Isometric view ──────────────────────────────────────────────────── */
+
+#board.iso-view {
+  transform: rotateX(55deg) rotateZ(45deg) scale(1.1);
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+  overflow: visible;
+}
+
+.board-wrap:has(#board.iso-view) {
+  overflow: visible;
+}

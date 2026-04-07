@@ -1,6 +1,14 @@
 // render-board.js — Board rendering functions.
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
+function toggleIsoView() {
+  state.isoView = !state.isoView;
+  refs.board.classList.toggle("iso-view", state.isoView);
+  var btn = document.getElementById("isoToggleBtn");
+  if (btn) btn.textContent = "Iso View: " + (state.isoView ? "On" : "Off");
+  renderPlayerTrailSvg();
+}
+
 function renderBoard() {
   const adjBuildingSpaces = state.pendingSpaceSelect
     ? (state.pendingSpaceSelect.validSpaces ?? getSpacesAdjoiningBuilding())
@@ -50,15 +58,16 @@ function renderBoard() {
     maxY = Math.max(maxY, y);
   });
 
-  const cols = maxX - minX + 1;
-  refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(84px, 96px))`;
-  refs.board.innerHTML = "";
-
   const pendingCoords = new Set(
     state.pendingTileOptions
       .filter((o) => o.rotation === state.pendingRotation)
       .map((o) => key(o.x, o.y))
   );
+
+  refs.board.innerHTML = "";
+
+  const cols = maxX - minX + 1;
+  refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(84px, 96px))`;
 
   for (let y = minY; y <= maxY; y += 1) {
     for (let x = minX; x <= maxX; x += 1) {
