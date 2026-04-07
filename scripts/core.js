@@ -196,7 +196,10 @@ const state = {
   multiplayerSession: null,     // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
   isoView: false,               // when true, board renders tiles in isometric projection
   isoRotateX: 55,              // tilt angle in degrees (20–80)
-  isoRotateZ: 45               // spin angle in degrees
+  isoRotateZ: 45,              // spin angle in degrees
+  boardZoom: 1.0,              // zoom scale factor (0.3–3.0)
+  boardPanX: 0,               // pan offset in pixels
+  boardPanY: 0
 };
 
 const refs = {

@@ -28,6 +28,16 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Collection metadata (type, version, year, description, creator) shown as tooltip on setup checkboxes
 - Each tile and event card shows a short collection code badge (Z1, Z2, IC, MW) — on the board, in your event hand, and in the setup panel
 
+### 🎲 Isometric View
+- Toggle an isometric 3D view of the board at any time with the **Iso View** button in the map header
+- **Tilt** (20°–80°) and **Spin** sliders for fine angle control; step buttons for 5° tilt / 45° spin increments; Reset snaps back to defaults
+- **3D elevation** — building subtiles rise above the ground plane; walls fold upward from tile edges and are semi-transparent so you can see through them
+- **Vertical pawns** — players, zombies, and zombie dogs render as standing pawn figures (body + round head) that always face the camera regardless of spin/tilt angle; player IDs are shown on the body
+- **Token icons** — heart tokens show ♥ and bullet tokens show ⬡ with counts in iso mode
+- **Zoom** — mouse wheel or pinch-to-zoom (mobile) to scale the board; range 0.3×–3.0×
+- **Pan** — click-and-drag (desktop) or single-finger drag (mobile) to move the board freely in any direction
+- Switching back to flat view restores the standard grid layout with no data loss
+
 ### 🌐 Online Multiplayer
 - Create or join a game with a 4-character room code — share the link and anyone can join instantly
 - **Host controls** — only the host can start the game; other players see a waiting state until the game begins

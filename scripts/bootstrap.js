@@ -364,6 +364,95 @@ function attachListeners() {
     });
   }
 
+  // Pan: click-drag to scroll the board-wrap
+  const boardWrap = document.querySelector(".board-wrap");
+  if (boardWrap) {
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let panOriginX = 0;
+    let panOriginY = 0;
+
+    boardWrap.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      if (e.target instanceof HTMLElement && e.target.closest("button, input, select, label, a")) return;
+      isPanning = true;
+      panStartX = e.clientX;
+      panStartY = e.clientY;
+      panOriginX = state.boardPanX || 0;
+      panOriginY = state.boardPanY || 0;
+      boardWrap.classList.add("panning");
+      e.preventDefault();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isPanning) return;
+      state.boardPanX = panOriginX + (e.clientX - panStartX);
+      state.boardPanY = panOriginY + (e.clientY - panStartY);
+      applyIsoTransform();
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (!isPanning) return;
+      isPanning = false;
+      boardWrap.classList.remove("panning");
+    });
+
+    // Zoom: mouse wheel
+    boardWrap.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      state.boardZoom = Math.min(3.0, Math.max(0.3, (state.boardZoom || 1.0) + delta));
+      applyIsoTransform();
+    }, { passive: false });
+
+    // Pan + zoom: touch
+    let lastPinchDist = null;
+    let lastTouchX = null;
+    let lastTouchY = null;
+
+    boardWrap.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        lastPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        lastTouchX = null;
+        lastTouchY = null;
+      } else if (e.touches.length === 1) {
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+        lastPinchDist = null;
+      }
+    }, { passive: true });
+
+    boardWrap.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2 && lastPinchDist !== null) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        state.boardZoom = Math.min(3.0, Math.max(0.3, (state.boardZoom || 1.0) * (dist / lastPinchDist)));
+        lastPinchDist = dist;
+        applyIsoTransform();
+      } else if (e.touches.length === 1 && lastTouchX !== null) {
+        e.preventDefault();
+        state.boardPanX = (state.boardPanX || 0) + (e.touches[0].clientX - lastTouchX);
+        state.boardPanY = (state.boardPanY || 0) + (e.touches[0].clientY - lastTouchY);
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+        applyIsoTransform();
+      }
+    }, { passive: false });
+
+    boardWrap.addEventListener("touchend", () => {
+      lastPinchDist = null;
+      lastTouchX = null;
+      lastTouchY = null;
+    }, { passive: true });
+  }
+
 }
 
 

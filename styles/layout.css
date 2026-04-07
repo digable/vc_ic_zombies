@@ -162,6 +162,12 @@
 
 .board-wrap {
   overflow: auto;
+  cursor: grab;
+  user-select: none;
+}
+
+.board-wrap.panning {
+  cursor: grabbing;
 }
 
 .board-header {

@@ -1071,19 +1071,115 @@
   overflow: visible;
 }
 
-/* Subtile elevation — taller subtiles rise more toward the viewer */
-#board.iso-view .micro-cell.building-subtile  { transform: translateZ(14px); }
-#board.iso-view .micro-cell.wooded-subtile    { transform: translateZ(8px); }
-#board.iso-view .micro-cell.altar-subtile     { transform: translateZ(6px); }
-#board.iso-view .micro-cell.cave-subtile      { transform: translateZ(4px); }
-#board.iso-view .micro-cell.escalator-subtile { transform: translateZ(5px); }
+/* All subtile floors sit on the ground plane */
+#board.iso-view .micro-cell { transform: translateZ(0); }
 
-/* Figures float above the elevated subtiles */
-#board.iso-view .mark.player               { transform: translateZ(22px); }
-#board.iso-view .mark.player.active        { transform: translateZ(24px); }
-#board.iso-view .mark.zombie               { transform: translateZ(20px); }
-#board.iso-view .mark.zombie.zombie-dog    { transform: translateZ(14px); }
-#board.iso-view .mark.token                { transform: translateZ(18px); }
+/* Pawn base — body with visible ID, pivots from base centre-bottom */
+#board.iso-view .mark.player,
+#board.iso-view .mark.zombie,
+#board.iso-view .mark.zombie-dog {
+  width: 14px;
+  height: 15px;
+  padding: 0;
+  font-size: 0.5rem;
+  font-weight: 900;
+  line-height: 15px;
+  text-align: center;
+  border-radius: 2px 2px 4px 4px;
+  overflow: visible;
+  position: relative;
+  transform-origin: center bottom;
+}
+
+/* Pawn head — circle floating above body */
+#board.iso-view .mark.player::before,
+#board.iso-view .mark.zombie::before,
+#board.iso-view .mark.zombie-dog::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: inherit;
+  outline: inherit;
+}
+
+/* Full inverse of board rotation so pawns are screen-vertical and touch the floor */
+#board.iso-view .mark.player {
+  transform: translateZ(2px)
+             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
+             rotateX(calc(-1 * var(--iso-rx, 55deg)));
+}
+#board.iso-view .mark.zombie {
+  transform: translateZ(2px)
+             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
+             rotateX(calc(-1 * var(--iso-rx, 55deg)));
+}
+#board.iso-view .mark.zombie-dog {
+  transform: translateZ(2px)
+             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
+             rotateX(calc(-1 * var(--iso-rx, 55deg)));
+}
+#board.iso-view .mark.token { transform: translateZ(18px); }
+
+/* Token icons in iso mode — replace H/B text with symbol + count */
+#board.iso-view .mark.token-heart,
+#board.iso-view .mark.token-bullet {
+  font-size: 0;
+  min-width: 16px;
+  text-align: center;
+}
+
+#board.iso-view .mark.token-heart::before {
+  content: "♥" attr(data-count);
+  font-size: 0.58rem;
+  color: #f87171;
+}
+
+#board.iso-view .mark.token-bullet::before {
+  content: "⬡" attr(data-count);
+  font-size: 0.58rem;
+  color: #fde68a;
+}
+
+/* ── Vertical walls in iso mode ──────────────────────────────────────── */
+
+/* Wall spans need to participate in the 3D context */
+#board.iso-view .micro-cell .wall {
+  transform-style: preserve-3d;
+  background: rgba(20, 20, 20, 0.55);  /* semi-transparent so you can see behind */
+}
+
+/* N wall: fold upward from top edge — height matches pawn body+head (~26px) */
+#board.iso-view .micro-cell .wall-n {
+  height: 26px;
+  transform-origin: top center;
+  transform: rotateX(90deg);
+}
+
+/* S wall: fold upward from bottom edge */
+#board.iso-view .micro-cell .wall-s {
+  height: 26px;
+  transform-origin: bottom center;
+  transform: rotateX(-90deg);
+}
+
+/* W wall: fold upward from left edge */
+#board.iso-view .micro-cell .wall-w {
+  width: 26px;
+  transform-origin: center left;
+  transform: rotateY(-90deg);
+}
+
+/* E wall: fold upward from right edge */
+#board.iso-view .micro-cell .wall-e {
+  width: 26px;
+  transform-origin: center right;
+  transform: rotateY(90deg);
+}
 
 /* ── Iso controls bar ────────────────────────────────────────────────── */
 

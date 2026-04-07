@@ -2,10 +2,18 @@
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
 function applyIsoTransform() {
+  var zoom = state.boardZoom || 1.0;
+  var px = state.boardPanX || 0;
+  var py = state.boardPanY || 0;
+  var pan = "translate(" + px + "px," + py + "px)";
   if (state.isoView) {
-    refs.board.style.transform = "rotateX(" + state.isoRotateX + "deg) rotateZ(" + state.isoRotateZ + "deg) scale(1.1)";
+    refs.board.style.transform = pan + " scale(" + zoom + ") rotateX(" + state.isoRotateX + "deg) rotateZ(" + state.isoRotateZ + "deg) scale(1.1)";
+    refs.board.style.setProperty("--iso-rx", state.isoRotateX + "deg");
+    refs.board.style.setProperty("--iso-rz", state.isoRotateZ + "deg");
   } else {
-    refs.board.style.transform = "";
+    refs.board.style.transform = pan + " scale(" + zoom + ")";
+    refs.board.style.removeProperty("--iso-rx");
+    refs.board.style.removeProperty("--iso-rz");
   }
   var tiltSlider = document.getElementById("isoTiltSlider");
   var spinSlider = document.getElementById("isoSpinSlider");
@@ -212,10 +220,10 @@ function renderBoard() {
             }
           }
           if (data.hearts > 0) {
-            parts.push(`<span class="mark token">H${data.hearts}</span>`);
+            parts.push(`<span class="mark token token-heart" data-count="${data.hearts}">H${data.hearts}</span>`);
           }
           if (data.bullets > 0) {
-            parts.push(`<span class="mark token">B${data.bullets}</span>`);
+            parts.push(`<span class="mark token token-bullet" data-count="${data.bullets}">B${data.bullets}</span>`);
           }
           const sx = x * TILE_DIM + lx;
           const sy = y * TILE_DIM + ly;
