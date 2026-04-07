@@ -10,7 +10,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       attack: 0,
       hand: [],
       items: [],
-      pages: [],
+      botdPages: [],
       eventUsedThisRound: false,
       pageRemovedThisRound: false,
       tempCombatBonus: 0,

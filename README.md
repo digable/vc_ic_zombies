@@ -41,9 +41,11 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Combat triggers when entering or sharing a space with a zombie
 - Roll d6 + attack bonus + temporary bonus; kill threshold depends on zombie type (regular: 4+, government-enhanced: 5+)
 - On failure: spend a bullet for +1, spend a heart to reroll, use a weapon item, or take the loss
+- **Zombie dogs** deal ½ heart damage on a loss instead of a full heart; the reroll button shows the total half-hearts remaining (e.g. 3 hearts = 6 half-hearts). Full-heart reroll only appears when fighting human zombies
+- **Mid-movement combat** — combat triggered while moving must fully resolve before movement continues; remaining moves are preserved and resumed after the fight
 - Combat panel shows current hearts and bullets, with smart hints (e.g. warns if spending bullets won't be enough to win)
 - All decisions resolved in-page — no browser prompts
-- Knockout: lose half your kills (rounded down), respawn at Town Square, reset to 3 hearts / 3 bullets — a toast banner confirms the event and auto-dismisses after 5 seconds
+- Knockout: lose half your kills (rounded down), respawn at the nearest start tile, reset to 3 hearts / 3 bullets — a toast banner confirms the event (including the respawn tile name) and auto-dismisses after 5 seconds
 - **Lucky Shot** — when in your hand, a button appears in the combat panel; spend 1 bullet to auto-kill the current zombie
 - **Weapons Jammed** — the Jammed event card blocks bullet tokens and weapon items for all players until the end of your next turn; affected buttons are disabled with a jammed indicator in the combat panel
 
@@ -52,19 +54,23 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 - Movement respects walls, doors, and tile connectors
 - One zombie per space; blocked zombies skip their move slot
 - Zombie count per roll capped at total zombies on the board
+- **Zombie dogs** are tracked individually — two dogs on the same space each get their own move slot and are rendered as separate markers
+- **Dog Repellent** (Z4 event card) prevents all dogs from moving closer to the protected player until the effect expires
 - Zombie types have distinct stats defined in `ZOMBIE_TYPES` (`constants.js`):
 
-| Type | Kill Roll | Movement |
-|------|-----------|----------|
-| Regular | 4+ | 1 space |
-| Government-Enhanced | 5+ | 2 spaces |
+| Type | Kill Roll | Movement | Damage |
+|------|-----------|----------|--------|
+| Regular | 4+ | 1 space | 1 heart |
+| Government-Enhanced | 5+ | 2 spaces | 1 heart |
+| Zombie Dog | 4+ | 2 spaces | ½ heart |
 
 ### 🎴 Event Cards
 - Draw up to 3 event cards per turn
 - Play one card per turn cycle (resets at the start of your next turn)
-- Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves
+- Card types: player buffs/recovery, opponent disruption, zombie spawns/removals/moves, and Book of the Dead pages
 - Event card collections are configured independently from map tile collections at setup — you can mix any combination
 - **Opponent disruption cards** include multi-step interactions: forced movement (Brain Cramp), tile placement hijacking (I Think It's Over Here), item theft (You Don't Need That!), card redirect (You Lookin' at Me?!?), hand wipe (Weekend Pass: DENIED!), and forced tile restriction (What is That Smell?!?)
+- **That Didn't Just Happen!?! (Z4)** — can be played immediately after any opponent plays a card; cancels the effect, clears any pending state the card set up, and refunds the opponent's play slot for the turn
 - **Mall Walkers (Z3) cards** include location-gated items and global effects:
 
 | Card | Effect |
@@ -76,6 +82,45 @@ Or clone the repo and open `index.html` locally — no server or build step requ
 | Jammed | Blocks all bullet tokens and weapons for all players until the end of your next turn |
 | Lots of Luck with That! | Play when sharing a space with another player — end your movement and take 1 bullet + 1 random card from them |
 | Lucky Shot | In combat only — spend 1 bullet to automatically kill the current zombie |
+
+### 📖 Book of the Dead (BOTD) Page Cards
+Page cards are shuffled into the event deck and drawn like regular event cards. They follow special rules:
+
+- **Stage** — move a page from your hand to in front of you; uses your event play slot for the turn. Some pages trigger an immediate effect when staged (`onStage`).
+- **Use & Discard** — trigger the card's effect and remove it from the game; only one page may be removed per round.
+- Players may have any number of pages staged in front of them at once.
+
+**The End (Z4) Book of the Dead pages:**
+
+| Card | Count | Effect |
+|------|-------|--------|
+| Twist of Fate | 2 | Remove to take 1 bullet from each other player |
+| Return to Sender | 2 | Remove to teleport one opponent from inside the Cabin to an outside Cabin subtile |
+| The Trees Are Alive! | 2 | Remove to spawn a zombie on every opponent currently on a wooded subtile |
+| Here Doggie! | 3 | On stage: fill the Pet Cemetery with 9 zombie dogs. Remove at any time |
+| Something Doesn't Feel Quite Right | 3 | Remove to permanently delete any 3 non-page cards from the deck or discard pile |
+
+### 🌲 The End (Z4) Event Cards
+
+| Card | Count | Effect |
+|------|-------|--------|
+| Amulet | 2 | Item (Abandoned Cars). Discard to teleport to any space on an adjacent map tile |
+| Rolled-Up Newspaper | 2 | Move 1 zombie from your subtile to an opponent's subtile |
+| Sickle | 2 | Item (Z4 named buildings). +1 to first combat roll per combat; also drives another dog off the space when used |
+| Spear | 2 | Item (Z4 named buildings). +1 to all attack rolls permanently while in play |
+| Talk to the Hand | 2 | Move one opponent on your map tile to any adjacent map tile of your choice |
+| Tranquilizer Gun | 2 | Item (Z4 named buildings). Discard to defeat all zombie dogs on any one subtile |
+| Bad Zombie, No Biscuit! | 3 | Move all zombies on your map tile to an adjacent tile. Cannot be used on Cabin or Helipad tiles |
+| Dog Repellent | 3 | No zombie dogs may move closer to you until the end of your next turn |
+| Fully Loaded | 3 | Match any one other player's current bullets and life tokens |
+| Clair Warlock | 3 | Move an opponent to any woods tile adjacent to their current map tile |
+| We're All Friends Here. | 2 | Take a BOTD page card staged by another player and place it in front of you; `onStage` fires again for the new owner |
+| Lost in the Woods | 2 | Target opponent may not move off their current map tile until the end of their next turn |
+| Magic Key | 2 | Item (Cave). Discard to look at an opponent's hand and take 1 card; discard down to 3 afterwards |
+| Monkeys are Funny! | 2 | Move through wooded subtiles without fighting zombies; auto-discards when you enter a non-wooded subtile |
+| Portal | 2 | Play on the Altar. Immediately swap positions with another player |
+| That Didn't Just Happen!?! | 2 | Cancel any card just played by an opponent — clears pending effects and refunds their play slot |
+| Full Moon Fever | 2 | Target opponent becomes a werewolf on their next turn. Both players roll d6 and may spend bullets; the loser moves to the Bridge |
 
 ### 🏬 Air Ducts (Mall Walkers)
 - Certain mall store subtiles have air duct connections, shown as blue wave markers on the board
@@ -189,8 +234,10 @@ vc_ic_zombies/
 │           ├── helpers.js            # Shared event utilities
 │           ├── player-cards.js       # Player buff/recovery cards (Z1/Z2/Z3)
 │           ├── player-cards-z35.js   # NOT_DEAD_YET player cards
+│           ├── player-cards-z4.js    # THE_END (Z4) player cards
 │           ├── opponent-cards.js     # Opponent disruption cards
-│           └── zombie-cards.js       # Zombie spawn/remove/move cards
+│           ├── zombie-cards.js       # Zombie spawn/remove/move cards
+│           └── page-cards.js         # Book of the Dead page cards (Z4)
 └── styles/
     ├── base.css                      # Design tokens, CSS variables, global element defaults
     ├── layout.css                    # Page layout, panels, topbar
@@ -234,6 +281,8 @@ Supported per-subtile properties:
 | `doors: ["N","E","S","W"]` | Directions that are always open |
 | `type: "road"\|"building"\|...` | Visual and logic type |
 | `airDucts: ["N","E","S","W"]` | Directions the air duct faces — enables duct teleportation from this subtile |
+| `type: "wooded"` | Wooded area — targeted by The Trees Are Alive! and Monkeys are Funny! |
+| `type: "cave"` | Cave interior — required to play the Magic Key item card |
 
 **Example:**
 ```js
@@ -331,7 +380,9 @@ If a collection with `requiresBase` set is selected without its required base ga
 - Knockout: lose half kills (rounded down), respawn Town Square, reset stats
 - Hearts are capped at 5
 - One event card may be played per turn cycle; some cards have timing restrictions (e.g. Much Needed Rest must be played before rolling movement)
-- Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot
+- **Book of the Dead pages** — staging a page uses your event play slot; only one page may be removed (used) per round; any number of pages may be staged in front of you at once
+- Players may cross to any adjacent tile from any edge-facing walkable subtile — movement is gated by walls/doors only, not limited to road connectors
+- Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot; zombie dogs move 2 spaces and deal ½ heart damage on a hit
 - Zombie auto-move plays out one zombie per tick (350 ms delay); spaces where zombies landed pulse red until the player ends their turn — a **Skip animation** button flushes the remaining moves instantly
 - **Air Ducts (Mall Walkers):** landing on a duct space offers a choice to teleport to any adjacent store (including diagonals) with a duct subtile; using it costs your next movement roll; zombies cannot use ducts
 - Win by reaching the **center square** of the Helipad or reaching 25 kills

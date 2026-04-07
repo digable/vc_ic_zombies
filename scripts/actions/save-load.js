@@ -37,7 +37,7 @@ function serializeState() {
     ...p,
     hand:  p.hand.map((c) => c.name),
     items: p.items.map((c) => c.name),
-    pages: (p.pages || []).map((c) => c.name)
+    botdPages: (p.botdPages || []).map((c) => c.name)
   });
 
   return {
@@ -102,7 +102,7 @@ function deserializeState(data) {
     ...p,
     hand:  restoreCards(p.hand),
     items: restoreCards(p.items),
-    pages: restoreCards(p.pages || []),
+    botdPages: restoreCards(p.botdPages || []),
     pageRemovedThisRound: p.pageRemovedThisRound ?? false
   }));
 
@@ -142,6 +142,7 @@ function deserializeState(data) {
   state.bulletsCombatFrozenCount   = data.bulletsCombatFrozenCount ?? 0;
   state.lastPlayedWeaponName       = data.lastPlayedWeaponName ?? null;
   state.lastPlayedWeaponByPlayerId = data.lastPlayedWeaponByPlayerId ?? null;
+  state.lastPlayedEventCard        = null;
   state.recentKillByPlayerId       = data.recentKillByPlayerId ?? null;
   state.movementBonus          = data.movementBonus;
   state.moveFloorThisTurn      = data.moveFloorThisTurn;

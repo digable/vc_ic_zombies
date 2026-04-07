@@ -442,6 +442,16 @@ function movePlayer(dir) {
     }
   }
 
+  if ((player.lockedToTileTurns ?? 0) > 0) {
+    const destTileX = spaceToTileCoord(player.x + d.x);
+    const destTileY = spaceToTileCoord(player.y + d.y);
+    if (destTileX !== spaceToTileCoord(player.x) || destTileY !== spaceToTileCoord(player.y)) {
+      logLine(`${player.name} cannot leave this tile (Lost in the Woods).`);
+      render();
+      return;
+    }
+  }
+
   const wasInBuilding = player.claustrophobiaActive && isSpaceBuilding(player.x, player.y);
 
   player.x += d.x;
@@ -479,6 +489,23 @@ function movePlayer(dir) {
     return;
   }
 
+  // Monkeys Are Funny! — auto-discard when player leaves a wooded subtile
+  if (player.monkeysAreFunny) {
+    const mafTile = getTileAtSpace(player.x, player.y);
+    const mafLx = getLocalCoord(player.x, spaceToTileCoord(player.x));
+    const mafLy = getLocalCoord(player.y, spaceToTileCoord(player.y));
+    const onWooded = mafTile && getSubTileType(mafTile, mafLx, mafLy) === "wooded";
+    if (!onWooded) {
+      player.monkeysAreFunny = false;
+      const mafIdx = player.items ? player.items.findIndex((c) => c.name === "Monkeys are Funny!") : -1;
+      if (mafIdx >= 0) {
+        const [mafCard] = player.items.splice(mafIdx, 1);
+        state.eventDiscardPile.push(mafCard);
+      }
+      logLine(`${player.name} left the trees — Monkeys are Funny! is discarded.`);
+    }
+  }
+
   const playerSpaceKey = playerKey(player);
   if (state.zombies.has(playerSpaceKey)) {
     if (player.noCombatThisTurn) {
@@ -488,6 +515,21 @@ function movePlayer(dir) {
       }
       render();
       return;
+    }
+
+    // Monkeys Are Funny! — skip combat while swinging through wooded subtiles
+    if (player.monkeysAreFunny) {
+      const mafSkipTile = getTileAtSpace(player.x, player.y);
+      const mafSkipLx = getLocalCoord(player.x, spaceToTileCoord(player.x));
+      const mafSkipLy = getLocalCoord(player.y, spaceToTileCoord(player.y));
+      if (mafSkipTile && getSubTileType(mafSkipTile, mafSkipLx, mafSkipLy) === "wooded") {
+        logLine(`${player.name} swings through the trees — no combat on wooded subtiles (Monkeys are Funny!).`);
+        if (state.movesRemaining <= 0) {
+          moveToZombiePhase();
+        }
+        render();
+        return;
+      }
     }
 
     logLine(`${player.name} encountered a zombie and must fight immediately.`);

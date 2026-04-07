@@ -182,13 +182,14 @@ function moveZombieAllSteps(startKey, pzm) {
   const zdata = state.zombies.get(startKey);
   if (!zdata) return { finalKey: startKey, moved: false, combatPending: false };
   const zTypeProps = ZOMBIE_TYPES[zdata.type] ?? ZOMBIE_TYPES[ZOMBIE_TYPE.REGULAR];
+  const isDog = zdata.type === ZOMBIE_TYPE.DOG;
   const steps = zTypeProps.movement;
   let currentKey = startKey;
   let movedAtLeastOnce = false;
   let combatPending = false;
 
   for (let step = 0; step < steps; step++) {
-    const next = moveZombieOneStep(currentKey);
+    const next = moveZombieOneStep(currentKey, { isDog });
     if (next === currentKey) break;
 
     // Move exactly 1 zombie from currentKey to next (split the stack if count > 1)

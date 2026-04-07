@@ -40,7 +40,7 @@ const BREAKTHROUGH_SEP  = "\u2192"; // separator used in breakthrough connection
 
 const CARD_TYPE = {
   EVENT: "event",
-  PAGE:  "page"
+  BOTD_PAGE:  "botd_page" // "Book of the Dead" page cards that start in front of the player and have special staging rules
 };
 
 // Tile-level types — used on the tile object itself (tile.type)

@@ -159,6 +159,7 @@ const state = {
   bulletsCombatFrozenCount: 0,
   lastPlayedWeaponName: null,
   lastPlayedWeaponByPlayerId: null,
+  lastPlayedEventCard: null,
   movementBonus: 0,
   moveFloorThisTurn: 0,
   doubleMovementThisTurn: false,

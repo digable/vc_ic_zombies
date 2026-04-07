@@ -64,7 +64,7 @@ function playEvent(index) {
     return;
   }
 
-  if (card.cardType === CARD_TYPE.PAGE) {
+  if (card.cardType === CARD_TYPE.BOTD_PAGE) {
     logLine(`${card.name} is a page card — use "Stage" to put it in front of you.`);
     render();
     return;
@@ -93,6 +93,7 @@ function playEvent(index) {
     }
     player.hand.splice(index, 1);
     player.items.push(card);
+    state.lastPlayedEventCard = { card, playerId: player.id };
     card.apply(player, buildEventDeckHelpers());
     if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
     player.eventUsedThisRound = true;
@@ -116,6 +117,7 @@ function playEvent(index) {
     }
     if (altTargets.length === 1) {
       state.forcedNextOpponentId = altTargets[0].id;
+      state.lastPlayedEventCard = { card, playerId: player.id };
       card.apply(player, buildEventDeckHelpers());
       state.forcedNextOpponentId = null;
       if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
@@ -126,6 +128,7 @@ function playEvent(index) {
         options: altTargets.map((t) => ({ key: `t_${t.id}`, label: t.name })),
         resolve(optKey) {
           state.forcedNextOpponentId = Number(optKey.slice(2));
+          state.lastPlayedEventCard = { card, playerId: player.id };
           card.apply(player, buildEventDeckHelpers());
           state.forcedNextOpponentId = null;
           if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
@@ -148,6 +151,7 @@ function playEvent(index) {
     return;
   }
 
+  state.lastPlayedEventCard = { card, playerId: player.id };
   card.apply(player, buildEventDeckHelpers());
   if (card.isWeapon) { state.lastPlayedWeaponName = card.name; state.lastPlayedWeaponByPlayerId = player.id; }
   state.eventDiscardPile.push(card);
@@ -174,11 +178,12 @@ function stagePage(index) {
     logLine("Only one event or page card may be played per turn."); render(); return;
   }
   const card = player.hand[index];
-  if (!card || card.cardType !== CARD_TYPE.PAGE) return;
+  if (!card || card.cardType !== CARD_TYPE.BOTD_PAGE) return;
   player.hand.splice(index, 1);
-  player.pages.push(card);
+  player.botdPages.push(card);
   player.eventUsedThisRound = true;
   logLine(`${player.name} staged page card: ${card.name}.`);
+  if (card.onStage) card.onStage(player, buildEventDeckHelpers());
   render();
 }
 
@@ -189,9 +194,9 @@ function usePage(index) {
   if (player.pageRemovedThisRound) {
     logLine(`${player.name} can only remove one page card per round.`); render(); return;
   }
-  const card = player.pages[index];
+  const card = player.botdPages[index];
   if (!card) return;
-  player.pages.splice(index, 1);
+  player.botdPages.splice(index, 1);
   player.pageRemovedThisRound = true;
   card.apply(player, buildEventDeckHelpers());
   state.eventDiscardPile.push(card);

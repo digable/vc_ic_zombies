@@ -37,12 +37,19 @@ function endTurn() {
   if (outgoing.cannotMoveTurns > 0) {
     outgoing.cannotMoveTurns -= 1;
   }
+  if ((outgoing.dogRepellentTurns ?? 0) > 0) {
+    outgoing.dogRepellentTurns -= 1;
+  }
+  if ((outgoing.lockedToTileTurns ?? 0) > 0) {
+    outgoing.lockedToTileTurns -= 1;
+  }
   if (state.weaponsJammedCount > 0) state.weaponsJammedCount -= 1;
   if (state.movementRollFreezeCount > 0) state.movementRollFreezeCount -= 1;
   if (state.tokenPickupFrozenCount > 0) state.tokenPickupFrozenCount -= 1;
   if (state.bulletsCombatFrozenCount > 0) state.bulletsCombatFrozenCount -= 1;
   state.playerTrail = [];
   state.lastCombatResult = null;
+  state.lastPlayedEventCard = null;
   state.zombieMovedSpaces = new Set();
   if (state.zombieAnimationTimer !== null) {
     clearTimeout(state.zombieAnimationTimer);
@@ -84,6 +91,14 @@ function endTurn() {
   autoSkipDrawTileIfEmpty();
 
   logLine(`Turn passes to ${player.name}.`);
+
+  if (player.werewolfNextTurn) {
+    player.werewolfNextTurn = false;
+    triggerWerewolfCombat(player);
+    syncToCloud();
+    render();
+    return;
+  }
 
   if (player.sleepChallengePending) {
     player.sleepChallengePending = false;

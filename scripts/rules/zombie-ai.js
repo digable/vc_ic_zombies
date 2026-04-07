@@ -15,10 +15,10 @@ function nearestPlayerDistance(x, y) {
   return nearestEntityDistance(x, y, state.players);
 }
 
-function closestPlayersTo(x, y) {
+function closestPlayersTo(x, y, pool = null) {
   const chosen = [];
   let best = Infinity;
-  state.players.forEach((p) => {
+  (pool ?? state.players).forEach((p) => {
     const dist = manhattanDist(p.x, p.y, x, y);
     if (dist < best) {
       best = dist;
@@ -33,13 +33,23 @@ function closestPlayersTo(x, y) {
 
 // options.targetPlayerId — move toward a specific player instead of the nearest one
 // options.resolveTiesDeterministically — pick the first tied option instead of a random one
+// options.isDog — apply Dog Repellent logic (cannot move closer to players with dogRepellentTurns > 0)
 function moveZombieOneStep(zKey, options = {}) {
-  const { targetPlayerId = null, resolveTiesDeterministically = false } = options;
+  const { targetPlayerId = null, resolveTiesDeterministically = false, isDog = false } = options;
   const { x, y } = parseKey(zKey);
+
+  // Players protected by Dog Repellent — dogs may not move closer to them
+  const repellentIds = isDog
+    ? new Set(state.players.filter((p) => (p.dogRepellentTurns ?? 0) > 0).map((p) => p.id))
+    : new Set();
 
   let target;
   if (targetPlayerId !== null) {
     target = state.players.find((p) => p.id === targetPlayerId) ?? closestPlayersTo(x, y)[0];
+  } else if (isDog && repellentIds.size > 0) {
+    const nonRepellent = state.players.filter((p) => !repellentIds.has(p.id));
+    if (nonRepellent.length === 0) return zKey; // all players repellent — dog stays put
+    target = closestPlayersTo(x, y, nonRepellent)[0];
   } else {
     target = closestPlayersTo(x, y)[0];
   }
@@ -53,6 +63,14 @@ function moveZombieOneStep(zKey, options = {}) {
     if (!canStep(x, y, nx, ny)) return;
     if (state.zombies.has(toKey)) return;
     if (state.noZombieTiles && state.noZombieTiles.has(key(spaceToTileCoord(nx), spaceToTileCoord(ny)))) return;
+    // Dog Repellent: cannot move to a space closer to any protected player
+    if (isDog && repellentIds.size > 0) {
+      for (const pid of repellentIds) {
+        const rp = state.players.find((p) => p.id === pid);
+        if (!rp) continue;
+        if (manhattanDist(rp.x, rp.y, nx, ny) < manhattanDist(rp.x, rp.y, x, y)) return;
+      }
+    }
     moveOptions.push({ toKey, dist: manhattanDist(target.x, target.y, nx, ny) });
   });
 

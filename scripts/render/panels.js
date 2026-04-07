@@ -250,17 +250,17 @@ function renderHand() {
       el.classList.add("selected");
     }
 
-    const isPage = card.cardType === CARD_TYPE.PAGE;
-    const canPlay = !isPage && isCardPlayable(card);
-    const canStage = isPage && !globallyBlocked;
+    const isBOTDPage = card.cardType === CARD_TYPE.BOTD_PAGE;
+    const canPlay = !isBOTDPage && isCardPlayable(card);
+    const canStage = isBOTDPage && !globallyBlocked;
     el.classList.add((canPlay || canStage) ? "playable" : "blocked");
 
-    const showSelect = !isPage && state.step === STEP.DISCARD && !state.pendingCombatDecision;
+    const showSelect = !isBOTDPage && state.step === STEP.DISCARD && !state.pendingCombatDecision;
     const cardShortCode = getCollectionShortCode(card.collection);
     el.innerHTML = `
-      <strong>${card.name}</strong>${cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : ""}${isPage ? ` <span class="coll-short-code">PAGE</span>` : ""}<br />
+      <strong>${card.name}</strong>${cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : ""}${isBOTDPage ? ` <span class="coll-short-code">BotD PAGE</span>` : ""}<br />
       <span class="small">${card.description}</span><br />
-      ${isPage
+      ${isBOTDPage
         ? `<button ${canStage ? "" : "disabled"} data-stage-index="${index}">Stage</button>`
         : `<button ${canPlay ? "" : "disabled"} data-play-index="${index}">Play</button>`}
       ${showSelect ? `<button data-select-index="${index}">Select</button>` : ""}
@@ -269,19 +269,19 @@ function renderHand() {
     refs.handList.appendChild(el);
   });
 
-  if (player.pages && player.pages.length > 0) {
+  if (player.botdPages && player.botdPages.length > 0) {
     const divider = document.createElement("div");
     divider.className = "hand-items-divider";
-    divider.textContent = "Pages in front of you:";
+    divider.textContent = "Book of the Dead Pages in front of you:";
     refs.handList.appendChild(divider);
 
     const useDisabled = state.gameOver || player.pageRemovedThisRound ||
       Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice);
-    player.pages.forEach((card, index) => {
+    player.botdPages.forEach((card, index) => {
       const el = document.createElement("div");
       el.className = "hand-card hand-item";
       el.innerHTML = `
-        <strong>${card.name}</strong> <span class="coll-short-code">PAGE</span><br />
+        <strong>${card.name}</strong> <span class="coll-short-code">BotD PAGE</span><br />
         <span class="small">${card.description}</span><br />
         <button ${useDisabled ? "disabled" : ""} data-use-page-index="${index}">Use &amp; Discard</button>
       `;

@@ -358,6 +358,7 @@ function renderMoveStatus() {
   const msgs = [];
   if (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) {
     if (p.cannotMoveTurns > 0)         msgs.push("Fear: you cannot move this turn.");
+    if ((p.lockedToTileTurns ?? 0) > 0) msgs.push("Lost in the Woods: you cannot leave this tile.");
     if (p.claustrophobiaActive) {
       if (isSpaceBuilding(p.x, p.y)) {
         msgs.push("Claustrophobia: you must exit the building — only moves toward the exit are available.");

@@ -249,6 +249,7 @@ function resolvePendingCombatDecision(actionCode) {
       player.itemsUsedThisTurn.push(weapon.name);
       pending.modifiedRoll += weapon.oncePerTurnCombatBoost;
       logLine(`${player.name} used the ${weapon.name} (+${weapon.oncePerTurnCombatBoost} once this turn). Combat roll is now ${pending.modifiedRoll}.`);
+      if (weapon.onWeaponUse) weapon.onWeaponUse(player, pending);
     } else {
       if (pending.weaponUsed) {
         player.items.splice(weaponIndex, 0, weapon); // put back

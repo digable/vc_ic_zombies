@@ -1074,7 +1074,7 @@ const namedTiles = [
     }
   },
   {
-    name: "Abandonded Cars",
+    name: "Abandoned Cars",
     type: "named",
     collection: {
       [COLLECTIONS.THE_END]: 1,
