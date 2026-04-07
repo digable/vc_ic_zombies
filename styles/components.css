@@ -1078,14 +1078,19 @@
   height: 100%;
 }
 
-/* Name label becomes a floating sign above the tile */
+/* Name label becomes a floating sign above the tile — billboard faces camera */
 #board.iso-view .cell > div:first-child {
   position: absolute;
-  bottom: calc(100% + 2px);
+  bottom: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform-style: preserve-3d;
+  transform:
+    translateX(-50%)
+    translateZ(48px)
+    rotateZ(calc(-1 * var(--iso-rz, 45deg)))
+    rotateX(calc(-1 * var(--iso-rx, 55deg)));
   white-space: nowrap;
-  background: rgba(30, 20, 10, 0.82);
+  background: rgba(30, 20, 10, 0.88);
   color: #fff;
   font-size: 0.58rem;
   font-weight: 700;
@@ -1093,7 +1098,7 @@
   border-radius: 3px;
   z-index: 5;
   pointer-events: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
 /* Hide the Z/L/B stats row in iso — too cluttered */
