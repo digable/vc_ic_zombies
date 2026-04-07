@@ -708,6 +708,8 @@ function renderGameOver() {
     if (refs.gameOverTitle) refs.gameOverTitle.textContent = "VICTORY!";
     const howWon = info.winType === "helipad"
       ? "escaped by helicopter"
+      : info.winType === "spell"
+      ? "performed the Cabin Spell"
       : `eliminated ${info.kills} zombies`;
     refs.gameOverMessage.innerHTML = `
       <div class="game-over-winner">${escapeHtml(info.playerName)}</div>

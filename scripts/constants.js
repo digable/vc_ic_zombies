@@ -4,6 +4,7 @@ const DIRECTION_ORDER = ["N", "E", "S", "W"]; // canonical clockwise order used 
 
 const TILE_DIM          = 3;   // each map tile is a TILE_DIM × TILE_DIM subtile grid
 const WIN_KILLS         = 25;  // kills needed to trigger kill-count win condition
+const SPELL_BASE_TARGET = 6;   // d6 roll needed to perform the Cabin spell (reduced by 1 per BotD page)
 const MAX_HEARTS        = 5;   // maximum heart tokens a player can hold
 const D6_SIDES          = 6;   // die face count (used in rollD6)
 const MAX_LOG_ENTRIES   = 120; // how many log lines to keep in memory

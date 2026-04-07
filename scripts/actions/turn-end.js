@@ -24,6 +24,7 @@ function endTurn() {
       logLine("Government Enhanced Zombies effect expires — regular zombies return to 4+ kill roll.");
     }
   }
+  outgoing.spellAttemptedThisTurn = false;
   outgoing.smellEffect = null;
   outgoing.lookinAtMePending = null;
   outgoing.tileHijackNotify = null;
@@ -79,6 +80,7 @@ function endTurn() {
   player.knockedOut = false;
   player.eventUsedThisRound = false;
   player.pageRemovedThisRound = false;
+  player.spellAttemptedThisTurn = false;
   player.dieRollPenalty = player.nextTurnDieRollPenalty || 0;
   player.nextTurnDieRollPenalty = 0;
   if (player.dieRollPenalty > 0) {

@@ -1,6 +1,6 @@
 # 🧟 VC IC Zombies
 
-A browser-based board game adaptation of zombie survival. Draw tiles to build the city, fight zombies, grab loot, and reach the Helipad before the horde overwhelms you.
+A browser-based board game adaptation of zombie survival. Draw tiles to build the city, fight zombies, grab loot, and reach the Helipad before the horde overwhelms you — or perform the Cabin Spell in The End (Z4) to win by dark magic.
 
 [![Play Now](https://img.shields.io/badge/Play%20Now-digable.github.io-orange)](https://digable.github.io/vc_ic_zombies/)
 ![Game Type](https://img.shields.io/badge/Type-Board%20Game-red)
@@ -154,6 +154,11 @@ Page cards are shuffled into the event deck and drawn like regular event cards. 
 ### 🏆 Win Conditions
 - **Escape** — reach the center square of the Helipad tile
 - **Last Stand** — accumulate 25 zombie kills
+- **Cabin Spell** *(The End / Z4)* — perform the spell at the Cabin tile to win instantly:
+  - You must be on a **building subtile** of the Cabin tile
+  - All **zombie dogs** must be cleared from every building subtile of the Cabin
+  - Roll a d6 — you need **6+** to succeed; each BotD page you have staged reduces the target by 1 (e.g. 3 pages → need 3+; minimum target is 1)
+  - One attempt per turn; the **Cabin Spell** button appears in the End Turn phase when all conditions are met
 
 ---
 
@@ -219,7 +224,7 @@ vc_ic_zombies/
 │   │   ├── save-load.js              # Save/load/export/import game state
 │   │   ├── multiplayer.js            # Online session create/join/start/leave/poll/sync
 │   │   ├── bug-report.js             # Bug report modal, compression, API call
-│   │   └── win.js                    # Win condition checks
+│   │   └── win.js                    # Win condition checks (helipad, kills, Cabin Spell)
 │   ├── rules/
 │   │   ├── placement.js              # Tile placement, connector validation, zone isolation
 │   │   ├── combat-flow.js            # Combat/zombie-step skip gating
@@ -385,7 +390,7 @@ If a collection with `requiresBase` set is selected without its required base ga
 - Zombie movement is non-diagonal, one zombie per space; government-enhanced zombies move 2 spaces per slot; zombie dogs move 2 spaces and deal ½ heart damage on a hit
 - Zombie auto-move plays out one zombie per tick (350 ms delay); spaces where zombies landed pulse red until the player ends their turn — a **Skip animation** button flushes the remaining moves instantly
 - **Air Ducts (Mall Walkers):** landing on a duct space offers a choice to teleport to any adjacent store (including diagonals) with a duct subtile; using it costs your next movement roll; zombies cannot use ducts
-- Win by reaching the **center square** of the Helipad or reaching 25 kills
+- Win by reaching the **center square** of the Helipad, reaching 25 kills, or **performing the Cabin Spell** (Z4: clear all dogs from Cabin building, be on a building subtile, roll d6 ≥ 6 minus your staged BotD page count — once per turn)
 
 ---
 

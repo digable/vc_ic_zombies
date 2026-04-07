@@ -172,6 +172,7 @@ function attachListeners() {
   refs.moveZombiesBtn.addEventListener("click", startZombieMovement);
   refs.discardBtn.addEventListener("click", discardSelected);
   refs.endTurnBtn.addEventListener("click", endTurn);
+  if (refs.performSpellBtn) refs.performSpellBtn.addEventListener("click", attemptSpell);
 
   refs.moveDirBtns.forEach((btn) => {
     btn.addEventListener("click", () => {

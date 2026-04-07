@@ -14,7 +14,7 @@ function updateButtons() {
   if (!state.gameActive) {
     [refs.drawTileBtn, refs.rotateLeftBtn, refs.rotateRightBtn, refs.combatBtn,
      refs.drawEventsBtn, refs.rollMoveBtn, refs.endMoveBtn, refs.moveZombiesBtn,
-     refs.discardBtn, refs.endTurnBtn].forEach((b) => { if (b) b.disabled = true; });
+     refs.discardBtn, refs.endTurnBtn, refs.performSpellBtn].forEach((b) => { if (b) b.disabled = true; });
     document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
     refs.moveDirBtns.forEach((b) => { b.disabled = true; });
     return;
@@ -24,7 +24,7 @@ function updateButtons() {
   if (state.multiplayerSession?.mode === "online" && !isMyTurn()) {
     [refs.drawTileBtn, refs.rotateLeftBtn, refs.rotateRightBtn, refs.combatBtn,
      refs.drawEventsBtn, refs.rollMoveBtn, refs.endMoveBtn, refs.moveZombiesBtn,
-     refs.discardBtn, refs.endTurnBtn].forEach((b) => { if (b) b.disabled = true; });
+     refs.discardBtn, refs.endTurnBtn, refs.performSpellBtn].forEach((b) => { if (b) b.disabled = true; });
     document.querySelectorAll(".standalone-draw-btn").forEach((b) => { b.disabled = true; });
     refs.moveDirBtns.forEach((b) => { b.disabled = true; });
     updateMpTurnBanner();
@@ -44,6 +44,7 @@ function updateButtons() {
     refs.moveZombiesBtn.disabled = true;
     refs.discardBtn.disabled = true;
     refs.endTurnBtn.disabled = true;
+    if (refs.performSpellBtn) refs.performSpellBtn.disabled = true;
     // Direction buttons stay enabled during forced movement so the controller
     // can move the target player (Brain Cramp / Where Did Everybody Go?).
     refs.moveDirBtns.forEach((btn) => {
@@ -82,6 +83,9 @@ function updateButtons() {
   refs.moveZombiesBtn.disabled = state.step !== STEP.MOVE_ZOMBIES || state.gameOver || state.zombies.size === 0;
   refs.discardBtn.disabled = state.step !== STEP.DISCARD || state.gameOver;
   refs.endTurnBtn.disabled = state.step !== STEP.END || state.gameOver;
+  if (refs.performSpellBtn) {
+    refs.performSpellBtn.disabled = state.gameOver || state.step !== STEP.END || !canAttemptSpell(p);
+  }
 
   const claustroInBuilding = p.claustrophobiaActive && isSpaceBuilding(p.x, p.y);
   refs.moveDirBtns.forEach((btn) => {

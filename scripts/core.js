@@ -226,6 +226,7 @@ const refs = {
   moveZombiesBtn: document.getElementById("moveZombiesBtn"),
   discardBtn: document.getElementById("discardBtn"),
   endTurnBtn: document.getElementById("endTurnBtn"),
+  performSpellBtn: document.getElementById("performSpellBtn"),
   playerCount: document.getElementById("playerCount"),
   moveStatusMsg: document.getElementById("moveStatusMsg"),
   gameOverOverlay: document.getElementById("gameOverOverlay"),

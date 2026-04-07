@@ -36,7 +36,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       itemsUsedThisTurn: [],
       dieRollPenalty: 0,
       nextTurnDieRollPenalty: 0,
-      pendingDuctTeleport: null
+      pendingDuctTeleport: null,
+      spellAttemptedThisTurn: false
     });
   }
 
