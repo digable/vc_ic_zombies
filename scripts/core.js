@@ -293,10 +293,12 @@ function clearPendingTileState() {
   state.pendingTileDeck = "base";
 }
 
+// Stringify a coordinate pair into a map key ("x,y"). Used for board, zombie, and subtile lookups.
 function key(x, y) {
   return `${x},${y}`;
 }
 
+// Parse a key produced by key() back into { x, y }.
 function parseKey(k) {
   const [x, y] = k.split(",").map(Number);
   return { x, y };
