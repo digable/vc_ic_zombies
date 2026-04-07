@@ -152,6 +152,35 @@ const state = {
   gameOver: false,
   winInfo: null,
   lastCombatResult: null,
+  // ─── Pending interaction state ────────────────────────────────────────────
+  // At most one pending interaction should be active at a time. Each one is set
+  // to a non-null object when waiting for the player to click the board or choose
+  // from a UI panel, and cleared back to null when the choice is resolved.
+  //
+  // Board-click priority (bootstrap.js routes clicks in this order — earlier
+  // entries consume the click and return, so later ones never fire at the same
+  // time as an earlier active one):
+  //
+  //  1. pendingZombieMovement   — zombie-move phase: click a micro-cell to move a zombie
+  //                               (blocked if any other pending state is set)
+  //  2. pendingRocketLauncher   — choose rocket launcher target micro-cell
+  //  3. pendingZombieFlood      — choose flood target micro-cell
+  //  4. pendingSpaceSelect      — generic space-pick (used by several cards)
+  //  5. pendingMinefield        — place minefield micro-cell
+  //  6. pendingDynamiteTarget   — choose dynamite target micro-cell
+  //  7. pendingBuildingSelect   — choose which building micro-cell to enter
+  //  8. pendingZombiePlace      — place a zombie on a micro-cell
+  //  9. pendingZombieReplace    — move a zombie to a new micro-cell
+  // 10. pendingDuctChoice       — choose air duct destination (micro-cell)
+  // 11. pendingBreakthrough     — choose breakthrough connector (micro-cell)
+  // 12. pendingTile             — tile placement: click a cell to place the pending tile
+  //
+  // Panel-only state (not routed through the board click handler):
+  //   pendingCombatDecision     — combat choice panel (reroll, use item, etc.)
+  //   pendingEventChoice        — event card choice panel
+  //   pendingZombieDiceChallenge — zombie dice challenge panel
+  //   pendingForcedMove         — direction buttons are rerouted to forcedMoveTarget()
+  // ──────────────────────────────────────────────────────────────────────────
   pendingCombatDecision: null,
   pendingEventChoice: null,
   zombieMoveFreezeCount: 0,
