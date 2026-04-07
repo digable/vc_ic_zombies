@@ -23,6 +23,11 @@ function applyIsoTransform() {
   if (spinSlider) spinSlider.value = state.isoRotateZ;
   if (tiltVal)    tiltVal.textContent = state.isoRotateX + "°";
   if (spinVal)    spinVal.textContent = state.isoRotateZ + "°";
+  var resetBtn = document.getElementById("resetViewBtn");
+  if (resetBtn) {
+    var changed = px !== 0 || py !== 0 || Math.abs(zoom - 1.0) > 0.001;
+    resetBtn.classList.toggle("hidden", !changed);
+  }
 }
 
 function toggleIsoView() {
@@ -30,7 +35,7 @@ function toggleIsoView() {
   refs.board.classList.toggle("iso-view", state.isoView);
   var btn      = document.getElementById("isoToggleBtn");
   var controls = document.getElementById("isoControls");
-  if (btn)      btn.textContent = "Iso View: " + (state.isoView ? "On" : "Off");
+  if (btn)      btn.textContent = "2.5D View: " + (state.isoView ? "On" : "Off");
   if (controls) controls.classList.toggle("hidden", !state.isoView);
   applyIsoTransform();
   renderPlayerTrailSvg();

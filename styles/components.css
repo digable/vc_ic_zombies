@@ -1069,6 +1069,36 @@
 
 #board.iso-view .cell {
   overflow: visible;
+  display: block;  /* let micro-grid fill the cell naturally */
+}
+
+/* Micro-grid fills the whole cell in iso mode */
+#board.iso-view .cell .micro-grid {
+  width: 100%;
+  height: 100%;
+}
+
+/* Name label becomes a floating sign above the tile */
+#board.iso-view .cell > div:first-child {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: rgba(30, 20, 10, 0.82);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  z-index: 5;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* Hide the Z/L/B stats row in iso — too cluttered */
+#board.iso-view .cell > .small {
+  display: none;
 }
 
 /* All subtile floors sit on the ground plane */

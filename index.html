@@ -150,8 +150,11 @@
       <section class="panel board-wrap">
         <div class="board-header">
           <h2>Map</h2>
-          <button id="isoToggleBtn" onclick="toggleIsoView()">Iso View: Off</button>
           <div id="turnInfo"></div>
+          <div class="board-header-actions">
+            <button id="isoToggleBtn" onclick="toggleIsoView()">2.5D View: Off</button>
+            <button id="resetViewBtn" class="hidden" onclick="state.boardPanX=0; state.boardPanY=0; state.boardZoom=1.0; applyIsoTransform()">Reset View</button>
+          </div>
         </div>
         <div id="isoControls" class="iso-controls hidden">
           <div class="iso-controls-row">
@@ -173,6 +176,11 @@
           </div>
         </div>
         <div id="mpTurnBanner" class="mp-turn-banner hidden"></div>
+        <svg id="spinIndicator" class="spin-indicator hidden" xmlns="http://www.w3.org/2000/svg">
+          <line id="spinRadiusLine" x1="0" y1="0" x2="0" y2="0"/>
+          <circle id="spinCenterMark" r="5"/>
+          <circle id="spinCursorDot" r="6"/>
+        </svg>
         <div id="board"></div>
       </section>
 

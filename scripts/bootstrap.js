@@ -364,38 +364,99 @@ function attachListeners() {
     });
   }
 
-  // Pan: click-drag to scroll the board-wrap
+  // Pan (left drag) + Spin/Tilt (right drag in iso mode)
   const boardWrap = document.querySelector(".board-wrap");
   if (boardWrap) {
     let isPanning = false;
+    let isSpinning = false;
     let panStartX = 0;
     let panStartY = 0;
     let panOriginX = 0;
     let panOriginY = 0;
+    let spinStartAngle = 0;
+    let spinOriginZ = 0;
 
     boardWrap.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
       if (e.target instanceof HTMLElement && e.target.closest("button, input, select, label, a")) return;
-      isPanning = true;
-      panStartX = e.clientX;
-      panStartY = e.clientY;
-      panOriginX = state.boardPanX || 0;
-      panOriginY = state.boardPanY || 0;
-      boardWrap.classList.add("panning");
-      e.preventDefault();
+      if (e.button === 0) {
+        isPanning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        panOriginX = state.boardPanX || 0;
+        panOriginY = state.boardPanY || 0;
+        boardWrap.classList.add("panning");
+        e.preventDefault();
+      } else if (e.button === 2 && state.isoView) {
+        isSpinning = true;
+        const boardEl = document.getElementById("board");
+        const br = boardEl ? boardEl.getBoundingClientRect() : boardWrap.getBoundingClientRect();
+        const wr = boardWrap.getBoundingClientRect();
+        const cx = br.left + br.width / 2;
+        const cy = br.top + br.height / 2;
+        spinStartAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+        spinOriginZ = state.isoRotateZ;
+        boardWrap.classList.add("panning");
+        const svg = document.getElementById("spinIndicator");
+        const centerMark = document.getElementById("spinCenterMark");
+        const cursorDot  = document.getElementById("spinCursorDot");
+        const radiusLine = document.getElementById("spinRadiusLine");
+        if (svg && centerMark && cursorDot && radiusLine) {
+          const bx = cx - wr.left;
+          const by = cy - wr.top;
+          const mx = e.clientX - wr.left;
+          const my = e.clientY - wr.top;
+          centerMark.setAttribute("cx", bx);
+          centerMark.setAttribute("cy", by);
+          cursorDot.setAttribute("cx", mx);
+          cursorDot.setAttribute("cy", my);
+          radiusLine.setAttribute("x1", bx); radiusLine.setAttribute("y1", by);
+          radiusLine.setAttribute("x2", mx); radiusLine.setAttribute("y2", my);
+          svg.classList.remove("hidden");
+        }
+        e.preventDefault();
+      }
+    });
+
+    boardWrap.addEventListener("contextmenu", (e) => {
+      if (state.isoView) e.preventDefault();
     });
 
     window.addEventListener("mousemove", (e) => {
-      if (!isPanning) return;
-      state.boardPanX = panOriginX + (e.clientX - panStartX);
-      state.boardPanY = panOriginY + (e.clientY - panStartY);
-      applyIsoTransform();
+      if (isPanning) {
+        state.boardPanX = panOriginX + (e.clientX - panStartX);
+        state.boardPanY = panOriginY + (e.clientY - panStartY);
+        applyIsoTransform();
+      } else if (isSpinning) {
+        const wr2 = boardWrap.getBoundingClientRect();
+        const boardEl2 = document.getElementById("board");
+        const br2 = boardEl2 ? boardEl2.getBoundingClientRect() : wr2;
+        const cx2 = br2.left + br2.width / 2;
+        const cy2 = br2.top + br2.height / 2;
+        const angle = Math.atan2(e.clientY - cy2, e.clientX - cx2) * (180 / Math.PI);
+        const raw = spinOriginZ + (angle - spinStartAngle);
+        state.isoRotateZ = Math.round(raw / 15) * 15;
+        applyIsoTransform();
+        const cursorDot  = document.getElementById("spinCursorDot");
+        const radiusLine = document.getElementById("spinRadiusLine");
+        if (cursorDot && radiusLine) {
+          const mx = e.clientX - wr2.left;
+          const my = e.clientY - wr2.top;
+          cursorDot.setAttribute("cx", mx);
+          cursorDot.setAttribute("cy", my);
+          radiusLine.setAttribute("x2", mx);
+          radiusLine.setAttribute("y2", my);
+        }
+      }
     });
 
-    window.addEventListener("mouseup", () => {
-      if (!isPanning) return;
-      isPanning = false;
-      boardWrap.classList.remove("panning");
+    window.addEventListener("mouseup", (e) => {
+      if (e.button === 0) { isPanning = false; }
+      if (e.button === 2) {
+        isSpinning = false;
+        const svg = document.getElementById("spinIndicator");
+        if (svg) svg.classList.add("hidden");
+      }
+      if (!isPanning && !isSpinning) boardWrap.classList.remove("panning");
     });
 
     // Zoom: mouse wheel
