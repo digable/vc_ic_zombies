@@ -5,11 +5,13 @@ const DIRS = {
   W: { x: -1, y: 0, opposite: "E" }
 };
 
+const TILE_CENTER = Math.floor(TILE_DIM / 2); // local coord of the middle subtile (1 in a 3×3 grid)
+
 const DOOR_LOCAL = {
-  N: { x: Math.floor(TILE_DIM / 2), y: 0 },
-  E: { x: TILE_DIM - 1,             y: Math.floor(TILE_DIM / 2) },
-  S: { x: Math.floor(TILE_DIM / 2), y: TILE_DIM - 1 },
-  W: { x: 0,                        y: Math.floor(TILE_DIM / 2) }
+  N: { x: TILE_CENTER,    y: 0            },
+  E: { x: TILE_DIM - 1,  y: TILE_CENTER  },
+  S: { x: TILE_CENTER,    y: TILE_DIM - 1 },
+  W: { x: 0,              y: TILE_CENTER  }
 };
 
 const COLLECTIONS = {
@@ -287,6 +289,16 @@ function getSpaceLocalCoords(sx, sy) {
 
 function getSpaceTileKey(sx, sy) {
   return key(spaceToTileCoord(sx), spaceToTileCoord(sy));
+}
+
+// Remove the first item with the given name from player.items and push it to the discard pile.
+// Returns true if the item was found and consumed, false if the player had no such item.
+function consumeItemByName(player, name) {
+  const idx = player.items ? player.items.findIndex((c) => c.name === name) : -1;
+  if (idx < 0) return false;
+  const [card] = player.items.splice(idx, 1);
+  state.eventDiscardPile.push(card);
+  return true;
 }
 
 function playerKey(player) {

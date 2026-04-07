@@ -114,7 +114,7 @@ function attachListeners() {
     refs.newGameBtn.classList.remove("needs-restart");
     const count = Number(refs.playerCount.value) || 2;
     state.gameActive = true;
-    setupGame(Math.max(1, Math.min(4, count)), readCurrentFilters(), readCurrentEventFilters());
+    setupGame(Math.max(1, Math.min(MAX_PLAYERS, count)), readCurrentFilters(), readCurrentEventFilters());
   });
 
   document.querySelectorAll("[data-requires-base][data-deck-state='enabled']").forEach((el) => {
@@ -434,7 +434,7 @@ function attachListeners() {
         const cy2 = br2.top + br2.height / 2;
         const angle = Math.atan2(e.clientY - cy2, e.clientX - cx2) * (180 / Math.PI);
         const raw = spinOriginZ + (angle - spinStartAngle);
-        state.isoRotateZ = Math.round(raw / 15) * 15;
+        state.isoRotateZ = Math.round(raw / ISO_SPIN_SNAP) * ISO_SPIN_SNAP;
         applyIsoTransform();
         const cursorDot  = document.getElementById("spinCursorDot");
         const radiusLine = document.getElementById("spinRadiusLine");
@@ -462,8 +462,8 @@ function attachListeners() {
     // Zoom: mouse wheel
     boardWrap.addEventListener("wheel", (e) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      state.boardZoom = Math.min(3.0, Math.max(0.3, (state.boardZoom || 1.0) + delta));
+      const delta = e.deltaY > 0 ? -ZOOM_INCREMENT : ZOOM_INCREMENT;
+      state.boardZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, (state.boardZoom || 1.0) + delta));
       applyIsoTransform();
     }, { passive: false });
 
@@ -494,7 +494,7 @@ function attachListeners() {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        state.boardZoom = Math.min(3.0, Math.max(0.3, (state.boardZoom || 1.0) * (dist / lastPinchDist)));
+        state.boardZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, (state.boardZoom || 1.0) * (dist / lastPinchDist)));
         lastPinchDist = dist;
         applyIsoTransform();
       } else if (e.touches.length === 1 && lastTouchX !== null) {
@@ -608,6 +608,7 @@ if (window.matchMedia("(max-width: 480px)").matches) {
   if (s) s.removeAttribute("open");
 }
 
+if (refs.playerCount) refs.playerCount.max = MAX_PLAYERS;
 buildCollectionRows();
 attachListeners();
 populateCollectionCounts();

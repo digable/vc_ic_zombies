@@ -560,8 +560,7 @@ const playerEventCards = [
       state.players.forEach((p) => {
         const spaceKey = key(p.x, p.y);
         const ptile = getTileAtSpace(p.x, p.y);
-        const plx = getLocalCoord(p.x, spaceToTileCoord(p.x));
-        const ply = getLocalCoord(p.y, spaceToTileCoord(p.y));
+        const { lx: plx, ly: ply } = getSpaceLocalCoords(p.x, p.y);
         if (!state.zombies.has(spaceKey) && isSubtileZombieViable(ptile, plx, ply)) {
           state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
           placed += 1;

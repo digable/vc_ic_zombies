@@ -39,6 +39,15 @@
   --tone-warm:  #5a4020;   /* headings, accents */
   --tone-muted: #9a8060;   /* secondary labels */
 
+  /* Parchment / UI surface colors */
+  --surface-tile:    #f0ead8;  /* map tile background */
+  --surface-btn:     #f4eddd;  /* button background */
+  --surface-btn-hover: #eadfca; /* button hover */
+  --border-input:    #8f7d56;  /* input/button border */
+  --border-cell:     #9e8a66;  /* map cell border */
+  --border-topbar:   #d7c7a1;  /* topbar bottom border */
+  --border-card:     #c5b08a;  /* event/hand card border */
+
   /* Tooltip */
   --tooltip-bg:     #2a1f0f;
   --tooltip-fg:     #f5ead0;
@@ -76,19 +85,19 @@ body {
 
 button,
 input {
-  border: 1px solid #8f7d56;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   padding: 0.4rem 0.55rem;
   font: inherit;
 }
 
 button {
-  background: #f4eddd;
+  background: var(--surface-btn);
   cursor: pointer;
 }
 
 button:hover {
-  background: #eadfca;
+  background: var(--surface-btn-hover);
 }
 
 button:disabled {

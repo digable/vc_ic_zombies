@@ -4,8 +4,7 @@ function checkJeepDoorOffer(player) {
   if (player.hasJeep || state.pendingEventChoice || state.pendingCombatDecision) return;
   const tile = getTileAtSpace(player.x, player.y);
   if (!tile || tile.name !== TILE_NAME.MOTOR_POOL) return;
-  const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-  const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+  const { lx, ly } = getSpaceLocalCoords(player.x, player.y);
   const sub = tile.subTiles?.[key(lx, ly)];
   if (!sub || !sub.jeepDoor) return;
   logLine(`${player.name} found a jeep at the Motor Pool!`);
@@ -31,8 +30,7 @@ function checkJeepDoorOffer(player) {
 function isSpaceBuilding(sx, sy) {
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return false;
-  const lx = getLocalCoord(sx, spaceToTileCoord(sx));
-  const ly = getLocalCoord(sy, spaceToTileCoord(sy));
+  const { lx, ly } = getSpaceLocalCoords(sx, sy);
   return getSubTileType(tile, lx, ly) === "building";
 }
 
@@ -492,16 +490,11 @@ function movePlayer(dir) {
   // Monkeys Are Funny! — auto-discard when player leaves a wooded subtile
   if (player.monkeysAreFunny) {
     const mafTile = getTileAtSpace(player.x, player.y);
-    const mafLx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-    const mafLy = getLocalCoord(player.y, spaceToTileCoord(player.y));
+    const { lx: mafLx, ly: mafLy } = getSpaceLocalCoords(player.x, player.y);
     const onWooded = mafTile && getSubTileType(mafTile, mafLx, mafLy) === "wooded";
     if (!onWooded) {
       player.monkeysAreFunny = false;
-      const mafIdx = player.items ? player.items.findIndex((c) => c.name === "Monkeys are Funny!") : -1;
-      if (mafIdx >= 0) {
-        const [mafCard] = player.items.splice(mafIdx, 1);
-        state.eventDiscardPile.push(mafCard);
-      }
+      consumeItemByName(player, "Monkeys are Funny!");
       logLine(`${player.name} left the trees — Monkeys are Funny! is discarded.`);
     }
   }
@@ -520,8 +513,7 @@ function movePlayer(dir) {
     // Monkeys Are Funny! — skip combat while swinging through wooded subtiles
     if (player.monkeysAreFunny) {
       const mafSkipTile = getTileAtSpace(player.x, player.y);
-      const mafSkipLx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-      const mafSkipLy = getLocalCoord(player.y, spaceToTileCoord(player.y));
+      const { lx: mafSkipLx, ly: mafSkipLy } = getSpaceLocalCoords(player.x, player.y);
       if (mafSkipTile && getSubTileType(mafSkipTile, mafSkipLx, mafSkipLy) === "wooded") {
         logLine(`${player.name} swings through the trees — no combat on wooded subtiles (Monkeys are Funny!).`);
         if (state.movesRemaining <= 0) {

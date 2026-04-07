@@ -235,8 +235,7 @@ playerEventCards.push(
         const [nx, ny] = nk.split(",").map(Number);
         const tile = getTileAtSpace(nx, ny);
         if (!tile) return false;
-        const lx = getLocalCoord(nx, spaceToTileCoord(nx));
-        const ly = getLocalCoord(ny, spaceToTileCoord(ny));
+        const { lx, ly } = getSpaceLocalCoords(nx, ny);
         return isLocalWalkable(tile, lx, ly);
       });
 

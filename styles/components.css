@@ -1,10 +1,10 @@
 .cell {
   width: 96px;
   height: 114px;
-  border: 1px solid #9e8a66;
+  border: 1px solid var(--border-cell);
   border-radius: var(--radius-lg);
   position: relative;
-  background: #f0ead8;
+  background: var(--surface-tile);
   padding: 0;
   font-size: 0.67rem;
   overflow: visible;
@@ -483,9 +483,13 @@
   z-index: 2;
 }
 
-.mark.player {
-  background: #2d6a9f;
-}
+.mark.player                    { background: #2d6a9f; } /* P1 — blue (default) */
+.mark.player[data-pid="P1"]    { background: #2d6a9f; }
+.mark.player[data-pid="P2"]    { background: #c0392b; } /* red */
+.mark.player[data-pid="P3"]    { background: #27ae60; } /* green */
+.mark.player[data-pid="P4"]    { background: #e67e22; } /* orange */
+.mark.player[data-pid="P5"]    { background: #8e44ad; } /* purple */
+.mark.player[data-pid="P6"]    { background: #16a085; } /* teal */
 
 @keyframes player-pulse {
   0%, 100% { background: #2d6a9f; }
@@ -545,7 +549,7 @@
 
 .player-card,
 .hand-card {
-  border: 1px solid #c5b08a;
+  border: 1px solid var(--border-card);
   border-radius: 6px;
   padding: 0.45rem;
   margin-bottom: 0.4rem;
@@ -718,7 +722,7 @@
   border-radius: 12px;
   padding: 2.5rem 3rem;
   text-align: center;
-  color: #f0ead8;
+  color: var(--surface-tile);
   max-width: 420px;
   width: 90%;
   box-shadow: 0 0 60px rgba(194, 74, 62, 0.5);

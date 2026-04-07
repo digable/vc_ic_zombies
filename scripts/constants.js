@@ -34,10 +34,17 @@ const ZOMBIE_TYPES = {
   [ZOMBIE_TYPE.DOG]:      { movement: 2, killRoll: 5, maxPerSpace: 2, halfHeartDamage: true,  halfHeartReroll: true  },
 };
 
+const MAX_PLAYERS       = 6;   // maximum players allowed in a single game
 const INITIAL_HEARTS    = 3;   // starting hearts for a new/respawned player
 const INITIAL_BULLETS   = 3;   // starting bullets for a new/respawned player
 const MAX_HAND_SIZE     = 3;   // maximum event cards in hand at end of turn
 const BREAKTHROUGH_SEP  = "\u2192"; // separator used in breakthrough connection keys
+
+const KNOCKOUT_BANNER_MS  = 5000; // how long the knockout banner stays on screen (ms)
+const ZOOM_INCREMENT      = 0.1;  // zoom step per mouse-wheel tick or pinch move
+const ZOOM_MIN            = 0.3;  // minimum board zoom level
+const ZOOM_MAX            = 3.0;  // maximum board zoom level
+const ISO_SPIN_SNAP       = 15;   // degrees per snap increment when right-click spinning
 
 const CARD_TYPE = {
   EVENT: "event",

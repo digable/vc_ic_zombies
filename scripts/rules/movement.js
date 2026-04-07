@@ -72,8 +72,7 @@ function canMove(player, dir) {
 function playerOnDuctSpace(player) {
   const tile = getTileAtSpace(player.x, player.y);
   if (!tile) return false;
-  const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-  const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+  const { lx, ly } = getSpaceLocalCoords(player.x, player.y);
   return (tile.subTiles?.[key(lx, ly)]?.airDucts?.length || 0) > 0;
 }
 

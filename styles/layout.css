@@ -1,6 +1,6 @@
 .topbar {
   padding: 1rem 1.2rem 0.4rem;
-  border-bottom: 2px solid #d7c7a1;
+  border-bottom: 2px solid var(--border-topbar);
   display: flex;
   flex-wrap: wrap;
   align-items: center;

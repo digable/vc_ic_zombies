@@ -121,8 +121,7 @@ const pageEventCards = [
         if (other.id === player.id) return;
         const tile = getTileAtSpace(other.x, other.y);
         if (!tile) return;
-        const lx = getLocalCoord(other.x, spaceToTileCoord(other.x));
-        const ly = getLocalCoord(other.y, spaceToTileCoord(other.y));
+        const { lx, ly } = getSpaceLocalCoords(other.x, other.y);
         if (getSubTileType(tile, lx, ly) !== "wooded") return;
         const sk = key(other.x, other.y);
         if (!state.zombies.has(sk)) {

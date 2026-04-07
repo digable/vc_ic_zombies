@@ -275,9 +275,8 @@ function handleZombieReplaceClick(sx, sy) {
 
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return;
-  const tileX = spaceToTileCoord(sx);
-  const tileY = spaceToTileCoord(sy);
-  if (!isLocalWalkable(tile, getLocalCoord(sx, tileX), getLocalCoord(sy, tileY))) return;
+  const { lx: wlx, ly: wly } = getSpaceLocalCoords(sx, sy);
+  if (!isLocalWalkable(tile, wlx, wly)) return;
   if (isSpaceOccupiedByZombie(spaceKey)) return;
 
   if (pzr.adjacentToKey) {
@@ -306,7 +305,8 @@ function handleZombiePlaceClick(sx, sy) {
 
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return;
-  if (!isSubtileZombieViable(tile, getLocalCoord(sx, spaceToTileCoord(sx)), getLocalCoord(sy, spaceToTileCoord(sy)))) return;
+  const { lx: zlx, ly: zly } = getSpaceLocalCoords(sx, sy);
+  if (!isSubtileZombieViable(tile, zlx, zly)) return;
   const spaceKey = key(sx, sy);
   if (isSpaceOccupiedByZombie(spaceKey)) return;
   if (state.players.some((p) => key(p.x, p.y) === spaceKey)) return;
@@ -589,8 +589,7 @@ function handleBuildingSelectClick(sx, sy) {
   if (!state.pendingBuildingSelect) return;
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return;
-  const lx = getLocalCoord(sx, spaceToTileCoord(sx));
-  const ly = getLocalCoord(sy, spaceToTileCoord(sy));
+  const { lx, ly } = getSpaceLocalCoords(sx, sy);
   if (getSubTileType(tile, lx, ly) !== "building") return;
 
   const tx = spaceToTileCoord(sx);

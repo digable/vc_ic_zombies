@@ -210,7 +210,7 @@ function renderBoard() {
             const activeId = `P${currentPlayer().id}`;
             data.players.forEach((pid) => {
               const cls = pid === activeId ? "mark player active" : "mark player";
-              parts.push(`<span class="${cls}">${pid}</span>`);
+              parts.push(`<span class="${cls}" data-pid="${pid}">${pid}</span>`);
             });
           }
           if (data.zombieType) {

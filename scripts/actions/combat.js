@@ -1,10 +1,7 @@
 function handleKnockout(player, options = {}) {
   const { endStep = true } = options;
-  const adjIdx = player.items ? player.items.findIndex((c) => c.name === "Adjusting Nicely") : -1;
   let lostKills;
-  if (adjIdx >= 0) {
-    const [card] = player.items.splice(adjIdx, 1);
-    state.eventDiscardPile.push(card);
+  if (consumeItemByName(player, "Adjusting Nicely")) {
     lostKills = 0;
     logLine(`${player.name} discarded Adjusting Nicely — no kills lost on knockout.`);
   } else {
@@ -20,10 +17,7 @@ function handleKnockout(player, options = {}) {
   player.knockouts = (player.knockouts || 0) + 1;
   if (player.meatCleaverActive) {
     player.meatCleaverActive = false;
-    const mcIdx = player.items ? player.items.findIndex((c) => c.name === "Meat Cleaver") : -1;
-    if (mcIdx >= 0) {
-      const [mc] = player.items.splice(mcIdx, 1);
-      state.eventDiscardPile.push(mc);
+    if (consumeItemByName(player, "Meat Cleaver")) {
       logLine(`${player.name}'s Meat Cleaver was lost on knockout.`);
     }
   }
@@ -37,7 +31,7 @@ function handleKnockout(player, options = {}) {
   setTimeout(() => {
     state.knockoutBanner = null;
     render();
-  }, 5000);
+  }, KNOCKOUT_BANNER_MS);
 }
 
 function applyCombatPostStep(player, playerSpaceKey, options = {}) {

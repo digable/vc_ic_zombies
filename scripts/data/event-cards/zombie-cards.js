@@ -26,8 +26,7 @@ const zombieEventCards = [
     },
     canActivate(player) {
       // Rule: must be inside a building OR directly in front of a building door
-      const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-      const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+      const { lx, ly } = getSpaceLocalCoords(player.x, player.y);
       const tile = getTileAtSpace(player.x, player.y);
       if (!tile) return false;
       const subType = getSubTileType(tile, lx, ly);

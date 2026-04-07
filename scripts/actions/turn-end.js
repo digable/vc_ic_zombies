@@ -111,8 +111,7 @@ function endTurn() {
     } else {
       const spaceKey = playerKey(player);
       const tile = getTileAtSpace(player.x, player.y);
-      const lx = getLocalCoord(player.x, spaceToTileCoord(player.x));
-      const ly = getLocalCoord(player.y, spaceToTileCoord(player.y));
+      const { lx, ly } = getSpaceLocalCoords(player.x, player.y);
       if (!state.zombies.has(spaceKey) && isSubtileZombieViable(tile, lx, ly)) {
         state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
       }
