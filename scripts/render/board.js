@@ -1,11 +1,30 @@
 // render-board.js — Board rendering functions.
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
+function applyIsoTransform() {
+  if (state.isoView) {
+    refs.board.style.transform = "rotateX(" + state.isoRotateX + "deg) rotateZ(" + state.isoRotateZ + "deg) scale(1.1)";
+  } else {
+    refs.board.style.transform = "";
+  }
+  var tiltSlider = document.getElementById("isoTiltSlider");
+  var spinSlider = document.getElementById("isoSpinSlider");
+  var tiltVal    = document.getElementById("isoTiltVal");
+  var spinVal    = document.getElementById("isoSpinVal");
+  if (tiltSlider) tiltSlider.value = state.isoRotateX;
+  if (spinSlider) spinSlider.value = state.isoRotateZ;
+  if (tiltVal)    tiltVal.textContent = state.isoRotateX + "°";
+  if (spinVal)    spinVal.textContent = state.isoRotateZ + "°";
+}
+
 function toggleIsoView() {
   state.isoView = !state.isoView;
   refs.board.classList.toggle("iso-view", state.isoView);
-  var btn = document.getElementById("isoToggleBtn");
-  if (btn) btn.textContent = "Iso View: " + (state.isoView ? "On" : "Off");
+  var btn      = document.getElementById("isoToggleBtn");
+  var controls = document.getElementById("isoControls");
+  if (btn)      btn.textContent = "Iso View: " + (state.isoView ? "On" : "Off");
+  if (controls) controls.classList.toggle("hidden", !state.isoView);
+  applyIsoTransform();
   renderPlayerTrailSvg();
 }
 

@@ -153,6 +153,25 @@
           <button id="isoToggleBtn" onclick="toggleIsoView()">Iso View: Off</button>
           <div id="turnInfo"></div>
         </div>
+        <div id="isoControls" class="iso-controls hidden">
+          <div class="iso-controls-row">
+            <label>Tilt <span id="isoTiltVal">55°</span>
+              <input id="isoTiltSlider" type="range" min="20" max="80" value="55"
+                oninput="state.isoRotateX=+this.value; applyIsoTransform()">
+            </label>
+            <label>Spin <span id="isoSpinVal">45°</span>
+              <input id="isoSpinSlider" type="range" min="-360" max="360" value="45"
+                oninput="state.isoRotateZ=+this.value; applyIsoTransform()">
+            </label>
+          </div>
+          <div class="iso-controls-row">
+            <button onclick="state.isoRotateX=Math.min(80,state.isoRotateX+5); applyIsoTransform()">Tilt ↑</button>
+            <button onclick="state.isoRotateX=Math.max(20,state.isoRotateX-5); applyIsoTransform()">Tilt ↓</button>
+            <button onclick="state.isoRotateZ+=15; applyIsoTransform()">↺ Spin</button>
+            <button onclick="state.isoRotateZ-=15; applyIsoTransform()">Spin ↻</button>
+            <button onclick="state.isoRotateX=55; state.isoRotateZ=45; applyIsoTransform()">Reset</button>
+          </div>
+        </div>
         <div id="mpTurnBanner" class="mp-turn-banner hidden"></div>
         <div id="board"></div>
       </section>

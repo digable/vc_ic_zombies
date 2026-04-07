@@ -194,7 +194,9 @@ const state = {
   logs: [],
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
   multiplayerSession: null,     // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
-  isoView: false                // when true, board renders tiles in isometric projection
+  isoView: false,               // when true, board renders tiles in isometric projection
+  isoRotateX: 55,              // tilt angle in degrees (20–80)
+  isoRotateZ: 45               // spin angle in degrees
 };
 
 const refs = {

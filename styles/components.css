@@ -1050,7 +1050,6 @@
 /* ── Isometric view ──────────────────────────────────────────────────── */
 
 #board.iso-view {
-  transform: rotateX(55deg) rotateZ(45deg) scale(1.1);
   transform-origin: center center;
   transform-style: preserve-3d;
   transition: transform 0.3s ease;
@@ -1059,4 +1058,72 @@
 
 .board-wrap:has(#board.iso-view) {
   overflow: visible;
+}
+
+/* Pass 3D context down so translateZ on children works */
+#board.iso-view .cell,
+#board.iso-view .micro-grid,
+#board.iso-view .micro-cell {
+  transform-style: preserve-3d;
+}
+
+#board.iso-view .cell {
+  overflow: visible;
+}
+
+/* Subtile elevation — taller subtiles rise more toward the viewer */
+#board.iso-view .micro-cell.building-subtile  { transform: translateZ(14px); }
+#board.iso-view .micro-cell.wooded-subtile    { transform: translateZ(8px); }
+#board.iso-view .micro-cell.altar-subtile     { transform: translateZ(6px); }
+#board.iso-view .micro-cell.cave-subtile      { transform: translateZ(4px); }
+#board.iso-view .micro-cell.escalator-subtile { transform: translateZ(5px); }
+
+/* Figures float above the elevated subtiles */
+#board.iso-view .mark.player               { transform: translateZ(22px); }
+#board.iso-view .mark.player.active        { transform: translateZ(24px); }
+#board.iso-view .mark.zombie               { transform: translateZ(20px); }
+#board.iso-view .mark.zombie.zombie-dog    { transform: translateZ(14px); }
+#board.iso-view .mark.token                { transform: translateZ(18px); }
+
+/* ── Iso controls bar ────────────────────────────────────────────────── */
+
+.iso-controls.hidden { display: none; }
+
+.iso-controls {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid #d8c7a0;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  font-size: 0.78rem;
+}
+
+.iso-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.iso-controls-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.iso-controls-row label span {
+  min-width: 2.6rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--tone-muted);
+}
+
+.iso-controls-row input[type="range"] {
+  width: 90px;
+  accent-color: var(--tone-warm);
 }
