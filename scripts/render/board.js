@@ -28,6 +28,9 @@ function applyIsoTransform() {
     var changed = px !== 0 || py !== 0 || Math.abs(zoom - 1.0) > 0.001;
     resetBtn.classList.toggle("hidden", !changed);
   }
+  // On mobile, overflow:hidden on board-wrap clips the 3D-rotated board, making it
+  // look flat. Toggle a class so CSS can switch to overflow:visible in iso mode.
+  document.body.classList.toggle("iso-active", !!state.isoView);
 }
 
 function toggleIsoView() {
@@ -359,7 +362,12 @@ function renderPlayerTrailSvg() {
     const cell = refs.board.querySelector(`[data-sx="${sx}"][data-sy="${sy}"]`);
     if (!cell) continue;
     const r = cell.getBoundingClientRect();
-    points.push({ x: r.left - boardRect.left + r.width / 2, y: r.top - boardRect.top + r.height / 2 });
+    // Add scrollLeft/scrollTop so coordinates are in the board's full
+    // scrollable content space (matches the SVG's position:absolute origin).
+    points.push({
+      x: r.left - boardRect.left + refs.board.scrollLeft + r.width / 2,
+      y: r.top  - boardRect.top  + refs.board.scrollTop  + r.height / 2
+    });
   }
   if (points.length < 2) return;
 

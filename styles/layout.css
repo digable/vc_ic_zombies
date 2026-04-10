@@ -708,8 +708,183 @@
   }
 
   .cell {
-    width: 74px;
     height: 96px;
   }
+}
+
+/* ── Mobile tab bar (≤ 768px) ─────────────────────────── */
+
+.mobile-tab-bar { display: none; }
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 56px; /* reserve space for fixed tab bar */
+  }
+
+  .site-footer { display: none; }
+
+  /* hide all three panels; active one is revealed below */
+  .controls,
+  .board-wrap,
+  #sidebarPanel {
+    display: none;
+  }
+
+  body[data-mobile-tab="controls"] .controls   { display: block; }
+  body[data-mobile-tab="map"]      .board-wrap  { display: flex; flex-direction: column; height: calc(100svh - 56px - 3.6rem); overflow: hidden; border-radius: 0; border-left: none; border-right: none; }
+  body[data-mobile-tab="info"]     #sidebarPanel { display: block; }
+
+  /* board fills remaining space above the phase sheet */
+  body[data-mobile-tab="map"] #board {
+    isolation: isolate;
+    z-index: 0;
+    flex: 1;
+    min-height: 0;
+    overflow: visible;
+    align-content: start;
+    width: fit-content;
+  }
+
+  /* hide all phase groups on mobile by default */
+  .controls .phase-group { display: none; }
+
+  /* ── Phase sheet handle (inside board-wrap) ── */
+  .phase-sheet {
+    flex-shrink: 0;
+    border-top: 2px solid var(--border-topbar);
+    background: rgba(244, 237, 221, 0.97);
+    backdrop-filter: blur(4px);
+  }
+
+  .phase-sheet.hidden { display: none; }
+
+  .phase-sheet-handle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    gap: 0.5rem;
+  }
+
+  .phase-sheet-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--tone-warm);
+  }
+
+  .phase-sheet-chevron {
+    font-size: 0.65rem;
+    color: var(--tone-muted);
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  body.sheet-collapsed .phase-sheet-chevron { transform: rotate(180deg); }
+
+  /* ── Controls as fixed bottom sheet on map tab ── */
+  body[data-mobile-tab="map"] .controls {
+    display: block;
+    position: fixed;
+    bottom: 56px;
+    left: 0; right: 0;
+    z-index: 90;
+    max-height: 280px;
+    overflow-y: auto;
+    border: none;
+    border-top: 2px solid var(--border-topbar);
+    border-radius: 0;
+    padding: 0.4rem 0.75rem 0.75rem;
+    background: rgba(244, 237, 221, 0.97);
+    backdrop-filter: blur(4px);
+  }
+
+  /* hide all non-phase content from the bottom sheet */
+  body[data-mobile-tab="map"] .controls > h2,
+  body[data-mobile-tab="map"] .controls .save-load-details,
+  body[data-mobile-tab="map"] #setupSection,
+  body[data-mobile-tab="map"] .controls > .row,
+  body[data-mobile-tab="map"] #mpPanel { display: none; }
+
+  /* show only the active phase group */
+  body[data-mobile-tab="map"] .controls .phase-group.phase-active { display: block; }
+
+  /* collapsed: hide the bottom sheet entirely */
+  body[data-mobile-tab="map"].sheet-collapsed .controls { display: none; }
+
+  /* 2.5D mode: isolation:isolate forces transform-style:flat, breaking preserve-3d.
+     Override it to auto so the 3D rendering context is preserved.
+     board-wrap keeps overflow:hidden so the board is always clipped to its bounds
+     and never paints over the fixed controls or tab bar. */
+  body[data-mobile-tab="map"].iso-active #board { isolation: auto; }
+
+  /* Ensure controls and tab bar always paint above the board regardless of 3D transforms */
+  body[data-mobile-tab="map"] .controls { z-index: 200; }
+  .mobile-tab-bar { z-index: 300; }
+
+  /* hide the <summary> toggle since the tab bar handles navigation */
+  #sidebarPanel .sidebar-panel-summary { display: none; }
+
+  /* player strip carries this info on mobile */
+  #turnInfo { display: none; }
+
+  /* "Map" heading is obvious on the map tab */
+  .board-wrap h2 { display: none; }
+
+  /* phase-active class drives both desktop collapse and mobile sheet visibility */
+
+  .mobile-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(244, 237, 221, 0.97);
+    border-top: 2px solid var(--border-topbar);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+  }
+
+  .mobile-tab-btn {
+    flex: 1;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    border-top: 3px solid transparent;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--tone-muted);
+    position: relative;
+    transition: color 0.12s, background 0.12s;
+  }
+
+  .mobile-tab-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .mobile-tab-btn.active {
+    color: var(--tone-warm);
+    border-top-color: var(--accent);
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* dot badge — shown when it's your turn and you're not on Controls */
+  .mobile-tab-dot {
+    position: absolute;
+    top: 7px;
+    right: calc(50% - 20px);
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 1.5px solid var(--surface-btn);
+  }
+
+  .mobile-tab-dot.hidden { display: none; }
 }
 

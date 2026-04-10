@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="styles/layout.css" />
     <link rel="stylesheet" href="styles/components.css" />
   </head>
-  <body>
+  <body data-mobile-tab="controls">
     <header class="topbar">
       <h1>VC IC Zombies</h1>
       <p class="subtitle">Town square survival. Reach the helipad or collect 25 kills. <a href="tile-editor.html">Tile Editor</a></p>
@@ -77,7 +77,7 @@
           <div id="mpLobbyStatus" class="mp-lobby-status"></div>
         </details>
 
-        <div class="phase-group">
+        <div class="phase-group" data-phase="tile">
           <span class="phase-label">Tile</span>
           <div class="row">
             <button id="drawTileBtn">Draw Base Tile</button>
@@ -92,7 +92,7 @@
           </div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-phase="combat">
           <span class="phase-label">Combat</span>
           <div class="row">
             <button id="combatBtn">Combat Current Space</button>
@@ -100,7 +100,7 @@
           <div id="combatDecisionPanel" class="combat-decision hidden" aria-live="polite"></div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-phase="events">
           <span class="phase-label">Events</span>
           <div class="row">
             <button id="drawEventsBtn">Draw to 3 Events</button>
@@ -109,7 +109,7 @@
           <div id="zombieDiceChallengePanel" class="combat-decision hidden" aria-live="polite"></div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-phase="movement">
           <span class="phase-label">Movement</span>
           <div class="row">
             <button id="rollMoveBtn">Roll Movement</button>
@@ -117,16 +117,16 @@
           </div>
           <div id="moveStatusMsg" class="move-status-msg hidden"></div>
           <div id="ductChoicePanel" class="combat-decision hidden" aria-live="polite"></div>
-          <div class="row dir-row">
-            <button class="moveDirBtn" data-dir="N">Move ↑</button>
-            <button class="moveDirBtn" data-dir="W">Move ←</button>
-            <button class="moveDirBtn" data-dir="E">Move →</button>
-            <button class="moveDirBtn" data-dir="S">Move ↓</button>
-            <button id="endMoveBtn">End Movement</button>
+          <div class="dir-pad">
+            <button class="moveDirBtn" data-dir="N" aria-label="Move North">↑</button>
+            <button class="moveDirBtn" data-dir="W" aria-label="Move West">←</button>
+            <button id="endMoveBtn" aria-label="End Movement">End</button>
+            <button class="moveDirBtn" data-dir="E" aria-label="Move East">→</button>
+            <button class="moveDirBtn" data-dir="S" aria-label="Move South">↓</button>
           </div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-phase="zombies">
           <span class="phase-label">Zombies</span>
           <div class="row">
             <button id="moveZombiesBtn">Move Zombies</button>
@@ -135,7 +135,7 @@
           <div id="zombieReplacePanel" class="zombie-replace hidden" aria-live="polite"></div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-phase="end">
           <span class="phase-label">End Turn</span>
           <div class="row">
             <button id="performSpellBtn">Cabin Spell</button>
@@ -176,6 +176,16 @@
           </div>
         </div>
         <div id="mpTurnBanner" class="mp-turn-banner hidden"></div>
+        <div id="playerStrip" class="player-strip hidden"></div>
+
+        <div id="phaseSheet" class="phase-sheet hidden">
+          <div class="phase-sheet-handle" onclick="togglePhaseSheet()">
+            <span id="phaseSheetLabel" class="phase-sheet-label"></span>
+            <span id="phaseSheetCardBadge" class="phase-sheet-card-badge hidden"></span>
+            <span class="phase-sheet-chevron">▲</span>
+          </div>
+          <div id="sheetCardTray" class="sheet-card-tray hidden"></div>
+        </div>
         <svg id="spinIndicator" class="spin-indicator hidden" xmlns="http://www.w3.org/2000/svg">
           <line id="spinRadiusLine" x1="0" y1="0" x2="0" y2="0"/>
           <circle id="spinCenterMark" r="5"/>
@@ -241,6 +251,25 @@
       </div>
     </div>
 
+    <div id="inviteModal" class="invite-modal hidden">
+      <div class="invite-modal-box">
+        <div class="invite-modal-title" id="inviteModalTitle"></div>
+        <p class="invite-modal-sub">Enter your name to join</p>
+        <input id="inviteModalName" type="text" maxlength="32" placeholder="Your name" class="invite-modal-input" />
+        <div id="inviteModalStatus" class="invite-modal-status"></div>
+        <button onclick="joinFromInviteModal()" class="invite-modal-join" id="inviteModalJoinBtn">Join Game</button>
+        <button onclick="dismissInviteModal()" class="invite-modal-cancel">Play solo instead</button>
+      </div>
+    </div>
+
+    <div id="yourTurnOverlay" class="your-turn-overlay hidden" onclick="dismissYourTurnAlert()">
+      <div class="your-turn-box">
+        <div class="your-turn-title">Your Turn!</div>
+        <div class="your-turn-sub" id="yourTurnSub"></div>
+        <button class="your-turn-dismiss">Got it</button>
+      </div>
+    </div>
+
     <div id="gameOverOverlay" class="game-over-overlay hidden">
       <div class="game-over-box">
         <div id="gameOverTitle" class="game-over-title">GAME OVER</div>
@@ -248,6 +277,15 @@
         <button id="gameOverNewGameBtn" class="game-over-btn">New Game</button>
       </div>
     </div>
+
+    <nav class="mobile-tab-bar" aria-label="Page navigation">
+      <button class="mobile-tab-btn active" data-tab="controls" onclick="switchMobileTab('controls')">
+        Menu
+        <span class="mobile-tab-dot hidden" id="mobileTabDot"></span>
+      </button>
+      <button class="mobile-tab-btn" data-tab="map" onclick="switchMobileTab('map')">Map</button>
+      <button class="mobile-tab-btn" data-tab="info" onclick="switchMobileTab('info')">Info</button>
+    </nav>
 
     <footer class="site-footer">
       <a href="https://www.twilightcreationsinc.com/" target="_blank">Original Game by Twilight Creations</a>

@@ -1,6 +1,67 @@
 // render.js — Thin orchestrator. Wires updateButtons and the main render() call.
 // All rendering helpers live in render-helpers.js, render-board.js, render-panels.js, render-debug.js.
 
+let _lastPhaseSheetPhase = null;
+
+function updatePhaseSheet() {
+  const sheet = document.getElementById("phaseSheet");
+  if (!sheet) return;
+
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  if (!isMobile || !state.gameActive) {
+    sheet.classList.add("hidden");
+    _lastPhaseSheetPhase = null;
+    return;
+  }
+
+  const activePhase = PHASE_FOR_STEP[state.step];
+
+  if (!activePhase) {
+    sheet.classList.add("hidden");
+    _lastPhaseSheetPhase = null;
+    return;
+  }
+
+  // Auto-expand and update label when phase changes
+  if (activePhase !== _lastPhaseSheetPhase) {
+    document.body.classList.remove("sheet-collapsed");
+    _lastPhaseSheetPhase = activePhase;
+    const labelEl = document.getElementById("phaseSheetLabel");
+    if (labelEl) {
+      const group = document.querySelector(`.phase-group[data-phase="${activePhase}"]`);
+      labelEl.textContent = group?.querySelector(".phase-label")?.textContent ?? activePhase;
+    }
+  }
+
+  sheet.classList.remove("hidden");
+}
+
+const PHASE_FOR_STEP = {
+  [STEP.DRAW_TILE]:    "tile",
+  [STEP.COMBAT]:       "combat",
+  [STEP.DRAW_EVENTS]:  "events",
+  [STEP.ROLL_MOVE]:    "movement",
+  [STEP.MOVE]:         "movement",
+  [STEP.MOVE_ZOMBIES]: "zombies",
+  [STEP.DISCARD]:      "end",
+  [STEP.END]:          "end"
+};
+
+function updateActivePhaseGroup() {
+  if (!state.gameActive) {
+    document.querySelectorAll(".phase-group[data-phase]").forEach((g) => {
+      g.classList.remove("phase-inactive", "phase-active");
+    });
+    return;
+  }
+  const activePhase = PHASE_FOR_STEP[state.step];
+  document.querySelectorAll(".phase-group[data-phase]").forEach((g) => {
+    const isActive = g.dataset.phase === activePhase;
+    g.classList.toggle("phase-inactive", !isActive);
+    g.classList.toggle("phase-active", isActive);
+  });
+}
+
 function isPendingInteraction() {
   return !!(state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace ||
     state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement ||
@@ -108,7 +169,10 @@ function render() {
   renderBoard();
   renderPlayerTrailSvg();
   renderPlayers();
+  renderPlayerStrip();
+
   renderHand();
+  renderSheetCardTray();
   renderDeckInfo();
   renderStandaloneDeckInfo();
   renderEventDeckInfo();
@@ -120,6 +184,8 @@ function render() {
   renderLog();
   rebuildStandaloneDrawBtns();
   updateButtons();
+  updateActivePhaseGroup();
+  updatePhaseSheet();
   renderMoveStatus();
   renderGameOver();
   renderKnockoutBanner();

@@ -109,6 +109,23 @@ function enforceCollectionCompatibility() {
   }
 }
 
+function togglePhaseSheet() {
+  document.body.classList.toggle("sheet-collapsed");
+}
+
+
+function switchMobileTab(tab) {
+  document.body.dataset.mobileTab = tab;
+  document.querySelectorAll(".mobile-tab-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+  if (tab === "info") {
+    const sidebar = document.getElementById("sidebarPanel");
+    if (sidebar) sidebar.open = true;
+  }
+  if (typeof updateMpTurnBanner === "function") updateMpTurnBanner();
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
@@ -184,11 +201,9 @@ function attachListeners() {
     });
   });
 
-  refs.handList.addEventListener("click", (event) => {
+  function handleCardAreaClick(event) {
     const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
+    if (!(target instanceof HTMLElement)) return;
 
     const playIndex = target.getAttribute("data-play-index");
     if (playIndex !== null) { playEvent(Number(playIndex)); return; }
@@ -204,7 +219,12 @@ function attachListeners() {
 
     const activateIndex = target.getAttribute("data-activate-item-index");
     if (activateIndex !== null) { activateItem(Number(activateIndex)); }
-  });
+  }
+
+  refs.handList.addEventListener("click", handleCardAreaClick);
+
+  const sheetCardTray = document.getElementById("sheetCardTray");
+  if (sheetCardTray) sheetCardTray.addEventListener("click", handleCardAreaClick);
 
   // Board click — routes to whichever pending interaction is active.
   // See pending state priority order documented in core.js state definition.
@@ -471,7 +491,27 @@ function attachListeners() {
     let lastTouchX = null;
     let lastTouchY = null;
 
+    function isTouchOnUiOverlay(touch) {
+      // Returns true if a touch point lands on a UI element that should NOT be
+      // captured by the board pan/zoom handler.
+      const selectors = [".controls", ".board-header", "#isoControls", "#phaseSheet"];
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (!el || el.classList.contains("hidden")) continue;
+        const r = el.getBoundingClientRect();
+        if (touch.clientX >= r.left && touch.clientX <= r.right &&
+            touch.clientY >= r.top  && touch.clientY <= r.bottom) return true;
+      }
+      return false;
+    }
+
     boardWrap.addEventListener("touchstart", (e) => {
+      if (isTouchOnUiOverlay(e.touches[0])) {
+        lastTouchX = null;
+        lastTouchY = null;
+        lastPinchDist = null;
+        return;
+      }
       if (e.touches.length === 2) {
         lastPinchDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
@@ -605,6 +645,10 @@ function applyCollectionTooltips() {
 if (window.matchMedia("(max-width: 480px)").matches) {
   const s = document.getElementById("sidebarPanel");
   if (s) s.removeAttribute("open");
+}
+
+if (window.matchMedia("(max-width: 768px)").matches) {
+  switchMobileTab("controls");
 }
 
 if (refs.playerCount) refs.playerCount.max = MAX_PLAYERS;

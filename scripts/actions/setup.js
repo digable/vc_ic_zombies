@@ -186,6 +186,9 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   logLine(`${currentPlayer().name} goes first (most recent zombie movie watcher).`);
 
   render();
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    switchMobileTab("map");
+  }
 }
 
 function drawAndPlaceTile(deckId = "base") {
@@ -261,6 +264,9 @@ function drawAndPlaceTile(deckId = "base") {
     : "";
   logLine(`${cp.name} drew ${drawnName}${companionNote}. Click a highlighted map space to place it.`);
   render();
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    switchMobileTab("map");
+  }
 }
 
 function rotatePendingTile(delta) {

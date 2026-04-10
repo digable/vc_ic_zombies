@@ -214,6 +214,36 @@ function renderPlayers() {
   });
 }
 
+const STRIP_COLORS = {
+  P1: "#2d6a9f", P2: "#c0392b", P3: "#27ae60",
+  P4: "#e67e22", P5: "#8e44ad", P6: "#16a085"
+};
+
+function renderPlayerStrip() {
+  const el = document.getElementById("playerStrip");
+  if (!el) return;
+  if (!state.gameActive || state.players.length === 0) {
+    el.classList.add("hidden");
+    return;
+  }
+  const cp = currentPlayer();
+  el.classList.remove("hidden");
+  el.innerHTML = state.players.map((p) => {
+    const isActive = p.id === cp.id;
+    const isKo = p.hearts <= 0;
+    const color = STRIP_COLORS[p.id] || "#888";
+    const heartsStr = isKo ? "KO" : `${p.hearts}♥`;
+    const bulletsStr = `${p.bullets}⦿`;
+    const activeStyle = isActive ? ` style="--ps-active-color:${color}"` : "";
+    return `<div class="ps-pill${isActive ? " ps-active" : ""}${isKo ? " ps-ko" : ""}"${activeStyle}>` +
+      `<span class="ps-dot" style="background:${color}"></span>` +
+      `<span class="ps-name">${p.name}</span>` +
+      `<span class="ps-hearts">${heartsStr}</span>` +
+      `<span class="ps-bullets">${bulletsStr}</span>` +
+      `</div>`;
+  }).join("");
+}
+
 function renderHand() {
   const player = currentPlayer();
   refs.handList.innerHTML = "";
@@ -307,6 +337,110 @@ function renderHand() {
       refs.handList.appendChild(el);
     });
   }
+}
+
+function renderSheetCardTray() {
+  const tray = document.getElementById("sheetCardTray");
+  const badge = document.getElementById("phaseSheetCardBadge");
+  if (!tray) return;
+
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  if (!isMobile || !state.gameActive) {
+    tray.classList.add("hidden");
+    if (badge) badge.classList.add("hidden");
+    return;
+  }
+
+  const player = currentPlayer();
+  const totalCards = (player.hand?.length ?? 0) + (player.items?.length ?? 0) + (player.botdPages?.length ?? 0);
+
+  if (totalCards === 0) {
+    tray.classList.add("hidden");
+    if (badge) badge.classList.add("hidden");
+    return;
+  }
+
+  if (badge) {
+    badge.textContent = `${totalCards} card${totalCards !== 1 ? "s" : ""}`;
+    badge.classList.remove("hidden");
+  }
+
+  tray.classList.remove("hidden");
+
+  const globallyBlocked = state.gameOver || player.eventUsedThisRound || player.cannotPlayCardTurns > 0 ||
+    Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice) ||
+    Boolean(state.pendingZombieReplace) || Boolean(state.pendingZombieDiceChallenge) ||
+    Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove) ||
+    Boolean(state.pendingDynamiteTarget) || Boolean(state.pendingMinefield) ||
+    Boolean(state.pendingRocketLauncher) || Boolean(state.pendingZombieFlood) ||
+    Boolean(state.pendingBuildingSelect) || Boolean(state.pendingSpaceSelect);
+
+  const isCardPlayable = (card) => {
+    if (globallyBlocked) return false;
+    if (card.canPlay && !card.canPlay()) return false;
+    if (card.isItem && player.items?.some((c) => c.name === card.name)) return false;
+    if (card.isItem && card.requiresTile) {
+      const tile = getTileAtSpace(player.x, player.y);
+      const allowed = Array.isArray(card.requiresTile) ? card.requiresTile : [card.requiresTile];
+      if (!tile || !allowed.includes(tile.name)) return false;
+    }
+    return true;
+  };
+
+  function makePill(name, desc, typeClass, actionsHtml) {
+    return `<div class="sheet-card-pill ${typeClass}" onclick="this.classList.toggle('pill-expanded')">` +
+      `<span class="sheet-card-pill-name">${name}</span>` +
+      `<span class="sheet-card-pill-desc">${desc}</span>` +
+      `<span class="sheet-card-pill-actions">${actionsHtml}</span>` +
+      `</div>`;
+  }
+
+  let html = "";
+
+  if (player.hand?.length > 0) {
+    const pills = player.hand.map((card, index) => {
+      const isBOTDPage = card.cardType === CARD_TYPE.BOTD_PAGE;
+      const canPlay = !isBOTDPage && isCardPlayable(card);
+      const canStage = isBOTDPage && !globallyBlocked;
+      const showSelect = !isBOTDPage && state.step === STEP.DISCARD && !state.pendingCombatDecision;
+      const typeClass = (canPlay || canStage) ? "pill-playable" : "pill-blocked";
+      const cardShortCode = getCollectionShortCode(card.collection);
+      const nameHtml = card.name + (cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : "") +
+        (isBOTDPage ? ` <span class="coll-short-code">BotD PAGE</span>` : "");
+      const actions = isBOTDPage
+        ? `<button ${canStage ? "" : "disabled"} data-stage-index="${index}">Stage</button>`
+        : `<button ${canPlay ? "" : "disabled"} data-play-index="${index}">Play</button>` +
+          (showSelect ? ` <button data-select-index="${index}">Select</button>` : "");
+      return makePill(nameHtml, card.description, typeClass, actions);
+    }).join("");
+    html += `<span class="sheet-card-tray-label">Hand</span><div class="sheet-card-pills">${pills}</div>`;
+  }
+
+  const useDisabled = state.gameOver || player.pageRemovedThisRound ||
+    Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice);
+
+  if (player.botdPages?.length > 0) {
+    const pills = player.botdPages.map((card, index) =>
+      makePill(`${card.name} <span class="coll-short-code">BotD PAGE</span>`, card.description, "pill-item",
+        `<button ${useDisabled ? "disabled" : ""} data-use-page-index="${index}">Use &amp; Discard</button>`)
+    ).join("");
+    html += `<span class="sheet-card-tray-label">In front of you</span><div class="sheet-card-pills">${pills}</div>`;
+  }
+
+  if (player.items?.length > 0) {
+    const activateDisabled = state.gameOver || Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice);
+    const pills = player.items.map((card, index) => {
+      const actions = card.combatWeapon
+        ? `<span class="small dim">Use in combat</span>`
+        : card.activateItem
+          ? `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">Activate &amp; Discard</button>`
+          : `<span class="small dim">Triggers automatically</span>`;
+      return makePill(card.name, card.description, "pill-item", actions);
+    }).join("");
+    html += `<span class="sheet-card-tray-label">Items in play</span><div class="sheet-card-pills">${pills}</div>`;
+  }
+
+  tray.innerHTML = html;
 }
 
 function renderCombatDecision() {

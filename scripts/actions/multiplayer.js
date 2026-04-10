@@ -151,6 +151,7 @@ async function pollFromCloud() {
 
     if (isMyTurn()) {
       stopPolling();
+      showYourTurnAlert();
     }
   } catch (e) {
     console.warn("pollFromCloud failed:", e.message);
@@ -352,6 +353,32 @@ async function leaveMultiplayerGame() {
 }
 
 // ---------------------------------------------------------------------------
+// Your-turn alert
+// ---------------------------------------------------------------------------
+
+function showYourTurnAlert() {
+  const overlay = document.getElementById("yourTurnOverlay");
+  if (!overlay) return;
+  const cp = currentPlayer();
+  const sub = document.getElementById("yourTurnSub");
+  if (sub) sub.textContent = cp?.name ? `${cp.name}, make your move.` : "";
+  overlay.classList.remove("hidden");
+  if (navigator.vibrate) navigator.vibrate(200);
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    switchMobileTab("map");
+  }
+  clearTimeout(overlay._dt);
+  overlay._dt = setTimeout(dismissYourTurnAlert, 3000);
+}
+
+function dismissYourTurnAlert() {
+  const overlay = document.getElementById("yourTurnOverlay");
+  if (!overlay) return;
+  clearTimeout(overlay._dt);
+  overlay.classList.add("hidden");
+}
+
+// ---------------------------------------------------------------------------
 // Turn banner
 // ---------------------------------------------------------------------------
 
@@ -369,6 +396,52 @@ function updateMpTurnBanner() {
     el.textContent = `Waiting for ${cp?.name ?? "opponent"}...`;
     el.className = "mp-turn-banner mp-waiting";
   }
+  const dot = document.getElementById("mobileTabDot");
+  if (dot) {
+    const myTurn = isMyTurn();
+    const onControls = document.body.dataset.mobileTab === "controls";
+    dot.classList.toggle("hidden", !myTurn || onControls);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Invite modal
+// ---------------------------------------------------------------------------
+
+function showInviteModal(code) {
+  const modal = document.getElementById("inviteModal");
+  if (!modal) return;
+  const title = document.getElementById("inviteModalTitle");
+  if (title) title.textContent = `You've been invited to game ${code}`;
+  const status = document.getElementById("inviteModalStatus");
+  if (status) status.textContent = "";
+  const btn = document.getElementById("inviteModalJoinBtn");
+  if (btn) btn.disabled = false;
+  modal.classList.remove("hidden");
+  document.getElementById("inviteModalName")?.focus();
+}
+
+function dismissInviteModal() {
+  document.getElementById("inviteModal")?.classList.add("hidden");
+  showSetupUI();
+}
+
+async function joinFromInviteModal() {
+  const name = document.getElementById("inviteModalName")?.value.trim();
+  const status = document.getElementById("inviteModalStatus");
+  if (!name) {
+    if (status) status.textContent = "Please enter your name.";
+    document.getElementById("inviteModalName")?.focus();
+    return;
+  }
+  const btn = document.getElementById("inviteModalJoinBtn");
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = "Joining...";
+  const nameInput = document.getElementById("mpJoinName");
+  if (nameInput) nameInput.value = name;
+  document.getElementById("inviteModal")?.classList.add("hidden");
+  if (window.matchMedia("(max-width: 768px)").matches) switchMobileTab("controls");
+  await joinMultiplayerGame();
 }
 
 // ---------------------------------------------------------------------------
@@ -395,21 +468,19 @@ function tryAutoRejoin() {
   const panel = document.getElementById("mpPanel");
   if (panel) panel.setAttribute("open", "");
 
-  // If this is an invite link, hide the local game setup entirely and show invite note
-  if (urlCode) {
-    hideSetupUI();
-    document.getElementById("mpCreateSection")?.classList.add("hidden");
-    const note = document.getElementById("mpInviteNote");
-    if (note) {
-      note.textContent = `You've been invited to game ${urlCode}. Enter your name to join.`;
-      note.classList.remove("hidden");
-    }
-    // Hide the code input row — code is already known from URL
-    document.getElementById("mpJoinCodeRow")?.classList.add("hidden");
-  }
-
-  // Pre-fill code and focus name
+  // Pre-fill hidden code input so joinMultiplayerGame() picks it up
   const codeInput = document.getElementById("mpJoinCode");
   if (codeInput) codeInput.value = code;
+
+  // If this is an invite link, show the prominent modal instead of the accordion
+  if (urlCode) {
+    hideSetupUI();
+    showInviteModal(urlCode);
+    return;
+  }
+
+  // Saved session rejoin: open the accordion and focus name as before
+  document.getElementById("mpCreateSection")?.classList.add("hidden");
+  document.getElementById("mpJoinCodeRow")?.classList.add("hidden");
   document.getElementById("mpJoinName")?.focus();
 }
