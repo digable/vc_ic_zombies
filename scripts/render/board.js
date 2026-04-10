@@ -1,6 +1,15 @@
 // render-board.js — Board rendering functions.
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
+var ISO_BTN_CUBE_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8,2 14,5 8,8 2,5"/><polygon points="14,5 14,11 8,14 8,8"/><polygon points="2,5 8,8 8,14 2,11"/></svg>';
+var ISO_BTN_SQUARE_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="1.5"/></svg>';
+var RESET_VIEW_BTN_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,3 3,3 3,8"/><polyline points="16,21 21,21 21,16"/><line x1="19" y1="5" x2="13" y2="11"/><polyline points="16,10 13,11 14,8"/><line x1="5" y1="19" x2="11" y2="13"/><polyline points="8,14 11,13 10,16"/></svg>';
+
+function updateIsoBtnIcon() {
+  var btn = document.getElementById("isoToggleBtn");
+  if (btn) btn.innerHTML = state.isoView ? ISO_BTN_SQUARE_HTML : ISO_BTN_CUBE_HTML;
+}
+
 function applyIsoTransform() {
   var zoom = state.boardZoom || 1.0;
   var px = state.boardPanX || 0;
@@ -27,7 +36,12 @@ function applyIsoTransform() {
   if (resetBtn) {
     var changed = px !== 0 || py !== 0 || Math.abs(zoom - 1.0) > 0.001;
     resetBtn.classList.toggle("hidden", !changed);
+    if (!resetBtn.dataset.iconSet) {
+      resetBtn.innerHTML = RESET_VIEW_BTN_HTML;
+      resetBtn.dataset.iconSet = "1";
+    }
   }
+  updateIsoBtnIcon();
 }
 
 function toggleIsoView() {
@@ -35,7 +49,7 @@ function toggleIsoView() {
   refs.board.classList.toggle("iso-view", state.isoView);
   var btn      = document.getElementById("isoToggleBtn");
   var controls = document.getElementById("isoControls");
-  if (btn)      btn.textContent = "2.5D View: " + (state.isoView ? "On" : "Off");
+  updateIsoBtnIcon();
   if (controls) controls.classList.toggle("hidden", !state.isoView);
   applyIsoTransform();
   renderPlayerTrailSvg();
@@ -99,7 +113,8 @@ function renderBoard() {
   refs.board.innerHTML = "";
 
   const cols = maxX - minX + 1;
-  refs.board.style.gridTemplateColumns = `repeat(${cols}, minmax(84px, 96px))`;
+  refs.board.style.gridTemplateColumns = `repeat(${cols}, 96px)`;
+  refs.board.style.width = "max-content";
 
   for (let y = minY; y <= maxY; y += 1) {
     for (let x = minX; x <= maxX; x += 1) {

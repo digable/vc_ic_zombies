@@ -124,4 +124,5 @@ function render() {
   renderGameOver();
   renderKnockoutBanner();
   renderSaveLoadPanel();
+  if (typeof syncTurnStrip === "function") syncTurnStrip();
 }

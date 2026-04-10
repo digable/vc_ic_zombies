@@ -115,6 +115,7 @@ function attachListeners() {
     const count = Number(refs.playerCount.value) || 2;
     state.gameActive = true;
     setupGame(Math.max(1, Math.min(MAX_PLAYERS, count)), readCurrentFilters(), readCurrentEventFilters());
+    if (window.matchMedia("(max-width: 1080px)").matches) switchMobileTab("map");
   });
 
   document.querySelectorAll("[data-requires-base][data-deck-state='enabled']").forEach((el) => {
@@ -472,6 +473,11 @@ function attachListeners() {
     let lastTouchY = null;
 
     boardWrap.addEventListener("touchstart", (e) => {
+      // On mobile, only pan/zoom when the touch starts inside the porthole.
+      // This lets the turn-strip and board-header scroll/interact normally.
+      const porthole = boardWrap.querySelector(".porthole");
+      if (porthole && !porthole.contains(e.target)) return;
+
       if (e.touches.length === 2) {
         lastPinchDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
@@ -512,6 +518,17 @@ function attachListeners() {
       lastTouchY = null;
     }, { passive: true });
   }
+
+  // Turn-strip direction buttons (proxy for the main moveDirBtns)
+  document.querySelectorAll(".ts-moveDirBtn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (state.pendingForcedMove) {
+        forcedMoveTarget(btn.dataset.dir);
+      } else {
+        movePlayer(btn.dataset.dir);
+      }
+    });
+  });
 
 }
 
@@ -602,6 +619,118 @@ function applyCollectionTooltips() {
   });
 }
 
+// Maps each dynamic panel to its sentinel (home in .controls) and its slot in the turn-strip.
+// Moving the actual DOM node keeps all refs, event listeners, and render targets intact.
+var PANEL_MOUNTS = [
+  { id: "standaloneDrawBtns",      sentinel: "sentinel-standalone",    slot: "ts-slot-standalone"    },
+  { id: "combatDecisionPanel",     sentinel: "sentinel-combat",        slot: "ts-slot-combat"        },
+  { id: "eventChoicePanel",        sentinel: "sentinel-events-choice", slot: "ts-slot-events-choice" },
+  { id: "zombieDiceChallengePanel",sentinel: "sentinel-events-dice",   slot: "ts-slot-events-dice"   },
+  { id: "moveStatusMsg",           sentinel: "sentinel-move-status",   slot: "ts-slot-move-status"   },
+  { id: "ductChoicePanel",         sentinel: "sentinel-move-duct",     slot: "ts-slot-move-duct"     },
+  { id: "zombieReplacePanel",      sentinel: "sentinel-zombies",       slot: "ts-slot-zombies"       },
+];
+
+function syncMobilePanels(toMap) {
+  PANEL_MOUNTS.forEach(function(m) {
+    var panel = document.getElementById(m.id);
+    if (!panel) return;
+    if (toMap) {
+      var slot = document.getElementById(m.slot);
+      if (slot) slot.appendChild(panel);
+    } else {
+      var sentinel = document.getElementById(m.sentinel);
+      if (sentinel) sentinel.parentNode.insertBefore(panel, sentinel.nextSibling);
+    }
+  });
+}
+
+function openTurnStep(step) {
+  document.querySelectorAll(".turn-step").forEach(function(el) {
+    el.classList.toggle("turn-step--open", el.dataset.step === step);
+  });
+}
+
+function getActiveStep() {
+  if (!state.gameActive) return "tile";
+  switch (state.step) {
+    case STEP.DRAW_TILE:   return "tile";
+    case STEP.COMBAT:      return "combat";
+    case STEP.DRAW_EVENTS: return "events";
+    case STEP.ROLL_MOVE:
+    case STEP.MOVE:        return "move";
+    case STEP.MOVE_ZOMBIES:return "zombies";
+    case STEP.DISCARD:
+    case STEP.END:         return "end";
+    default:               return "tile";
+  }
+}
+
+function syncTurnStripButtons() {
+  // Sync disabled state from the canonical refs buttons to the turn-strip proxy buttons.
+  [
+    ["ts-drawTileBtn",    "drawTileBtn"],
+    ["ts-rotateLeftBtn",  "rotateLeftBtn"],
+    ["ts-rotateRightBtn", "rotateRightBtn"],
+    ["ts-combatBtn",      "combatBtn"],
+    ["ts-drawEventsBtn",  "drawEventsBtn"],
+    ["ts-rollMoveBtn",    "rollMoveBtn"],
+    ["ts-endMoveBtn",     "endMoveBtn"],
+    ["ts-moveZombiesBtn", "moveZombiesBtn"],
+    ["ts-discardBtn",     "discardBtn"],
+    ["ts-endTurnBtn",     "endTurnBtn"],
+    ["ts-performSpellBtn","performSpellBtn"],
+  ].forEach(function(pair) {
+    var ts  = document.getElementById(pair[0]);
+    var src = document.getElementById(pair[1]);
+    if (ts && src) {
+      ts.disabled = src.disabled;
+      // Keep rollMoveBtn label in sync (it changes to "Air Duct → …" etc.)
+      if (pair[0] === "ts-rollMoveBtn") ts.textContent = src.textContent;
+    }
+  });
+
+  // Direction buttons
+  document.querySelectorAll(".ts-moveDirBtn").forEach(function(btn) {
+    var dir = btn.dataset.dir;
+    var src = refs.moveDirBtns.find(function(b) { return b.dataset.dir === dir; });
+    if (src) btn.disabled = src.disabled;
+  });
+
+  // Text span mirrors
+  var tsMove = document.getElementById("ts-moveRollOutput");
+  if (tsMove && refs.moveRollOutput) tsMove.textContent = refs.moveRollOutput.textContent;
+  var tsZombie = document.getElementById("ts-zombieRollOutput");
+  if (tsZombie && refs.zombieRollOutput) tsZombie.textContent = refs.zombieRollOutput.textContent;
+  var tsPending = document.getElementById("ts-pendingTileInfo");
+  if (tsPending && refs.pendingTileInfo) tsPending.textContent = refs.pendingTileInfo.textContent;
+}
+
+function syncTurnStrip() {
+  syncTurnStripButtons();
+  openTurnStep(getActiveStep());
+}
+
+function switchMobileTab(tab) {
+  var panels = {
+    controls: document.querySelector(".controls"),
+    map: document.querySelector(".board-wrap"),
+    info: document.getElementById("sidebarPanel")
+  };
+  document.querySelectorAll(".mobile-tab-btn").forEach(function(b) {
+    b.classList.toggle("mobile-tab-btn--active", b.dataset.tab === tab);
+  });
+  Object.keys(panels).forEach(function(key) {
+    var p = panels[key];
+    if (p) p.classList.toggle("mobile-tab-active", key === tab);
+  });
+  if (window.matchMedia("(max-width: 1080px)").matches) {
+    syncMobilePanels(tab === "map");
+    var strip = document.querySelector(".turn-strip");
+    if (strip) strip.classList.toggle("turn-strip--visible", tab === "map");
+  }
+}
+
 if (window.matchMedia("(max-width: 480px)").matches) {
   const s = document.getElementById("sidebarPanel");
   if (s) s.removeAttribute("open");
@@ -618,3 +747,5 @@ attachDeckDragListeners();
 const _baseFilter = { [getBaseCollection()]: { enabled: true, disabled: false } };
 setupGame(2, _baseFilter, _baseFilter);
 tryAutoRejoin();
+switchMobileTab("controls");
+updateIsoBtnIcon();
