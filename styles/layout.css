@@ -998,6 +998,27 @@
     order: 2;
   }
 
+  /* Hand tab: compact porthole above, hand panel below */
+  body.hand-tab-active main.layout {
+    flex: 0 0 auto;
+  }
+
+  body.hand-tab-active .board-wrap.mobile-tab-active {
+    height: 38vh;
+    flex: none;
+    padding: 0.3rem;
+  }
+
+  body.hand-tab-active .porthole {
+    height: 100%;
+    flex: none;
+  }
+
+  body.hand-tab-active #mobileHandPanel {
+    flex: 1;
+    min-height: 0;
+  }
+
   .mobile-hand-title {
     margin: 0 0 0.5rem;
     font-size: 1rem;

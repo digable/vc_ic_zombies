@@ -674,6 +674,12 @@ function openTurnStep(step) {
 
 function getActiveStep() {
   if (!state.gameActive) return "tile";
+  // Pending interactions override state.step so the right accordion opens.
+  if (state.pendingCombatDecision)                                    return "combat";
+  if (state.pendingEventChoice || state.pendingZombieDiceChallenge)   return "events";
+  if (state.pendingZombieReplace || state.pendingZombiePlace ||
+      state.pendingZombieMovement)                                     return "zombies";
+  if (state.pendingForcedMove || state.pendingDuctChoice)             return "move";
   switch (state.step) {
     case STEP.DRAW_TILE:   return "tile";
     case STEP.COMBAT:      return "combat";
@@ -780,19 +786,23 @@ function renderMobileHandPanel() {
 }
 
 function switchMobileTab(tab) {
-  var panels = {
-    controls: document.querySelector(".controls"),
-    map: document.querySelector(".board-wrap"),
-    info: document.getElementById("sidebarPanel"),
-    hand: document.getElementById("mobileHandPanel")
-  };
   document.querySelectorAll(".mobile-tab-btn").forEach(function(b) {
     b.classList.toggle("mobile-tab-btn--active", b.dataset.tab === tab);
   });
-  Object.keys(panels).forEach(function(key) {
-    var p = panels[key];
-    if (p) p.classList.toggle("mobile-tab-active", key === tab);
-  });
+
+  // controls / info / sidebar — show only on their own tab
+  var controls = document.querySelector(".controls");
+  if (controls) controls.classList.toggle("mobile-tab-active", tab === "controls");
+  var sidebar = document.getElementById("sidebarPanel");
+  if (sidebar) sidebar.classList.toggle("mobile-tab-active", tab === "info");
+
+  // board-wrap (porthole) shows on BOTH map and hand tabs
+  var boardWrap = document.querySelector(".board-wrap");
+  if (boardWrap) boardWrap.classList.toggle("mobile-tab-active", tab === "map" || tab === "hand");
+
+  // Body class drives compact-porthole layout on hand tab
+  document.body.classList.toggle("hand-tab-active", tab === "hand");
+
   if (window.matchMedia("(max-width: 1080px)").matches) {
     syncMobilePanels(tab === "map");
     var strip = document.querySelector(".turn-strip");

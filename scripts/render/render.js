@@ -135,4 +135,9 @@ function render() {
   renderSaveLoadPanel();
   if (typeof syncTurnStrip === "function") syncTurnStrip();
   if (typeof renderMobileHandPanel === "function") renderMobileHandPanel();
+  // If a card triggered a pending interaction while on the Hand tab, jump to Map
+  // so the player sees the relevant turn-strip panel immediately.
+  if (document.body.classList.contains("hand-tab-active") && isPendingInteraction()) {
+    if (typeof switchMobileTab === "function") switchMobileTab("map");
+  }
 }
