@@ -132,25 +132,76 @@ async function pollFromCloud() {
     if (!session.state) return;
 
     const incoming = session.state;
-
-    // Use a composite key to detect real state changes.
-    // On first "playing" poll (mp.lastStateKey is unset), always apply.
     const stateKey = `${incoming.turnNumber}:${incoming.currentPlayerIndex}:${incoming.step}`;
-    if (mp.lastStateKey === stateKey) return;
-    mp.lastStateKey = stateKey;
 
-    // First time seeing "playing" — close the lobby panel
+    // First time seeing "playing" — close the lobby panel and jump to map
     if (!mp.gameStarted) {
       mp.gameStarted = true;
+      mp.lastPlayerCount = session.players.length;
+      mp.lastStateKey = stateKey;
       hideMpPanel();
+      if (typeof switchMobileTab === "function") switchMobileTab("map");
+      deserializeState(incoming);
+      updateMpTurnBanner();
+      render();
+      if (isMyTurn()) { stopPolling(); showMpTurnNotification(); }
+      return;
     }
 
-    deserializeState(incoming);
+    // Detect player departures — must happen before the stateKey check because
+    // a non-current player leaving doesn't change turnNumber/currentPlayerIndex/step.
+    const departures = [];
+    if (mp.lastPlayerCount !== null && session.players.length < mp.lastPlayerCount) {
+      const leftCount = mp.lastPlayerCount - session.players.length;
+      const newDeps = (session.leftLog || []).slice(-leftCount);
+      for (const dep of newDeps) {
+        // If the leaver had a lower slot than ours, our slot shifted down by one
+        if (dep.slot < mp.myPlayerSlot) mp.myPlayerSlot -= 1;
+        departures.push(dep);
+      }
+    }
+    mp.lastPlayerCount = session.players.length;
+
+    // Use a composite key to detect real game-state changes.
+    const stateChanged = mp.lastStateKey !== stateKey;
+    if (stateChanged) mp.lastStateKey = stateKey;
+
+    // Nothing new to apply
+    if (!stateChanged && departures.length === 0) return;
+
+    // Always deserialize when a player left — server removed them from state.players
+    // even if stateKey didn't change (e.g. currentPlayerIndex stayed 0 after wrapping).
+    if (stateChanged || departures.length > 0) deserializeState(incoming);
+
+    // Log departures after deserializeState so they append to the restored log
+    for (const dep of departures) {
+      if (typeof logLine === "function") logLine(`${dep.name} left the game.`);
+    }
+    if (departures.length === 1) {
+      const el = document.getElementById("mobileToast");
+      if (el) {
+        el.textContent = `${departures[0].name} left the game`;
+        el.classList.add("mobile-toast--visible");
+        setTimeout(() => el.classList.remove("mobile-toast--visible"), 5000);
+      }
+    } else if (departures.length > 1) {
+      const el = document.getElementById("mobileToast");
+      if (el) {
+        el.textContent = `${departures.length} players left the game`;
+        el.classList.add("mobile-toast--visible");
+        setTimeout(() => el.classList.remove("mobile-toast--visible"), 5000);
+      }
+    }
+
     updateMpTurnBanner();
     render();
 
     if (isMyTurn()) {
       stopPolling();
+      // Fire notification when state changed (normal turn handoff) OR when a departure
+      // caused our turn — departure can leave currentPlayerIndex unchanged (wraps to same
+      // number) so stateChanged would be false even though it just became our turn.
+      if (stateChanged || departures.length > 0) showMpTurnNotification();
     }
   } catch (e) {
     console.warn("pollFromCloud failed:", e.message);
@@ -207,7 +258,7 @@ async function createMultiplayerGame() {
     state.multiplayerSession = {
       code, myPlayerId: playerId, myDeviceId: deviceId,
       myPlayerSlot: 0, isHost: true, hostId, mode: "online",
-      pollInterval: null, gameStarted: false, lastStateKey: null
+      pollInterval: null, gameStarted: false, lastStateKey: null, lastPlayerCount: null
     };
 
     showLobbySection();
@@ -254,7 +305,7 @@ async function joinMultiplayerGame() {
     state.multiplayerSession = {
       code, myPlayerId: playerId, myDeviceId: deviceId,
       myPlayerSlot: slot, isHost: false, hostId: null, mode: "online",
-      pollInterval: null, gameStarted: false, lastStateKey: null
+      pollInterval: null, gameStarted: false, lastStateKey: null, lastPlayerCount: null
     };
 
     // If the game is already playing (rejoining mid-game), skip the lobby
@@ -306,6 +357,7 @@ async function startMultiplayerGame() {
     });
 
     mp.myPlayerSlot = session.players.findIndex((p) => p.id === mp.myPlayerId);
+    mp.lastPlayerCount = lobbyPlayers.length;
 
     const initialState = serializeState();
     mp.lastStateKey = `${initialState.turnNumber}:${initialState.currentPlayerIndex}:${initialState.step}`;
@@ -319,6 +371,10 @@ async function startMultiplayerGame() {
     hideMpPanel();
     updateMpTurnBanner();
     render();
+    // Switch to map and flash the tab — showMpTurnNotification handles both.
+    // Always switch to map; only flash if it's actually our turn right now.
+    if (typeof switchMobileTab === "function") switchMobileTab("map");
+    if (isMyTurn()) showMpTurnNotification();
   } catch (e) {
     setLobbyStatus(e.message || "Failed to start game.", true);
     if (btn) btn.disabled = false;
@@ -359,15 +415,68 @@ function updateMpTurnBanner() {
   const el = document.getElementById("mpTurnBanner");
   if (!el) return;
   const mp = mpSession();
-  if (!mp || !mp.gameStarted) { el.classList.add("hidden"); return; }
+
+  const mapBtn = document.querySelector('.mobile-tab-btn[data-tab="map"]');
+
+  if (!mp || !mp.gameStarted) {
+    el.classList.add("hidden");
+    if (mapBtn) mapBtn.classList.remove("mobile-tab-btn--mp-active");
+    return;
+  }
   el.classList.remove("hidden");
   if (isMyTurn()) {
     el.textContent = "Your turn";
     el.className = "mp-turn-banner mp-your-turn";
+    if (mapBtn) mapBtn.classList.add("mobile-tab-btn--mp-active");
   } else {
     const cp = currentPlayer();
     el.textContent = `Waiting for ${cp?.name ?? "opponent"}...`;
     el.className = "mp-turn-banner mp-waiting";
+    if (mapBtn) mapBtn.classList.remove("mobile-tab-btn--mp-active");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Turn notification — fires on the waiting device when its turn arrives
+// ---------------------------------------------------------------------------
+
+function showMpTurnNotification() {
+  const playerName = currentPlayer()?.name ?? "You";
+
+  // Flash the Map tab button first — must happen before switchMobileTab because
+  // switchMobileTab calls syncMobilePanels which moves DOM nodes and triggers a
+  // reflow, which would make the void-offsetWidth restart trick a no-op.
+  const mapTabBtn = document.querySelector('.mobile-tab-btn[data-tab="map"]');
+  if (mapTabBtn) {
+    mapTabBtn.classList.remove("mobile-tab-btn--your-turn");
+    void mapTabBtn.offsetWidth; // force reflow so the animation restarts cleanly
+    mapTabBtn.classList.add("mobile-tab-btn--your-turn");
+    // 5 iterations × 0.55 s = 2.75 s; remove class after so active styling is unaffected
+    setTimeout(() => mapTabBtn.classList.remove("mobile-tab-btn--your-turn"), 2800);
+  }
+
+  // Switch to the map tab after the flash class is committed
+  if (typeof switchMobileTab === "function") switchMobileTab("map");
+
+  // Browser Notification (works even if the tab is in the background)
+  if ("Notification" in window) {
+    const fire = () => new Notification("Your turn!", {
+      body: `${playerName}, it's your turn in Zombie Dice.`,
+      icon: "favicon.ico"
+    });
+    if (Notification.permission === "granted") {
+      fire();
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((perm) => { if (perm === "granted") fire(); });
+    }
+  }
+
+  // Toast (visible on any screen size for multiplayer turns)
+  const el = document.getElementById("mobileToast");
+  if (el) {
+    el.textContent = "Your turn!";
+    el.classList.add("mobile-toast--visible");
+    setTimeout(() => el.classList.remove("mobile-toast--visible"), 5000);
   }
 }
 

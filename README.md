@@ -453,6 +453,12 @@ This project is a fan adaptation inspired by the physical board game series by *
 
 ---
 
+## 🙏 Thanks
+
+Special thanks to **Chris Troyer** — playtester, great person, and an essential part of making this game better.
+
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Feel free to:

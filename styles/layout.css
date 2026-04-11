@@ -818,6 +818,37 @@
     background: rgba(0, 0, 0, 0.04);
   }
 
+  @keyframes mp-tab-flash {
+    0%, 100% { background: transparent; color: var(--tone-muted); border-bottom-color: transparent; }
+    50%       { background: var(--tone-warm); color: #fff; border-bottom-color: var(--tone-warm); }
+  }
+
+  .mobile-tab-btn--your-turn {
+    animation: mp-tab-flash 0.55s ease-in-out 5;
+  }
+
+  @keyframes mp-dot-pulse {
+    0%, 100% { transform: scale(1);    opacity: 1;   }
+    50%       { transform: scale(0.75); opacity: 0.5; }
+  }
+
+  /* Persistent green dot shown on the Map tab while it is the local player's turn */
+  .mobile-tab-btn--mp-active {
+    position: relative;
+  }
+
+  .mobile-tab-btn--mp-active::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    background: #4caf50;
+    border-radius: 50%;
+    animation: mp-dot-pulse 1.4s ease-in-out infinite;
+  }
+
   main.layout {
     flex: 1;
     min-height: 0;
