@@ -354,7 +354,7 @@ function handleBreakthroughAttempt(dir) {
     state.movesRemaining -= 1;
     state.playerTrail.push(key(player.x, player.y));
     collectTokensAtPlayerSpace(player);
-    logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(toTile)} [space ${toX}, ${toY}].`);
+    logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(toTile)} [space ${toX}, ${toY}].`, "quiet");
     if (checkWin(player)) { render(); return; }
     const playerSpaceKey = playerKey(player);
     if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
@@ -404,7 +404,7 @@ function movePlayer(dir) {
   if (!canMove(player, dir)) {
     const d = DIRS[dir];
     logLine(
-      `${player.name} cannot move ${directionToArrow(dir)} from [space ${player.x}, ${player.y}] to [space ${player.x + d.x}, ${player.y + d.y}].`
+      `${player.name} cannot move ${directionToArrow(dir)} from [space ${player.x}, ${player.y}] to [space ${player.x + d.x}, ${player.y + d.y}].`, "quiet"
     );
     render();
     return;
@@ -467,7 +467,7 @@ function movePlayer(dir) {
 
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
-  logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}].`);
+  logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}].`, "quiet");
 
   if (player.smellEffect && !player.smellEffect.movedToNewTile) {
     const newTileKey = key(spaceToTileCoord(player.x), spaceToTileCoord(player.y));
@@ -554,7 +554,7 @@ function movePlayer(dir) {
       moveToZombiePhase();
     } else {
       state.step = STEP.MOVE;
-      logLine(`${player.name} may continue moving (${state.movesRemaining} space(s) remaining).`);
+      logLine(`${player.name} may continue moving (${state.movesRemaining} space(s) remaining).`, "quiet");
     }
     render();
     return;
@@ -584,7 +584,7 @@ function forcedMoveTarget(dir) {
 
   if (!canMove(player, dir)) {
     const d = DIRS[dir];
-    logLine(`${player.name} cannot move ${directionToArrow(dir)} from [space ${player.x}, ${player.y}] to [space ${player.x + d.x}, ${player.y + d.y}].`);
+    logLine(`${player.name} cannot move ${directionToArrow(dir)} from [space ${player.x}, ${player.y}] to [space ${player.x + d.x}, ${player.y + d.y}].`, "quiet");
     render();
     return;
   }
@@ -606,7 +606,7 @@ function forcedMoveTarget(dir) {
 
   const tile = getTileAtSpace(player.x, player.y);
   collectTokensAtPlayerSpace(player);
-  logLine(`${player.name} was moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}] (${pfm.remaining} move(s) remaining).`);
+  logLine(`${player.name} was moved ${directionToArrow(dir)} to ${getTileDisplayName(tile)} [space ${player.x}, ${player.y}] (${pfm.remaining} move(s) remaining).`, "quiet");
 
   if (checkWin(player)) {
     state.pendingForcedMove = null;

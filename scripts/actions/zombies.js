@@ -320,19 +320,19 @@ function manualMoveZombie(zKey) {
 
   if (!moved) {
     pzm.stuckKeys.add(zKey);
-    logLine(`Zombie at ${zKey} is stuck and cannot move.`);
+    logLine(`Zombie at ${zKey} is stuck and cannot move.`, "quiet");
     const available = availableZombiesForMove(pzm);
     if (available.length === 0) {
       state.pendingZombieMovement = null;
       state.step = STEP.DISCARD;
-      logLine(`No more zombies can move.`);
+      logLine(`No more zombies can move.`, "quiet");
     }
     render();
     return;
   }
 
   pzm.remaining -= 1;
-  logLine(`Zombie moved to ${finalKey}. (${pzm.remaining} move(s) remaining)`);
+  logLine(`Zombie moved to ${finalKey}. (${pzm.remaining} move(s) remaining)`, "quiet");
 
   if (combatPending) {
     const resumeAfter = pzm.remaining > 0 ? STEP.MOVE_ZOMBIES : STEP.DISCARD;

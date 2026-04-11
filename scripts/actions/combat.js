@@ -57,7 +57,7 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
     if (resumeStepAfterPending === STEP.MOVE) {
       state.step = STEP.MOVE;
       if (state.movesRemaining > 0) {
-        logLine(`${player.name} may continue moving (${state.movesRemaining} space(s) remaining).`);
+        logLine(`${player.name} may continue moving (${state.movesRemaining} space(s) remaining).`, "quiet");
       }
       return;
     }

@@ -52,9 +52,15 @@ function serializeState() {
     turnNumber:              state.turnNumber,
     gameOver:                state.gameOver,
     winInfo:                 state.winInfo,
-    zombieMoveFreezeCount:   state.zombieMoveFreezeCount,
-    weaponsJammedCount:      state.weaponsJammedCount,
-    movementBonus:           state.movementBonus,
+    zombieMoveFreezeCount:       state.zombieMoveFreezeCount,
+    weaponsJammedCount:          state.weaponsJammedCount,
+    movementRollFreezeCount:     state.movementRollFreezeCount,
+    tokenPickupFrozenCount:      state.tokenPickupFrozenCount,
+    bulletsCombatFrozenCount:    state.bulletsCombatFrozenCount,
+    lastPlayedWeaponName:        state.lastPlayedWeaponName,
+    lastPlayedWeaponByPlayerId:  state.lastPlayedWeaponByPlayerId,
+    recentKillByPlayerId:        state.recentKillByPlayerId,
+    movementBonus:               state.movementBonus,
     moveFloorThisTurn:       state.moveFloorThisTurn,
     doubleMovementThisTurn:  state.doubleMovementThisTurn,
     regularZombieEnhanced:   state.regularZombieEnhanced,
@@ -209,7 +215,7 @@ function saveGame(slot) {
       step:        state.step,
       savedAt:     data.savedAt
     }));
-    logLine(`Game saved to Slot ${slot + 1}.`);
+    logLine(`Game saved to Slot ${slot + 1}.`, "quiet");
   } catch (e) {
     logLine(`Save to Slot ${slot + 1} failed: ${e.message}`);
   }
@@ -245,7 +251,7 @@ function loadGame(slot) {
   try {
     deserializeState(JSON.parse(raw));
     syncSetupUiToState();
-    logLine(`Game loaded from Slot ${slot + 1}.`);
+    logLine(`Game loaded from Slot ${slot + 1}.`, "quiet");
   } catch (e) {
     logLine(`Load from Slot ${slot + 1} failed: ${e.message}`);
   }
@@ -294,7 +300,7 @@ function importToSlot(slot, file) {
         step:        data.step,
         savedAt:     data.savedAt
       }));
-      logLine(`Save file imported into Slot ${slot + 1}.`);
+      logLine(`Save file imported into Slot ${slot + 1}.`, "quiet");
     } catch (err) {
       alert(`Import failed: ${err.message}`);
     }

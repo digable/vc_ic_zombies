@@ -44,6 +44,36 @@ function applyIsoTransform() {
   updateIsoBtnIcon();
 }
 
+function centerBoardOnPlayer(player) {
+  if (!window.matchMedia("(max-width: 1080px)").matches) return;
+  var porthole = document.querySelector(".porthole");
+  if (!porthole || !refs.board) return;
+
+  var { minX, minY } = boardBounds();
+  var CELL = 96;
+  var GAP  = 6;
+
+  // Tile coord of this player
+  var tx = spaceToTileCoord(player.x);
+  var ty = spaceToTileCoord(player.y);
+
+  // Pixel center of that tile within the board element (relative to board top-left)
+  var tileCol = tx - minX;  // 0-based column index
+  var tileRow = ty - minY;
+  var tileCx  = tileCol * (CELL + GAP) + CELL / 2;
+  var tileCy  = tileRow * (CELL + GAP) + CELL / 2;
+
+  // Porthole center
+  var portholeW = porthole.clientWidth;
+  var portholeH = porthole.clientHeight;
+  var zoom = state.boardZoom || 1.0;
+
+  // Pan so the tile center lands at the porthole center
+  state.boardPanX = portholeW / 2 - tileCx * zoom;
+  state.boardPanY = portholeH / 2 - tileCy * zoom;
+  applyIsoTransform();
+}
+
 function toggleIsoView() {
   state.isoView = !state.isoView;
   refs.board.classList.toggle("iso-view", state.isoView);

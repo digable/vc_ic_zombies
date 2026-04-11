@@ -559,9 +559,15 @@ function renderZombieReplacePanel() {
     const pfmTitle = pfm.cardName || "Forced Movement";
     panel.innerHTML = `
       <div class="combat-decision-title">${pfmTitle} — Move ${targetName} ${pfm.remaining} space(s)</div>
-      <div class="small">Use the movement buttons to move ${targetName}. All zombies must be fought.</div>
+      <div class="small">Move ${targetName} using the direction buttons below. All zombies must be fought.</div>
+      <div class="row dir-row pfm-dir-row">
+        <button class="ts-moveDirBtn pfm-dir-btn" data-dir="N">↑</button>
+        <button class="ts-moveDirBtn pfm-dir-btn" data-dir="W">←</button>
+        <button class="ts-moveDirBtn pfm-dir-btn" data-dir="E">→</button>
+        <button class="ts-moveDirBtn pfm-dir-btn" data-dir="S">↓</button>
+      </div>
       <div class="combat-decision-actions">
-        <button data-forced-move-action="end">End movement</button>
+        <button data-forced-move-action="end">End movement early</button>
       </div>
     `;
     return;

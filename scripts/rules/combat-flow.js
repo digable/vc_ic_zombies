@@ -20,7 +20,7 @@ function autoSkipCombatIfClear() {
     return;
   }
   if (currentPlayer().noCombatThisTurn) {
-    logLine(`${currentPlayer().name} is under a no-combat effect. Combat step skipped.`);
+    logLine(`${currentPlayer().name} is under a no-combat effect. Combat step skipped.`, "quiet");
     state.step = STEP.DRAW_EVENTS;
     return;
   }
@@ -28,7 +28,7 @@ function autoSkipCombatIfClear() {
     return;
   }
 
-  logLine(`${currentPlayer().name} has no zombie in current space. Combat step skipped.`);
+  logLine(`${currentPlayer().name} has no zombie in current space. Combat step skipped.`, "quiet");
   state.step = STEP.DRAW_EVENTS;
 }
 
@@ -40,7 +40,7 @@ function autoSkipZombieMoveIfClear() {
     return;
   }
 
-  logLine(`${currentPlayer().name} has no zombies to move. Zombie movement skipped.`);
+  logLine(`${currentPlayer().name} has no zombies to move. Zombie movement skipped.`, "quiet");
   state.currentZombieRoll = null;
   state.step = STEP.DISCARD;
 }

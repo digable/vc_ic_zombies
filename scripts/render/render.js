@@ -1,6 +1,25 @@
 // render.js — Thin orchestrator. Wires updateButtons and the main render() call.
 // All rendering helpers live in render-helpers.js, render-board.js, render-panels.js, render-debug.js.
 
+let _toastTimer = null;
+let _lastToastText = null;
+
+function showMobileToast(text) {
+  if (!window.matchMedia("(max-width: 1080px)").matches) return;
+  const el = document.getElementById("mobileToast");
+  if (!el) return;
+  if (text === _lastToastText) return; // same message — don't re-flash
+  _lastToastText = text;
+  el.textContent = text;
+  el.classList.add("mobile-toast--visible");
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    el.classList.remove("mobile-toast--visible");
+    _lastToastText = null;
+    _toastTimer = null;
+  }, 4000);
+}
+
 function isPendingInteraction() {
   return !!(state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace ||
     state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement ||
@@ -139,5 +158,10 @@ function render() {
   // so the player sees the relevant turn-strip panel immediately.
   if (document.body.classList.contains("hand-tab-active") && isPendingInteraction()) {
     if (typeof switchMobileTab === "function") switchMobileTab("map");
+  }
+  // Show latest non-quiet log line as a toast on mobile.
+  if (state.logs && state.logs.length > 0) {
+    const latest = state.logs.find((e) => e.type !== "quiet");
+    if (latest) showMobileToast(latest.text);
   }
 }

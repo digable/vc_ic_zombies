@@ -208,7 +208,7 @@ function attachListeners() {
   });
 
   // Mobile hand panel — same delegation as refs.handList so cards can be played from Hand tab.
-  var mobileHandPanel = document.getElementById("mobileHandPanel");
+  const mobileHandPanel = document.getElementById("mobileHandPanel");
   if (mobileHandPanel) {
     mobileHandPanel.addEventListener("click", (event) => {
       const target = event.target;
@@ -335,6 +335,10 @@ function attachListeners() {
       if (!(event.target instanceof HTMLElement)) return;
       const forcedAction = event.target.getAttribute("data-forced-move-action");
       if (forcedAction === "end") { endForcedMovement(); return; }
+      if (event.target.classList.contains("pfm-dir-btn")) {
+        const dir = event.target.getAttribute("data-dir");
+        if (dir) { forcedMoveTarget(dir); return; }
+      }
       const zmAction = event.target.getAttribute("data-zombie-move-action");
       if (zmAction === "auto") { autoFinishZombieMovement(); return; }
       if (zmAction === "done") { flushZombieMovement(); return; }
@@ -678,8 +682,8 @@ function getActiveStep() {
   if (state.pendingCombatDecision)                                    return "combat";
   if (state.pendingEventChoice || state.pendingZombieDiceChallenge)   return "events";
   if (state.pendingZombieReplace || state.pendingZombiePlace ||
-      state.pendingZombieMovement)                                     return "zombies";
-  if (state.pendingForcedMove || state.pendingDuctChoice)             return "move";
+      state.pendingZombieMovement || state.pendingForcedMove)          return "zombies";
+  if (state.pendingDuctChoice)                                        return "move";
   switch (state.step) {
     case STEP.DRAW_TILE:   return "tile";
     case STEP.COMBAT:      return "combat";
@@ -735,7 +739,15 @@ function syncTurnStripButtons() {
 
 function syncTurnStrip() {
   syncTurnStripButtons();
-  openTurnStep(getActiveStep());
+  var activeStep = getActiveStep();
+  openTurnStep(activeStep);
+  // Auto-center the map on the moving player when the move step becomes active.
+  if (activeStep === "move" && state.gameActive && !state.gameOver) {
+    var mover = state.pendingForcedMove
+      ? state.players.find(function(p) { return p.id === state.pendingForcedMove.targetPlayerId; })
+      : currentPlayer();
+    if (mover && typeof centerBoardOnPlayer === "function") centerBoardOnPlayer(mover);
+  }
 }
 
 // ---- Lock screen (pass-device single-device play) -------------------------
@@ -807,8 +819,6 @@ function switchMobileTab(tab) {
     syncMobilePanels(tab === "map");
     var strip = document.querySelector(".turn-strip");
     if (strip) strip.classList.toggle("turn-strip--visible", tab === "map");
-    var handPanel = document.getElementById("mobileHandPanel");
-    if (handPanel) handPanel.style.display = (tab === "hand") ? "" : "none";
     if (tab === "hand") renderMobileHandPanel();
   }
 }

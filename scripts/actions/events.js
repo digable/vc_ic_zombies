@@ -8,7 +8,7 @@ function drawOneEventCardForPlayer(player, sourceName) {
   }
   const card = state.eventDeck.shift();
   player.hand.push(card);
-  logLine(`${player.name} drew ${card.name} (${sourceName} — natural 6).`);
+  logLine(`${player.name} drew ${card.name} (${sourceName} — natural 6).`, "quiet");
 }
 
 function drawEventsToThree() {
@@ -25,7 +25,7 @@ function drawEventsToThree() {
     player.hand.push(state.eventDeck.shift());
   }
 
-  logLine(`${player.name} refilled event hand to ${player.hand.length}.`);
+  logLine(`${player.name} refilled event hand to ${player.hand.length}.`, "quiet");
   state.step = STEP.ROLL_MOVE;
   render();
 }
@@ -217,7 +217,7 @@ function resolveZombieDiceChallenge(action) {
     const idx = action === "B0" ? 0 : 1;
     target.bullets -= 1;
     pzdc.dice[idx] += 1;
-    logLine(`${target.name} spent 1 bullet — die ${idx + 1} is now ${pzdc.dice[idx]}.`);
+    logLine(`${target.name} spent 1 bullet — die ${idx + 1} is now ${pzdc.dice[idx]}.`, "quiet");
     render();
     return;
   }
@@ -227,7 +227,7 @@ function resolveZombieDiceChallenge(action) {
     const idx = action === "H0" ? 0 : 1;
     target.hearts -= 1;
     pzdc.dice[idx] = rollD6();
-    logLine(`${target.name} spent 1 heart — die ${idx + 1} rerolled to ${pzdc.dice[idx]}.`);
+    logLine(`${target.name} spent 1 heart — die ${idx + 1} rerolled to ${pzdc.dice[idx]}.`, "quiet");
     render();
     return;
   }
@@ -674,7 +674,7 @@ function discardSelected() {
       render();
       return;
     }
-    logLine(`${player.name} skipped discard.`);
+    logLine(`${player.name} skipped discard.`, "quiet");
   }
 
   state.selectedHandIndex = null;

@@ -259,7 +259,7 @@ function drawAndPlaceTile(deckId = "base") {
   const companionNote = state.pendingCompanionTiles.length > 0
     ? ` (+${state.pendingCompanionTiles.map((t) => t.name).join(", ")})`
     : "";
-  logLine(`${cp.name} drew ${drawnName}${companionNote}. Click a highlighted map space to place it.`);
+  logLine(`${cp.name} drew ${drawnName}${companionNote}. Click a highlighted map space to place it.`, "quiet");
   render();
 }
 
@@ -274,7 +274,7 @@ function rotatePendingTile(delta) {
     next = (next + delta + 4) % 4;
   }
   state.pendingRotation = next;
-  logLine(`${currentPlayer().name} rotated pending tile to ${next * 90} degrees.`);
+  logLine(`${currentPlayer().name} rotated pending tile to ${next * 90} degrees.`, "quiet");
   render();
 }
 

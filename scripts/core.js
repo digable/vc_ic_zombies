@@ -933,7 +933,7 @@ function reshuffleEventDeckIfEmpty() {
   if (state.eventDiscardPile.length === 0) return;
   state.eventDeck = shuffle([...state.eventDiscardPile]);
   state.eventDiscardPile = [];
-  logLine("Event deck exhausted — discard pile shuffled back in.");
+  logLine("Event deck exhausted — discard pile shuffled back in.", "quiet");
 }
 
 function addTile(x, y, tile) {
