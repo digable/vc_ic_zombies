@@ -203,12 +203,19 @@ function renderPlayers() {
     const pty = spaceToTileCoord(p.y);
     const plx = getLocalCoord(p.x, ptx);
     const ply = getLocalCoord(p.y, pty);
+    const itemChipsHtml = (p.items && p.items.length > 0)
+      ? `<div class="player-item-chips">${p.items.map((it) => `<span class="player-item-chip">${it.name}</span>`).join("")}</div>`
+      : "";
+    const botdChipsHtml = (p.botdPages && p.botdPages.length > 0)
+      ? `<div class="player-item-chips">${p.botdPages.map(() => `<span class="player-item-chip player-item-chip--botd">BotD Page</span>`).join("")}</div>`
+      : "";
     const el = document.createElement("div");
     el.className = "player-card";
     el.innerHTML = `
       <strong>${p.name}</strong><br />
       Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}${p.hasJeep ? " | Jeep" : ""} | KO: ${p.knockouts || 0}<br />
       Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
+      ${itemChipsHtml}${botdChipsHtml}
     `;
     refs.playersList.appendChild(el);
   });
@@ -662,9 +669,16 @@ function renderLog() {
 }
 
 function renderMeta() {
-  const combatText = state.lastCombatResult ? ` | Combat: ${state.lastCombatResult}` : "";
-  refs.turnInfo.textContent = `Turn ${state.turnNumber} | ${currentPlayer().name} | Step: ${state.step}${combatText}`;
   const cp = currentPlayer();
+  const pipsHtml = state.players.map((p) => {
+    const isActive = p.id === cp.id;
+    return `<span class="player-pip${isActive ? " player-pip--active" : ""}">
+      <span class="pip-name">${p.name}</span>
+      <span class="pip-stat">♥${p.hearts}</span>
+      <span class="pip-stat pip-stat--bullets">⬤${p.bullets}</span>
+    </span>`;
+  }).join("");
+  refs.turnInfo.innerHTML = `<div class="player-strip">${pipsHtml}</div>`;
   const jeepHint = cp.hasJeep ? "  |  Jeep: doubles roll on road — entering a building ends it at turn's end" : "";
   refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}${jeepHint}`;
   refs.zombieRollOutput.textContent = `Zombie Roll: ${state.currentZombieRoll ?? "-"}`;

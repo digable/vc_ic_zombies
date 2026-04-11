@@ -12,7 +12,7 @@
   <body>
     <header class="topbar">
       <h1>VC IC Zombies</h1>
-      <p class="subtitle">Town square survival. Reach the helipad or collect 25 kills. <a href="tile-editor.html">Tile Editor</a></p>
+      <p class="subtitle">Reach the Helipad &nbsp;·&nbsp; 25 kills<span id="spellObjective" class="hidden"> &nbsp;·&nbsp; Cabin Spell: roll 6 on d6 (−1 per BotD page, no dogs)</span> &nbsp;·&nbsp; <a href="tile-editor.html">Tile Editor</a></p>
       <button class="br-trigger" onclick="openBugReportModal()">Report a Bug</button>
     </header>
 
@@ -149,7 +149,6 @@
 
       <section class="panel board-wrap">
         <div class="board-header">
-          <h2>Map</h2>
           <div id="turnInfo"></div>
           <div class="board-header-actions">
             <button id="isoToggleBtn" onclick="toggleIsoView()" title="Toggle 2.5D view"></button>
@@ -308,7 +307,7 @@
               </div>
               <div class="row">
                 <button id="ts-discardBtn" onclick="discardSelected()">Discard Event</button>
-                <button id="ts-endTurnBtn" onclick="endTurn()">End Turn</button>
+                <button id="ts-endTurnBtn" onclick="endTurnWithLockCheck()">End Turn</button>
               </div>
             </div>
           </div>
@@ -360,10 +359,21 @@
       </div>
     </div>
 
+    <div id="lockScreen" class="lock-screen" style="display:none" onclick="dismissLockScreen()">
+      <div class="lock-screen-inner">
+        <div class="lock-screen-icon">🔒</div>
+        <div id="lockScreenMsg" class="lock-screen-msg">Pass device to next player.</div>
+        <div class="lock-screen-hint">Tap anywhere to start your turn</div>
+      </div>
+    </div>
+
+    <div id="mobileHandPanel" class="mobile-hand-panel" style="display:none"></div>
+
     <nav class="mobile-tabs" aria-label="Section tabs">
       <button class="mobile-tab-btn mobile-tab-btn--active" data-tab="controls" onclick="switchMobileTab('controls')">Controls</button>
       <button class="mobile-tab-btn" data-tab="map" onclick="switchMobileTab('map')">Map</button>
       <button class="mobile-tab-btn" data-tab="info" onclick="switchMobileTab('info')">Game Info</button>
+      <button class="mobile-tab-btn" data-tab="hand" onclick="switchMobileTab('hand')">Hand</button>
     </nav>
 
     <footer class="site-footer">

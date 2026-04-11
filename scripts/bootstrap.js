@@ -172,7 +172,7 @@ function attachListeners() {
   refs.endMoveBtn.addEventListener("click", endMovementEarly);
   refs.moveZombiesBtn.addEventListener("click", startZombieMovement);
   refs.discardBtn.addEventListener("click", discardSelected);
-  refs.endTurnBtn.addEventListener("click", endTurn);
+  refs.endTurnBtn.addEventListener("click", endTurnWithLockCheck);
   if (refs.performSpellBtn) refs.performSpellBtn.addEventListener("click", attemptSpell);
 
   refs.moveDirBtns.forEach((btn) => {
@@ -206,6 +206,25 @@ function attachListeners() {
     const activateIndex = target.getAttribute("data-activate-item-index");
     if (activateIndex !== null) { activateItem(Number(activateIndex)); }
   });
+
+  // Mobile hand panel — same delegation as refs.handList so cards can be played from Hand tab.
+  var mobileHandPanel = document.getElementById("mobileHandPanel");
+  if (mobileHandPanel) {
+    mobileHandPanel.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const playIndex = target.getAttribute("data-play-index");
+      if (playIndex !== null) { playEvent(Number(playIndex)); return; }
+      const stageIndex = target.getAttribute("data-stage-index");
+      if (stageIndex !== null) { stagePage(Number(stageIndex)); return; }
+      const usePageIndex = target.getAttribute("data-use-page-index");
+      if (usePageIndex !== null) { usePage(Number(usePageIndex)); return; }
+      const selectIndex = target.getAttribute("data-select-index");
+      if (selectIndex !== null) { toggleHandSelection(Number(selectIndex)); return; }
+      const activateIndex = target.getAttribute("data-activate-item-index");
+      if (activateIndex !== null) { activateItem(Number(activateIndex)); }
+    });
+  }
 
   // Board click — routes to whichever pending interaction is active.
   // See pending state priority order documented in core.js state definition.
@@ -646,8 +665,10 @@ function syncMobilePanels(toMap) {
 }
 
 function openTurnStep(step) {
+  var activeStep = getActiveStep();
   document.querySelectorAll(".turn-step").forEach(function(el) {
     el.classList.toggle("turn-step--open", el.dataset.step === step);
+    el.classList.toggle("turn-step--active", el.dataset.step === activeStep);
   });
 }
 
@@ -711,11 +732,59 @@ function syncTurnStrip() {
   openTurnStep(getActiveStep());
 }
 
+// ---- Lock screen (pass-device single-device play) -------------------------
+
+function endTurnWithLockCheck() {
+  if (state.step !== STEP.END || state.gameOver) { endTurn(); return; }
+  const isSingleDevice = !state.multiplayerSession || state.multiplayerSession.mode !== "online";
+  const multiPlayer = state.players && state.players.length > 1;
+  // Capture next player name before endTurn advances the index
+  const nextIdx = (state.currentPlayerIndex + 1) % state.players.length;
+  const nextName = state.players[nextIdx] ? state.players[nextIdx].name : "";
+  endTurn();
+  if (isSingleDevice && multiPlayer && state.gameActive && !state.gameOver) {
+    var lockMsg = document.getElementById("lockScreenMsg");
+    if (lockMsg) lockMsg.textContent = "Pass device to " + nextName + ".";
+    var lockScreen = document.getElementById("lockScreen");
+    if (lockScreen) lockScreen.style.display = "";
+  }
+}
+
+function dismissLockScreen() {
+  var lockScreen = document.getElementById("lockScreen");
+  if (lockScreen) lockScreen.style.display = "none";
+  if (window.matchMedia("(max-width: 1080px)").matches) {
+    switchMobileTab("map");
+  }
+}
+
+// ---- Mobile Hand panel ---------------------------------------------------
+
+function renderMobileHandPanel() {
+  var panel = document.getElementById("mobileHandPanel");
+  if (!panel) return;
+  // Mirror the fully-rendered hand list (includes Play/Stage/etc buttons with data attributes).
+  // Event delegation on mobileHandPanel handles the clicks.
+  var src = refs.handList;
+  if (src) panel.innerHTML = src.innerHTML;
+
+  // Update Hand tab label with card count.
+  var mp = state.multiplayerSession;
+  var playerIdx = (mp && mp.mode === "online" && mp.myPlayerSlot != null)
+    ? mp.myPlayerSlot
+    : state.currentPlayerIndex;
+  var player = state.players && state.players[playerIdx];
+  var count = player ? (player.hand ? player.hand.length : 0) : 0;
+  var btn = document.querySelector(".mobile-tab-btn[data-tab='hand']");
+  if (btn) btn.textContent = "Hand (" + count + ")";
+}
+
 function switchMobileTab(tab) {
   var panels = {
     controls: document.querySelector(".controls"),
     map: document.querySelector(".board-wrap"),
-    info: document.getElementById("sidebarPanel")
+    info: document.getElementById("sidebarPanel"),
+    hand: document.getElementById("mobileHandPanel")
   };
   document.querySelectorAll(".mobile-tab-btn").forEach(function(b) {
     b.classList.toggle("mobile-tab-btn--active", b.dataset.tab === tab);
@@ -728,6 +797,9 @@ function switchMobileTab(tab) {
     syncMobilePanels(tab === "map");
     var strip = document.querySelector(".turn-strip");
     if (strip) strip.classList.toggle("turn-strip--visible", tab === "map");
+    var handPanel = document.getElementById("mobileHandPanel");
+    if (handPanel) handPanel.style.display = (tab === "hand") ? "" : "none";
+    if (tab === "hand") renderMobileHandPanel();
   }
 }
 

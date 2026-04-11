@@ -10,6 +10,15 @@ function isPendingInteraction() {
 }
 
 function updateButtons() {
+  // Z4 (Cabin Spell) visibility — runs unconditionally so early returns don't leave stale state
+  const _z4 = isZ4Active();
+  const _spellDisplay = _z4 ? "" : "none";
+  if (refs.performSpellBtn) refs.performSpellBtn.style.display = _spellDisplay;
+  const _tsSpell = document.getElementById("ts-performSpellBtn");
+  if (_tsSpell) _tsSpell.style.display = _spellDisplay;
+  const _spellObj = document.getElementById("spellObjective");
+  if (_spellObj) _spellObj.classList.toggle("hidden", !_z4);
+
   // No game started yet — disable all action buttons
   if (!state.gameActive) {
     [refs.drawTileBtn, refs.rotateLeftBtn, refs.rotateRightBtn, refs.combatBtn,
@@ -125,4 +134,5 @@ function render() {
   renderKnockoutBanner();
   renderSaveLoadPanel();
   if (typeof syncTurnStrip === "function") syncTurnStrip();
+  if (typeof renderMobileHandPanel === "function") renderMobileHandPanel();
 }

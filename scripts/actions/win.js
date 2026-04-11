@@ -1,3 +1,7 @@
+function isZ4Active() {
+  return !!(state.deckFilters && state.deckFilters[COLLECTIONS.THE_END] && state.deckFilters[COLLECTIONS.THE_END].enabled);
+}
+
 // --- Cabin Spell (Z4 / The End standalone win) ----------------------------
 
 function canAttemptSpell(player) {
