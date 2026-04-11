@@ -157,6 +157,41 @@ Page cards are shuffled into the event deck and drawn like regular event cards. 
 - On submit, a GitHub Issue is created with the full save file embedded in a collapsible block
 - After submission you can view the issue on GitHub or download the save file as a `.json` for local import
 
+### 📱 Mobile UI
+
+The game has a dedicated mobile layout (≤ 1080px) optimized for single-device and pass-and-play multiplayer.
+
+**Tab bar (bottom of screen)**
+
+| Tab | What it shows |
+|-----|---------------|
+| Controls | Game setup, player count, collection selection, online multiplayer |
+| Map | Pannable/zoomable board in a bordered porthole viewport |
+| Game Info | Map/event deck info, all player stats, log |
+| Hand (N) | Current player's hand — N updates live with card count |
+
+**Map tab — Turn Strip**
+
+A collapsible accordion strip sits between the board and the tab bar with one row per turn phase. The active game step auto-opens and stays highlighted (colored step badge + warm left border) even when you manually expand a different step. Pending interactions (combat decision, zombie dice challenge, duct choice, etc.) override the highlight to show the correct step. Each accordion row contains the relevant action buttons and panels — Draw Tile, Combat, Events/choices, Movement (directions + duct choice), Move Zombies, and End Turn/Cabin Spell.
+
+**Hand tab**
+
+- The porthole map is shown at the top (~38% screen height) so you can see the board while reviewing your hand
+- All Play / Stage / Select / Activate buttons work directly from the Hand tab — no need to switch to Map first
+- If playing a card opens a pending interaction (event choice, zombie dice challenge, etc.), the app automatically switches to the Map tab and opens the relevant turn-strip step
+
+**Board header player strip**
+
+All players are shown as compact pills in the map header (name · ♥ hearts · ⬤ bullets). The current player's pill is highlighted in the accent color.
+
+**Item chips on player cards**
+
+Each player card in Game Info shows pill badges for every active item they hold, plus green badges for staged Book of the Dead pages.
+
+**Pass-device lock screen (single-device multiplayer)**
+
+When End Turn is clicked in a local multi-player game, a full-screen dark overlay appears — *"Pass device to [PlayerName]. Tap anywhere to start your turn."* Tapping dismisses it and switches to the Map tab so the next player lands on the board ready to go.
+
 ### 🃏 Deck Management
 - **"Show cards"** dropdown in Map Deck Info and Event Deck Info panels lists every card in the remaining deck
 - Cards in both panels support **drag-and-drop reordering** — grab any row and drop it to a new position to manually arrange the draw order
