@@ -697,6 +697,38 @@ function getActiveStep() {
   }
 }
 
+// ---- In Play panel (turn strip + hand tab) --------------------------------
+
+function buildInPlayHtml(excludeCurrentPlayer) {
+  if (!state.gameActive || !state.players || state.players.length === 0) return "";
+  var cp = currentPlayer();
+  var rows = [];
+  state.players.forEach(function(p) {
+    if (excludeCurrentPlayer && p.id === cp.id) return;
+    var cards = [];
+    if (p.items) p.items.forEach(function(c) { cards.push({ name: c.name, desc: c.description }); });
+    if (p.botdPages) p.botdPages.forEach(function(c) { cards.push({ name: c.name, desc: c.description, botd: true }); });
+    if (cards.length === 0) return;
+    var chipsHtml = cards.map(function(c) {
+      return "<span class='ts-inplay-chip" + (c.botd ? " ts-inplay-chip--botd" : "") + "' title='" + (c.desc || "").replace(/'/g, "\u2019") + "'>" + c.name + "</span>";
+    }).join("");
+    rows.push("<div class='ts-inplay-player'><span class='ts-inplay-name'>" + p.name + "</span>" + chipsHtml + "</div>");
+  });
+  return rows.join("");
+}
+
+function renderInPlayRow() {
+  var el = document.getElementById("tsInPlayRow");
+  if (!el) return;
+  var html = buildInPlayHtml(false);
+  if (html) {
+    el.innerHTML = "<div class='ts-inplay-label'>Cards in Play</div>" + html;
+    el.style.display = "";
+  } else {
+    el.style.display = "none";
+  }
+}
+
 function syncTurnStripButtons() {
   // Sync disabled state from the canonical refs buttons to the turn-strip proxy buttons.
   [
@@ -739,6 +771,7 @@ function syncTurnStripButtons() {
 
 function syncTurnStrip() {
   syncTurnStripButtons();
+  renderInPlayRow();
   var activeStep = getActiveStep();
   openTurnStep(activeStep);
   // Auto-center the map on the moving player when the move step becomes active.
@@ -784,7 +817,15 @@ function renderMobileHandPanel() {
   // Mirror the fully-rendered hand list (includes Play/Stage/etc buttons with data attributes).
   // Event delegation on mobileHandPanel handles the clicks.
   var src = refs.handList;
-  if (src) panel.innerHTML = src.innerHTML;
+  var handHtml = src ? src.innerHTML : "";
+
+  // Append others' cards in play (exclude current player — they can see their own in their hand section).
+  var othersHtml = buildInPlayHtml(true);
+  if (othersHtml) {
+    othersHtml = "<div class='ts-inplay-label hand-inplay-label'>Others' Cards in Play</div>" + othersHtml;
+  }
+
+  panel.innerHTML = handHtml + othersHtml;
 
   // Update Hand tab label with card count.
   var mp = state.multiplayerSession;

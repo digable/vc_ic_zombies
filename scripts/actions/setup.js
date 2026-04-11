@@ -453,7 +453,7 @@ function placePendingTileAt(x, y) {
 
   if ((tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_CARD || tile.zombieSpawnMode === ZOMBIE_SPAWN_MODE.D6_ROLL) && ((tile.hearts || 0) > 0 || (tile.bullets || 0) > 0)) {
     placeBuildingTokens(placement.x, placement.y, tile.hearts || 0, tile.bullets || 0);
-    logLine(`${placedName} received item tokens (H${tile.hearts || 0}, B${tile.bullets || 0}).`);
+    logLine(`${placedName} received item tokens (H${tile.hearts || 0}, B${tile.bullets || 0}).`, "quiet");
   }
 
   state.discardPile.push(tile);

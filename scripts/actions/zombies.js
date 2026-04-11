@@ -170,7 +170,7 @@ function startZombieMovement() {
   const snapshot = new Map();
   state.zombies.forEach((zdata, zk) => snapshot.set(zk, zdata.count ?? 1));
 
-  logLine(`${currentPlayer().name} rolled ${roll} for zombie movement — ${moveLimit} zombie(s) to move. Select zombies manually or auto-move.`);
+  logLine(`${currentPlayer().name} rolled ${roll} for zombie movement — ${moveLimit} zombie(s) to move. Select zombies manually or auto-move.`, "quiet");
   state.pendingZombieMovement = { remaining: moveLimit, movedFromCounts: new Map(), stuckKeys: new Set(), snapshot };
   render();
 }

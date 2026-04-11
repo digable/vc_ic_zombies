@@ -971,6 +971,61 @@
     font-size: 1rem;
   }
 
+  /* In Play row — pinned at bottom of turn strip */
+  .ts-inplay-row {
+    border-top: 1px solid #d8c7a0;
+    padding: 0.35rem 0.6rem 0.4rem;
+    background: rgba(255, 252, 245, 0.97);
+  }
+
+  .ts-inplay-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--tone-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .ts-inplay-player {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .ts-inplay-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--tone-muted);
+    min-width: 3.5rem;
+    flex-shrink: 0;
+  }
+
+  .ts-inplay-chip {
+    display: inline-block;
+    padding: 0.12rem 0.4rem;
+    background: #e8d9b0;
+    border: 1px solid #c4a96e;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #5c3a0a;
+    white-space: nowrap;
+  }
+
+  .ts-inplay-chip--botd {
+    background: #d0e8d0;
+    border-color: #6ea06e;
+    color: #1a4a1a;
+  }
+
+  /* Hand tab — others' in-play section */
+  .hand-inplay-label {
+    margin-top: 1rem;
+  }
+
   .porthole {
     width: calc(100vw - 1.5rem);
     flex: 1;
@@ -1022,17 +1077,17 @@
   /* Mobile toast — shows latest log line briefly after any action */
   .mobile-toast {
     display: none;
-    position: fixed;
-    bottom: calc(3rem + env(safe-area-inset-bottom));
+    position: absolute;
+    bottom: 2.5rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 8000;
-    background: rgba(20, 12, 4, 0.88);
+    background: rgba(20, 12, 4, 0.82);
     color: #f0e0b0;
     font-size: 0.82rem;
-    padding: 0.45rem 0.85rem;
+    padding: 0.4rem 0.85rem;
     border-radius: 6px;
-    max-width: calc(100vw - 2rem);
+    max-width: calc(100% - 1.5rem);
     text-align: center;
     pointer-events: none;
     opacity: 0;
