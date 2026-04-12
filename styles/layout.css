@@ -778,6 +778,9 @@
 
   .topbar {
     flex-shrink: 0;
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+    padding-left: max(1.2rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.2rem, env(safe-area-inset-right, 0px));
   }
 
   .site-footer {
@@ -792,6 +795,7 @@
     border-bottom: none;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(4px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .mobile-tab-btn {
@@ -898,97 +902,86 @@
     border-top: 1px solid #d8c7a0;
     border-bottom: 1px solid #d8c7a0;
     background: rgba(255, 255, 255, 0.97);
-    max-height: 42vh;
-    overflow-y: auto;
   }
 
-  .turn-step {
-    border-bottom: 1px solid #ede0c8;
+  /* 2×3 pill grid */
+  .turn-pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid #d8c7a0;
   }
 
-  .turn-step:last-child {
-    border-bottom: none;
-  }
-
-  .turn-step-hdr {
+  .turn-pill {
     display: flex;
     align-items: center;
-    width: 100%;
-    padding: 0.45rem 0.6rem;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.38rem 0.25rem;
     background: transparent;
     border: none;
+    border-right: 1px solid #ede0c8;
+    border-bottom: 2px solid transparent;
     border-radius: 0;
-    text-align: left;
-    font-size: 0.85rem;
+    cursor: pointer;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--tone-muted);
-    gap: 0.5rem;
-    cursor: pointer;
   }
 
-  .turn-step-hdr:hover {
+  .turn-pill:nth-child(3n) {
+    border-right: none;
+  }
+
+  .turn-pill:nth-child(n+4) {
+    border-top: 1px solid #ede0c8;
+  }
+
+  .turn-pill:hover {
     background: rgba(0, 0, 0, 0.03);
   }
 
-  .turn-step--open > .turn-step-hdr {
+  /* Active step — orange border + number badge */
+  .turn-pill.turn-step--active {
     color: var(--tone-warm);
-    background: rgba(255, 248, 235, 0.85);
+    border-bottom-color: var(--tone-warm);
   }
 
-  /* Active game step — highlighted even when collapsed */
-  .turn-step--active > .turn-step-hdr {
-    border-left: 3px solid var(--tone-warm);
-  }
-
-  .turn-step--active:not(.turn-step--open) > .turn-step-hdr .ts-step-num {
+  .turn-pill.turn-step--active .ts-step-num,
+  .turn-pill.turn-step--open .ts-step-num {
     background: var(--tone-warm);
     color: #fff;
   }
 
-  .turn-step--active:not(.turn-step--open) > .turn-step-hdr {
+  /* Open/selected pill */
+  .turn-pill.turn-step--open {
     color: var(--tone-warm);
+    background: rgba(255, 248, 235, 0.85);
   }
 
   .ts-step-num {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.3rem;
+    height: 1.3rem;
     border-radius: 50%;
     background: #e0d5be;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 800;
     color: var(--tone-muted);
     flex-shrink: 0;
   }
 
-  .turn-step--open > .turn-step-hdr .ts-step-num {
-    background: var(--tone-warm);
-    color: #fff;
-  }
-
-  .ts-step-label {
-    flex: 1;
-  }
-
-  .ts-chevron {
-    font-size: 0.75rem;
-    display: inline-block;
-    transition: transform 0.15s;
-  }
-
-  .turn-step--open > .turn-step-hdr .ts-chevron {
-    transform: rotate(180deg);
-  }
-
-  .turn-step-body {
+  /* Action bar — only the open step body is shown */
+  .turn-body {
     display: none;
     padding: 0.4rem 0.6rem 0.5rem;
     background: rgba(255, 252, 245, 0.95);
+    max-height: 30vh;
+    overflow-y: auto;
   }
 
-  .turn-step--open > .turn-step-body {
+  .turn-body.turn-step--open {
     display: block;
   }
 

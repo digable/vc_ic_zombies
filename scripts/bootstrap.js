@@ -670,9 +670,12 @@ function syncMobilePanels(toMap) {
 
 function openTurnStep(step) {
   var activeStep = getActiveStep();
-  document.querySelectorAll(".turn-step").forEach(function(el) {
+  document.querySelectorAll(".turn-pill").forEach(function(el) {
     el.classList.toggle("turn-step--open", el.dataset.step === step);
     el.classList.toggle("turn-step--active", el.dataset.step === activeStep);
+  });
+  document.querySelectorAll(".turn-body").forEach(function(el) {
+    el.classList.toggle("turn-step--open", el.dataset.step === step);
   });
 }
 

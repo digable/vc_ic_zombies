@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>VC IC Zombies</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles/base.css" />
@@ -208,114 +208,101 @@
 
     <div class="turn-strip">
 
-          <div class="turn-step" data-step="tile">
-            <button class="turn-step-hdr" onclick="openTurnStep('tile')">
-              <span class="ts-step-num">1</span>
-              <span class="ts-step-label">Tile</span>
-              <span class="ts-chevron">▾</span>
-            </button>
-            <div class="turn-step-body">
-              <div class="row">
-                <button id="ts-drawTileBtn" onclick="drawAndPlaceTile('base')">Draw Base Tile</button>
-              </div>
-              <div id="ts-slot-standalone"></div>
-              <div class="row">
-                <span id="ts-pendingTileInfo" class="ts-info-span">Pending Tile: -</span>
-              </div>
-              <div class="row">
-                <button id="ts-rotateLeftBtn" onclick="rotatePendingTile(-1)">Rotate ⟲</button>
-                <button id="ts-rotateRightBtn" onclick="rotatePendingTile(1)">Rotate ⟳</button>
-              </div>
-            </div>
+      <div class="turn-pills">
+        <button class="turn-pill" data-step="tile" onclick="openTurnStep('tile')">
+          <span class="ts-step-num">1</span>
+          <span class="ts-step-label">Tile</span>
+        </button>
+        <button class="turn-pill" data-step="combat" onclick="openTurnStep('combat')">
+          <span class="ts-step-num">2</span>
+          <span class="ts-step-label">Combat</span>
+        </button>
+        <button class="turn-pill" data-step="events" onclick="openTurnStep('events')">
+          <span class="ts-step-num">3</span>
+          <span class="ts-step-label">Events</span>
+        </button>
+        <button class="turn-pill" data-step="move" onclick="openTurnStep('move')">
+          <span class="ts-step-num">4</span>
+          <span class="ts-step-label">Move</span>
+        </button>
+        <button class="turn-pill" data-step="zombies" onclick="openTurnStep('zombies')">
+          <span class="ts-step-num">5</span>
+          <span class="ts-step-label">Zombies</span>
+        </button>
+        <button class="turn-pill" data-step="end" onclick="openTurnStep('end')">
+          <span class="ts-step-num">6</span>
+          <span class="ts-step-label">End Turn</span>
+        </button>
+      </div>
+
+      <div class="turn-bodies">
+        <div class="turn-body" data-step="tile">
+          <div class="row">
+            <button id="ts-drawTileBtn" onclick="drawAndPlaceTile('base')">Draw Base Tile</button>
           </div>
-
-          <div class="turn-step" data-step="combat">
-            <button class="turn-step-hdr" onclick="openTurnStep('combat')">
-              <span class="ts-step-num">2</span>
-              <span class="ts-step-label">Combat</span>
-              <span class="ts-chevron">▾</span>
-            </button>
-            <div class="turn-step-body">
-              <div class="row">
-                <button id="ts-combatBtn" onclick="resolveCombatOnCurrentTile()">Combat Current Space</button>
-              </div>
-              <div id="ts-slot-combat"></div>
-            </div>
+          <div id="ts-slot-standalone"></div>
+          <div class="row">
+            <span id="ts-pendingTileInfo" class="ts-info-span">Pending Tile: -</span>
           </div>
-
-          <div class="turn-step" data-step="events">
-            <button class="turn-step-hdr" onclick="openTurnStep('events')">
-              <span class="ts-step-num">3</span>
-              <span class="ts-step-label">Events</span>
-              <span class="ts-chevron">▾</span>
-            </button>
-            <div class="turn-step-body">
-              <div class="row">
-                <button id="ts-drawEventsBtn" onclick="drawEventsToThree()">Draw to 3 Events</button>
-              </div>
-              <div id="ts-slot-events-choice"></div>
-              <div id="ts-slot-events-dice"></div>
-            </div>
+          <div class="row">
+            <button id="ts-rotateLeftBtn" onclick="rotatePendingTile(-1)">Rotate ⟲</button>
+            <button id="ts-rotateRightBtn" onclick="rotatePendingTile(1)">Rotate ⟳</button>
           </div>
-
-          <div class="turn-step" data-step="move">
-            <button class="turn-step-hdr" onclick="openTurnStep('move')">
-              <span class="ts-step-num">4</span>
-              <span class="ts-step-label">Move</span>
-              <span class="ts-chevron">▾</span>
-            </button>
-            <div class="turn-step-body">
-              <div class="row">
-                <button id="ts-rollMoveBtn" onclick="rollMovement()">Roll Movement</button>
-                <span id="ts-moveRollOutput" class="ts-info-span">Move Roll: -</span>
-              </div>
-              <div id="ts-slot-move-status"></div>
-              <div id="ts-slot-move-duct"></div>
-              <div class="row dir-row">
-                <button class="ts-moveDirBtn" data-dir="N">↑</button>
-                <button class="ts-moveDirBtn" data-dir="W">←</button>
-                <button class="ts-moveDirBtn" data-dir="E">→</button>
-                <button class="ts-moveDirBtn" data-dir="S">↓</button>
-                <button id="ts-endMoveBtn" onclick="endMovementEarly()">End Move</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="turn-step" data-step="zombies">
-            <button class="turn-step-hdr" onclick="openTurnStep('zombies')">
-              <span class="ts-step-num">5</span>
-              <span class="ts-step-label">Zombies</span>
-              <span class="ts-chevron">▾</span>
-            </button>
-            <div class="turn-step-body">
-              <div class="row">
-                <button id="ts-moveZombiesBtn" onclick="startZombieMovement()">Move Zombies</button>
-                <span id="ts-zombieRollOutput" class="ts-info-span">Zombie Roll: -</span>
-              </div>
-              <div id="ts-slot-zombies"></div>
-            </div>
-          </div>
-
-          <div class="turn-step" data-step="end">
-            <button class="turn-step-hdr" onclick="openTurnStep('end')">
-              <span class="ts-step-num">6</span>
-              <span class="ts-step-label">End Turn</span>
-              <span class="ts-chevron">▾</span>
-            </button>
-            <div class="turn-step-body">
-              <div class="row">
-                <button id="ts-performSpellBtn" onclick="attemptSpell()">Cabin Spell</button>
-              </div>
-              <div class="row">
-                <button id="ts-discardBtn" onclick="discardSelected()">Discard Event</button>
-                <button id="ts-endTurnBtn" onclick="endTurnWithLockCheck()">End Turn</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="ts-inplay-row" id="tsInPlayRow"></div>
-
         </div>
+
+        <div class="turn-body" data-step="combat">
+          <div class="row">
+            <button id="ts-combatBtn" onclick="resolveCombatOnCurrentTile()">Combat Current Space</button>
+          </div>
+          <div id="ts-slot-combat"></div>
+        </div>
+
+        <div class="turn-body" data-step="events">
+          <div class="row">
+            <button id="ts-drawEventsBtn" onclick="drawEventsToThree()">Draw to 3 Events</button>
+          </div>
+          <div id="ts-slot-events-choice"></div>
+          <div id="ts-slot-events-dice"></div>
+        </div>
+
+        <div class="turn-body" data-step="move">
+          <div class="row">
+            <button id="ts-rollMoveBtn" onclick="rollMovement()">Roll Movement</button>
+            <span id="ts-moveRollOutput" class="ts-info-span">Move Roll: -</span>
+          </div>
+          <div id="ts-slot-move-status"></div>
+          <div id="ts-slot-move-duct"></div>
+          <div class="row dir-row">
+            <button class="ts-moveDirBtn" data-dir="N">↑</button>
+            <button class="ts-moveDirBtn" data-dir="W">←</button>
+            <button class="ts-moveDirBtn" data-dir="E">→</button>
+            <button class="ts-moveDirBtn" data-dir="S">↓</button>
+            <button id="ts-endMoveBtn" onclick="endMovementEarly()">End Move</button>
+          </div>
+        </div>
+
+        <div class="turn-body" data-step="zombies">
+          <div class="row">
+            <button id="ts-moveZombiesBtn" onclick="startZombieMovement()">Move Zombies</button>
+            <span id="ts-zombieRollOutput" class="ts-info-span">Zombie Roll: -</span>
+          </div>
+          <div id="ts-slot-zombies"></div>
+        </div>
+
+        <div class="turn-body" data-step="end">
+          <div class="row">
+            <button id="ts-performSpellBtn" onclick="attemptSpell()">Cabin Spell</button>
+          </div>
+          <div class="row">
+            <button id="ts-discardBtn" onclick="discardSelected()">Discard Event</button>
+            <button id="ts-endTurnBtn" onclick="endTurnWithLockCheck()">End Turn</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ts-inplay-row" id="tsInPlayRow"></div>
+
+    </div>
 
     <div id="knockoutBanner" class="knockout-banner hidden"></div>
 
