@@ -278,7 +278,14 @@ const refs = {
   gameOverTitle: document.getElementById("gameOverTitle"),
   gameOverMessage: document.getElementById("gameOverMessage"),
   gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn"),
-  knockoutBanner: document.getElementById("knockoutBanner")
+  knockoutBanner: document.getElementById("knockoutBanner"),
+  isoToggleBtn:  document.getElementById("isoToggleBtn"),
+  isoControls:   document.getElementById("isoControls"),
+  isoTiltSlider: document.getElementById("isoTiltSlider"),
+  isoSpinSlider: document.getElementById("isoSpinSlider"),
+  isoTiltVal:    document.getElementById("isoTiltVal"),
+  isoSpinVal:    document.getElementById("isoSpinVal"),
+  resetViewBtn:  document.getElementById("resetViewBtn")
 };
 
 function resetStepProgress(nextStep = STEP.DRAW_TILE) {

@@ -5,13 +5,16 @@
 var _boardBoundsCache = { minX: null, maxX: null, minY: null, maxY: null };
 var _boardCellFps = new Map(); // key(x,y) → fingerprint string
 
+// Trail SVG cache — avoids getBoundingClientRect reflow when trail/view unchanged
+var _trailFp = null;
+var _trailSvgEl = null;
+
 var ISO_BTN_CUBE_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8,2 14,5 8,8 2,5"/><polygon points="14,5 14,11 8,14 8,8"/><polygon points="2,5 8,8 8,14 2,11"/></svg>';
 var ISO_BTN_SQUARE_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="1.5"/></svg>';
 var RESET_VIEW_BTN_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,3 3,3 3,8"/><polyline points="16,21 21,21 21,16"/><line x1="19" y1="5" x2="13" y2="11"/><polyline points="16,10 13,11 14,8"/><line x1="5" y1="19" x2="11" y2="13"/><polyline points="8,14 11,13 10,16"/></svg>';
 
 function updateIsoBtnIcon() {
-  var btn = document.getElementById("isoToggleBtn");
-  if (btn) btn.innerHTML = state.isoView ? ISO_BTN_SQUARE_HTML : ISO_BTN_CUBE_HTML;
+  if (refs.isoToggleBtn) refs.isoToggleBtn.innerHTML = state.isoView ? ISO_BTN_SQUARE_HTML : ISO_BTN_CUBE_HTML;
 }
 
 function applyIsoTransform() {
@@ -28,21 +31,16 @@ function applyIsoTransform() {
     refs.board.style.removeProperty("--iso-rx");
     refs.board.style.removeProperty("--iso-rz");
   }
-  var tiltSlider = document.getElementById("isoTiltSlider");
-  var spinSlider = document.getElementById("isoSpinSlider");
-  var tiltVal    = document.getElementById("isoTiltVal");
-  var spinVal    = document.getElementById("isoSpinVal");
-  if (tiltSlider) tiltSlider.value = state.isoRotateX;
-  if (spinSlider) spinSlider.value = state.isoRotateZ;
-  if (tiltVal)    tiltVal.textContent = state.isoRotateX + "°";
-  if (spinVal)    spinVal.textContent = state.isoRotateZ + "°";
-  var resetBtn = document.getElementById("resetViewBtn");
-  if (resetBtn) {
+  if (refs.isoTiltSlider) refs.isoTiltSlider.value = state.isoRotateX;
+  if (refs.isoSpinSlider) refs.isoSpinSlider.value = state.isoRotateZ;
+  if (refs.isoTiltVal)    refs.isoTiltVal.textContent = state.isoRotateX + "°";
+  if (refs.isoSpinVal)    refs.isoSpinVal.textContent = state.isoRotateZ + "°";
+  if (refs.resetViewBtn) {
     var changed = px !== 0 || py !== 0 || Math.abs(zoom - 1.0) > 0.001;
-    resetBtn.classList.toggle("hidden", !changed);
-    if (!resetBtn.dataset.iconSet) {
-      resetBtn.innerHTML = RESET_VIEW_BTN_HTML;
-      resetBtn.dataset.iconSet = "1";
+    refs.resetViewBtn.classList.toggle("hidden", !changed);
+    if (!refs.resetViewBtn.dataset.iconSet) {
+      refs.resetViewBtn.innerHTML = RESET_VIEW_BTN_HTML;
+      refs.resetViewBtn.dataset.iconSet = "1";
     }
   }
   updateIsoBtnIcon();
@@ -81,10 +79,8 @@ function centerBoardOnPlayer(player) {
 function toggleIsoView() {
   state.isoView = !state.isoView;
   refs.board.classList.toggle("iso-view", state.isoView);
-  var btn      = document.getElementById("isoToggleBtn");
-  var controls = document.getElementById("isoControls");
   updateIsoBtnIcon();
-  if (controls) controls.classList.toggle("hidden", !state.isoView);
+  if (refs.isoControls) refs.isoControls.classList.toggle("hidden", !state.isoView);
   applyIsoTransform();
   renderPlayerTrailSvg();
 }
@@ -173,6 +169,8 @@ function renderBoard() {
     refs.board.innerHTML = "";
     _boardCellFps.clear();
     _boardBoundsCache = { minX, maxX, minY, maxY };
+    _trailFp = null;
+    _trailSvgEl = null;
   }
 
   const cols = maxX - minX + 1;
@@ -454,9 +452,22 @@ function buildGlobalOccupantMap() {
 }
 
 function renderPlayerTrailSvg() {
-  // Board clears its innerHTML every render — SVG must be re-appended each time.
-  // Measuring happens after DOM insertion so getBoundingClientRect is valid.
-  if (!state.playerTrail || state.playerTrail.length < 2) return;
+  if (!state.playerTrail || state.playerTrail.length < 2) {
+    _trailFp = null;
+    _trailSvgEl = null;
+    return;
+  }
+
+  // Fingerprint covers the trail path and any view state that affects pixel positions.
+  const fp = state.playerTrail.join(",") + "|" +
+    (state.boardZoom || 1) + "|" + (state.boardPanX || 0) + "|" + (state.boardPanY || 0) + "|" +
+    (state.isoView ? state.isoRotateX + "," + state.isoRotateZ : "0");
+
+  if (fp === _trailFp && _trailSvgEl) {
+    // Trail and view unchanged — re-append the cached SVG element (no reflow).
+    refs.board.appendChild(_trailSvgEl);
+    return;
+  }
 
   const NS = "http://www.w3.org/2000/svg";
   const boardRect = refs.board.getBoundingClientRect();
@@ -475,7 +486,6 @@ function renderPlayerTrailSvg() {
   svg.setAttribute("class", "player-trail-svg");
   svg.setAttribute("style", "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;");
 
-  // Dashed path connecting all points
   const ptStr = points.map((p) => `${p.x},${p.y}`).join(" ");
   const polyline = document.createElementNS(NS, "polyline");
   polyline.setAttribute("points", ptStr);
@@ -484,7 +494,6 @@ function renderPlayerTrailSvg() {
   polyline.setAttribute("class", "player-trail-line");
   svg.appendChild(polyline);
 
-  // Directional arrow triangle at the midpoint of each segment
   for (let i = 0; i < points.length - 1; i++) {
     const p1 = points[i], p2 = points[i + 1];
     const mx = (p1.x + p2.x) / 2;
@@ -497,6 +506,8 @@ function renderPlayerTrailSvg() {
     svg.appendChild(arrow);
   }
 
+  _trailFp = fp;
+  _trailSvgEl = svg;
   refs.board.appendChild(svg);
 }
 

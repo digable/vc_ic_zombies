@@ -200,6 +200,8 @@ function deserializeState(data) {
   }
   _boardBoundsCache = { minX: null, maxX: null, minY: null, maxY: null };
   _boardCellFps.clear();
+  _trailFp = null;
+  _trailSvgEl = null;
 }
 
 function saveGame(slot) {

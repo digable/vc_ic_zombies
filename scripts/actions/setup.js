@@ -82,6 +82,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   clearPendingTileState();
   _boardBoundsCache = { minX: null, maxX: null, minY: null, maxY: null };
   _boardCellFps.clear();
+  _trailFp = null;
+  _trailSvgEl = null;
   state.logs = [];
 
   const deckMeta = {};
