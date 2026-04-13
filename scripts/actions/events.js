@@ -209,7 +209,7 @@ function resolveZombieDiceChallenge(action) {
   const pzdc = state.pendingZombieDiceChallenge;
   if (!pzdc) return;
 
-  const target = state.players.find((p) => p.id === pzdc.targetPlayerId);
+  const target = getPlayerById(pzdc.targetPlayerId);
   if (!target) { state.pendingZombieDiceChallenge = null; render(); return; }
 
   if (action === "B0" || action === "B1") {
@@ -336,7 +336,7 @@ function handleRocketLauncherClick(sx, sy) {
   const prl = state.pendingRocketLauncher;
   if (!prl) return;
 
-  const player = state.players.find((p) => p.id === prl.playerId);
+  const player = getPlayerById(prl.playerId);
   if (!player) { state.pendingRocketLauncher = null; render(); return; }
 
   const tileKey = getSpaceTileKey(sx, sy);
@@ -403,7 +403,7 @@ function handleMinefieldClick(sx, sy) {
   const pmf = state.pendingMinefield;
   if (!pmf) return;
 
-  const player = state.players.find((p) => p.id === pmf.playerId);
+  const player = getPlayerById(pmf.playerId);
   if (!player) { state.pendingMinefield = null; render(); return; }
 
   const tile = state.board.get(getSpaceTileKey(sx, sy));
@@ -445,7 +445,7 @@ function handleZombieFloodClick(sx, sy) {
   const pzf = state.pendingZombieFlood;
   if (!pzf) return;
 
-  const player = state.players.find((p) => p.id === pzf.playerId);
+  const player = getPlayerById(pzf.playerId);
   if (!player) { state.pendingZombieFlood = null; render(); return; }
 
   const tileKey = getSpaceTileKey(sx, sy);
@@ -516,7 +516,7 @@ function handleSpaceSelectClick(sx, sy) {
   const pss = state.pendingSpaceSelect;
   if (!pss) return;
 
-  const player = state.players.find((p) => p.id === pss.playerId);
+  const player = getPlayerById(pss.playerId);
   if (!player) { state.pendingSpaceSelect = null; render(); return; }
 
   const valid = pss.validSpaces ?? getSpacesAdjoiningBuilding();
@@ -547,7 +547,7 @@ function handleDynamiteTargetClick(sx, sy) {
   const pdt = state.pendingDynamiteTarget;
   if (!pdt) return;
 
-  const player = state.players.find((p) => p.id === pdt.playerId);
+  const player = getPlayerById(pdt.playerId);
   if (!player) { state.pendingDynamiteTarget = null; render(); return; }
 
   const dx = Math.abs(sx - player.x);

@@ -117,7 +117,7 @@ function rollMovement() {
   if (player.brainCramp) {
     const { controllerPlayerId } = player.brainCramp;
     player.brainCramp = null;
-    const controller = state.players.find((p) => p.id === controllerPlayerId);
+    const controller = getPlayerById(controllerPlayerId);
     const controllerName = controller ? controller.name : "opponent";
     const roll = rollD6();
     state.currentMoveRoll = roll;
@@ -135,7 +135,7 @@ function rollMovement() {
   if (player.movementHijack) {
     const { byPlayerId } = player.movementHijack;
     player.movementHijack = null;
-    const hijacker = state.players.find((p) => p.id === byPlayerId);
+    const hijacker = getPlayerById(byPlayerId);
     const roll = rollD6();
     const move = roll + (hijacker ? (hijacker.movementBonus || 0) : 0);
     state.currentMoveRoll = roll;
@@ -241,7 +241,7 @@ function _resumeRollAfterDuctPanel() {
 function confirmDuctTeleport(destIndex) {
   const pdc = state.pendingDuctChoice;
   if (!pdc) return;
-  const player = state.players.find((p) => p.id === pdc.playerId);
+  const player = getPlayerById(pdc.playerId);
   if (!player) { state.pendingDuctChoice = null; return; }
   const dest = pdc.destinations[destIndex];
   if (!dest) return;
@@ -262,7 +262,7 @@ function skipDuct() {
   const pdc = state.pendingDuctChoice;
   if (!pdc) return;
   const skipToRoll = pdc.skipToRoll;
-  const player = state.players.find((p) => p.id === pdc.playerId);
+  const player = getPlayerById(pdc.playerId);
   state.pendingDuctChoice = null;
   if (player) logLine(`${player.name} chose not to use the air duct.`);
   if (skipToRoll) {
@@ -287,7 +287,7 @@ function handleBreakthroughAttempt(dir) {
   if (!pb) return;
   state.pendingBreakthrough = null;
 
-  const player = state.players.find((p) => p.id === pb.playerId);
+  const player = getPlayerById(pb.playerId);
   if (!player) { render(); return; }
 
   const d = DIRS[dir];
@@ -458,7 +458,7 @@ function movePlayer(dir) {
   state.playerTrail.push(key(player.x, player.y));
 
   if (player.movingTogether) {
-    const companion = state.players.find((p) => p.id === player.movingTogether.withPlayerId);
+    const companion = getPlayerById(player.movingTogether.withPlayerId);
     if (companion) {
       companion.x = player.x;
       companion.y = player.y;
@@ -574,7 +574,7 @@ function forcedMoveTarget(dir) {
   const pfm = state.pendingForcedMove;
   if (!pfm || pfm.remaining <= 0) return;
 
-  const player = state.players.find((p) => p.id === pfm.targetPlayerId);
+  const player = getPlayerById(pfm.targetPlayerId);
   if (!player) {
     state.pendingForcedMove = null;
     state.step = pfm.priorStep;
@@ -597,7 +597,7 @@ function forcedMoveTarget(dir) {
   state.playerTrail.push(key(player.x, player.y));
 
   if (player.movingTogether) {
-    const companion = state.players.find((p) => p.id === player.movingTogether.withPlayerId);
+    const companion = getPlayerById(player.movingTogether.withPlayerId);
     if (companion) {
       companion.x = player.x;
       companion.y = player.y;
@@ -642,7 +642,7 @@ function forcedMoveTarget(dir) {
 function endForcedMovement() {
   const pfm = state.pendingForcedMove;
   if (!pfm) return;
-  const player = state.players.find((p) => p.id === pfm.targetPlayerId);
+  const player = getPlayerById(pfm.targetPlayerId);
   state.pendingForcedMove = null;
   state.movesRemaining = 0;
   state.step = pfm.priorStep;

@@ -45,7 +45,7 @@ function moveZombieOneStep(zKey, options = {}) {
 
   let target;
   if (targetPlayerId !== null) {
-    target = state.players.find((p) => p.id === targetPlayerId) ?? closestPlayersTo(x, y)[0];
+    target = getPlayerById(targetPlayerId) ?? closestPlayersTo(x, y)[0];
   } else if (isDog && repellentIds.size > 0) {
     const nonRepellent = state.players.filter((p) => !repellentIds.has(p.id));
     if (nonRepellent.length === 0) return zKey; // all players repellent — dog stays put
@@ -66,7 +66,7 @@ function moveZombieOneStep(zKey, options = {}) {
     // Dog Repellent: cannot move to a space closer to any protected player
     if (isDog && repellentIds.size > 0) {
       for (const pid of repellentIds) {
-        const rp = state.players.find((p) => p.id === pid);
+        const rp = getPlayerById(pid);
         if (!rp) continue;
         if (manhattanDist(rp.x, rp.y, nx, ny) < manhattanDist(rp.x, rp.y, x, y)) return;
       }

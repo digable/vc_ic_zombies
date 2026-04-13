@@ -780,7 +780,7 @@ function syncTurnStrip() {
   // Auto-center the map on the moving player when the move step becomes active.
   if (activeStep === "move" && state.gameActive && !state.gameOver) {
     var mover = state.pendingForcedMove
-      ? state.players.find(function(p) { return p.id === state.pendingForcedMove.targetPlayerId; })
+      ? getPlayerById(state.pendingForcedMove.targetPlayerId)
       : currentPlayer();
     if (mover && typeof centerBoardOnPlayer === "function") centerBoardOnPlayer(mover);
   }

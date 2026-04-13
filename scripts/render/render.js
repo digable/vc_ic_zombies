@@ -119,7 +119,7 @@ function updateButtons() {
   refs.moveDirBtns.forEach((btn) => {
     const dir = btn.dataset.dir;
     const mover = state.pendingForcedMove
-      ? state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId) ?? p
+      ? getPlayerById(state.pendingForcedMove.targetPlayerId) ?? p
       : p;
     let disabled = state.step !== STEP.MOVE || state.gameOver || state.movesRemaining <= 0 || !canMove(mover, dir);
     // Claustrophobia: while inside a building, block directions leading to more building subtiles

@@ -1,6 +1,10 @@
 // render-board.js — Board rendering functions.
 // Handles renderBoard (tile grid + occupants), renderPlayerTrailSvg, and renderMoveStatus.
 
+// Incremental DOM cache for renderBoard (#1 optimization)
+var _boardBoundsCache = { minX: null, maxX: null, minY: null, maxY: null };
+var _boardCellFps = new Map(); // key(x,y) → fingerprint string
+
 var ISO_BTN_CUBE_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8,2 14,5 8,8 2,5"/><polygon points="14,5 14,11 8,14 8,8"/><polygon points="2,5 8,8 8,14 2,11"/></svg>';
 var ISO_BTN_SQUARE_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="1.5"/></svg>';
 var RESET_VIEW_BTN_HTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,3 3,3 3,8"/><polyline points="16,21 21,21 21,16"/><line x1="19" y1="5" x2="13" y2="11"/><polyline points="16,10 13,11 14,8"/><line x1="5" y1="19" x2="11" y2="13"/><polyline points="8,14 11,13 10,16"/></svg>';
@@ -140,22 +144,94 @@ function renderBoard() {
       .map((o) => key(o.x, o.y))
   );
 
-  refs.board.innerHTML = "";
+  const globalOccupantMap = buildGlobalOccupantMap();
+
+  // Global pending fingerprint — same for all cells this render pass.
+  // Captures all state that drives per-space highlighting.
+  const pzmState = state.pendingZombieMovement;
+  const pzrState = state.pendingZombieReplace;
+  const globalPendingFp = [
+    pzmState ? `zm${pzmState.remaining}${pzmState.movedFromCounts.size}${pzmState.stuckKeys.size}` : "",
+    state.pendingBuildingSelect ? "bs" : "",
+    state.pendingRocketLauncher ? "rl" : "",
+    state.pendingMinefield ? "mf" : "",
+    state.pendingDynamiteTarget ? state.pendingDynamiteTarget.playerId : "",
+    state.pendingSpaceSelect ? (state.pendingSpaceSelect.validSpaces ? state.pendingSpaceSelect.validSpaces.size : "ss") : "",
+    state.pendingZombiePlace ? (state.pendingZombiePlace.validSpaces ? state.pendingZombiePlace.validSpaces.size : "zp") : "",
+    pzrState ? (pzrState.selectedZombieKey || "0") : "",
+  ].join("|");
+
+  // Determine if the board grid dimensions changed (new tile placed, etc.)
+  const boundsChanged = minX !== _boardBoundsCache.minX || maxX !== _boardBoundsCache.maxX ||
+                        minY !== _boardBoundsCache.minY || maxY !== _boardBoundsCache.maxY;
+
+  // Remove the player-trail SVG — renderPlayerTrailSvg will re-append it below.
+  const existingTrailSvg = refs.board.querySelector(".player-trail-svg");
+  if (existingTrailSvg) existingTrailSvg.remove();
+
+  if (boundsChanged) {
+    refs.board.innerHTML = "";
+    _boardCellFps.clear();
+    _boardBoundsCache = { minX, maxX, minY, maxY };
+  }
 
   const cols = maxX - minX + 1;
   refs.board.style.gridTemplateColumns = `repeat(${cols}, 96px)`;
   refs.board.style.width = "max-content";
 
+  // When bounds are unchanged, reuse existing cell elements (already in DOM order).
+  const existingCells = boundsChanged ? null : refs.board.querySelectorAll(".cell");
+  let cellIndex = 0;
+
   for (let y = minY; y <= maxY; y += 1) {
     for (let x = minX; x <= maxX; x += 1) {
-      const tile = state.board.get(key(x, y));
-      const cell = document.createElement("div");
+      const ck = key(x, y);
+      const tile = state.board.get(ck);
+
+      // Compute a fingerprint for this cell's current visual state.
+      let cellFp;
+      if (!tile) {
+        if (state.pendingTile && pendingCoords.has(ck)) {
+          cellFp = `po|${ck}|${state.pendingRotation}`;
+        } else if (companionPreviewMap.has(ck)) {
+          cellFp = `cp|${companionPreviewMap.get(ck).tile.name}`;
+        } else {
+          cellFp = "e";
+        }
+      } else {
+        // Summarise occupants across the 9 sub-spaces of this tile.
+        let occFp = "";
+        for (let ly2 = 0; ly2 < TILE_DIM; ly2 += 1) {
+          for (let lx2 = 0; lx2 < TILE_DIM; lx2 += 1) {
+            const d = globalOccupantMap.get(key(x * TILE_DIM + lx2, y * TILE_DIM + ly2));
+            if (d) occFp += `${lx2}${ly2}:${d.players.join("")}${d.zombieType || ""}${d.zombieCount}${d.hearts}${d.bullets};`;
+          }
+        }
+        if (state.recentKillKey) {
+          const { x: kx, y: ky } = parseKey(state.recentKillKey);
+          if (spaceToTileCoord(kx) === x && spaceToTileCoord(ky) === y) occFp += "kf;";
+        }
+        state.zombieMovedSpaces.forEach((sk) => {
+          const { x: zx, y: zy } = parseKey(sk);
+          if (spaceToTileCoord(zx) === x && spaceToTileCoord(zy) === y) occFp += `zm${zx}${zy};`;
+        });
+        cellFp = `t|${occFp}|${globalPendingFp}`;
+      }
+
+      const ci = cellIndex;
+      cellIndex += 1;
+
+      // Skip this cell if nothing has changed.
+      if (!boundsChanged && _boardCellFps.get(ck) === cellFp) continue;
+      _boardCellFps.set(ck, cellFp);
+
+      // Reuse the existing DOM element or create a fresh one.
+      const cell = boundsChanged ? document.createElement("div") : existingCells[ci];
       cell.className = "cell";
 
       if (!tile) {
         cell.classList.add("empty");
-        const k = key(x, y);
-        if (state.pendingTile && pendingCoords.has(k)) {
+        if (state.pendingTile && pendingCoords.has(ck)) {
           cell.classList.add("place-option");
           cell.dataset.placeX = String(x);
           cell.dataset.placeY = String(y);
@@ -186,8 +262,8 @@ function renderBoard() {
             <div class="micro-grid">${buildMicroGridHtml(previewTileForWalk)}</div>
             <div class="small">Click to place</div>
           `;
-        } else if (companionPreviewMap.has(k)) {
-          const { tile: cTile } = companionPreviewMap.get(k);
+        } else if (companionPreviewMap.has(ck)) {
+          const { tile: cTile } = companionPreviewMap.get(ck);
           cell.classList.add("companion-preview");
           cell.classList.add(getTileClassName(cTile));
           const rotatedConnectors = getRotatedConnectors(cTile.connectors, state.pendingRotation);
@@ -204,7 +280,7 @@ function renderBoard() {
             <div class="micro-grid">${buildMicroGridHtml(cPreviewTile)}</div>
           `;
         }
-        refs.board.appendChild(cell);
+        if (boundsChanged) refs.board.appendChild(cell);
         continue;
       }
 
@@ -217,13 +293,13 @@ function renderBoard() {
       if (getRoadLineDirs(tile, DOOR_LOCAL.N.x, DOOR_LOCAL.N.y, getAdjacentTile).includes("N")) cell.classList.add("connects-n");
       if (getRoadLineDirs(tile, DOOR_LOCAL.S.x, DOOR_LOCAL.S.y, getAdjacentTile).includes("S")) cell.classList.add("connects-s");
 
-      const occupantMap = buildOccupantMapForTile(x, y);
-
       const micro = [];
       for (let ly = 0; ly < TILE_DIM; ly += 1) {
         for (let lx = 0; lx < TILE_DIM; lx += 1) {
           const isWalkable = isLocalWalkable(tile, lx, ly);
-          const data = occupantMap.get(key(lx, ly)) || { players: [], zombieType: null, zombieCount: 1, hearts: 0, bullets: 0 };
+          const sx = x * TILE_DIM + lx;
+          const sy = y * TILE_DIM + ly;
+          const data = globalOccupantMap.get(key(sx, sy)) || { players: [], zombieType: null, zombieCount: 1, hearts: 0, bullets: 0 };
           const parts = [];
           const subType = getSubTileType(tile, lx, ly);
           const lineDirs = getRoadLineDirs(tile, lx, ly, getAdjacentTile);
@@ -275,16 +351,14 @@ function renderBoard() {
           if (data.bullets > 0) {
             parts.push(`<span class="mark token token-bullet" data-count="${data.bullets}">B${data.bullets}</span>`);
           }
-          const sx = x * TILE_DIM + lx;
-          const sy = y * TILE_DIM + ly;
-          const pzr = state.pendingZombieReplace;
+          const pzr = pzrState;
           const spaceKey = key(sx, sy);
 
           let zombieClass = "";
           if (state.recentKillKey === spaceKey) {
             zombieClass = " zombie-kill-flash";
           }
-          const pzm = state.pendingZombieMovement;
+          const pzm = pzmState;
           if (pzm && data.zombieType && isAvailableForMove(pzm, spaceKey)) {
             zombieClass = " zombie-selectable";
           } else if (state.pendingBuildingSelect && subType === "building" && isWalkable) {
@@ -294,7 +368,7 @@ function renderBoard() {
           } else if (state.pendingMinefield && data.zombieType && subType === "road") {
             zombieClass = " zombie-selectable";
           } else if (state.pendingDynamiteTarget && data.zombieType) {
-            const dp = state.players.find((pl) => pl.id === state.pendingDynamiteTarget.playerId);
+            const dp = getPlayerById(state.pendingDynamiteTarget.playerId);
             if (dp && manhattanDist(sx, sy, dp.x, dp.y) <= 1 && !(sx === dp.x && sy === dp.y)) {
               zombieClass = " zombie-selectable";
             }
@@ -329,7 +403,7 @@ function renderBoard() {
         <div class="micro-grid">${micro.join("")}</div>
       `;
 
-      refs.board.appendChild(cell);
+      if (boundsChanged) refs.board.appendChild(cell);
     }
   }
 
@@ -348,46 +422,35 @@ function renderBoard() {
   }
 }
 
-function buildOccupantMapForTile(tileX, tileY) {
-  const occupantMap = new Map();
-  const ensureCell = (lx, ly) => {
-    const k = key(lx, ly);
-    if (!occupantMap.has(k)) {
-      occupantMap.set(k, { players: [], zombieType: null, zombieCount: 1, hearts: 0, bullets: 0 });
-    }
-    return occupantMap.get(k);
+// Build a single occupant map for the whole board, keyed by global space key(sx, sy).
+// Called once per renderBoard() instead of once per tile.
+function buildGlobalOccupantMap() {
+  const map = new Map();
+  const ensure = (sx, sy) => {
+    const k = key(sx, sy);
+    if (!map.has(k)) map.set(k, { players: [], zombieType: null, zombieCount: 1, hearts: 0, bullets: 0 });
+    return map.get(k);
   };
 
   state.players.forEach((p) => {
-    const ptx = spaceToTileCoord(p.x);
-    const pty = spaceToTileCoord(p.y);
-    if (ptx === tileX && pty === tileY) {
-      const { lx, ly } = getSpaceLocalCoords(p.x, p.y);
-      ensureCell(lx, ly).players.push(`P${p.id}`);
-    }
+    ensure(p.x, p.y).players.push(`P${p.id}`);
   });
 
   state.zombies.forEach((zdata, zk) => {
     const { x: zx, y: zy } = parseKey(zk);
-    if (spaceToTileCoord(zx) === tileX && spaceToTileCoord(zy) === tileY) {
-      const { lx, ly } = getSpaceLocalCoords(zx, zy);
-      const cell = ensureCell(lx, ly);
-      cell.zombieType = zdata.type;
-      cell.zombieCount = zdata.count ?? 1;
-    }
+    const cell = ensure(zx, zy);
+    cell.zombieType = zdata.type;
+    cell.zombieCount = zdata.count ?? 1;
   });
 
   state.spaceTokens.forEach((tokens, tk) => {
     const { x: tx, y: ty } = parseKey(tk);
-    if (spaceToTileCoord(tx) === tileX && spaceToTileCoord(ty) === tileY) {
-      const { lx, ly } = getSpaceLocalCoords(tx, ty);
-      const cellData = ensureCell(lx, ly);
-      cellData.hearts += tokens.hearts || 0;
-      cellData.bullets += tokens.bullets || 0;
-    }
+    const cell = ensure(tx, ty);
+    cell.hearts += tokens.hearts || 0;
+    cell.bullets += tokens.bullets || 0;
   });
 
-  return occupantMap;
+  return map;
 }
 
 function renderPlayerTrailSvg() {
@@ -409,6 +472,7 @@ function renderPlayerTrailSvg() {
   if (points.length < 2) return;
 
   const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("class", "player-trail-svg");
   svg.setAttribute("style", "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;");
 
   // Dashed path connecting all points
@@ -457,7 +521,7 @@ function renderMoveStatus() {
     if (p.dieRollPenalty > 0)           msgs.push(`Abandon All Hope: -${p.dieRollPenalty} to all die rolls this turn.`);
     if (state.pendingBreakthrough)      msgs.push("Breakthrough: choose a direction to attempt to break through a wall (5–6 succeeds, 4 or less loses 1 life and ends movement).");
     if (state.pendingForcedMove) {
-      const target = state.players.find((pl) => pl.id === state.pendingForcedMove.targetPlayerId);
+      const target = getPlayerById(state.pendingForcedMove.targetPlayerId);
       const targetName = target ? target.name : "Unknown";
       msgs.push(`Forced movement: moving ${targetName} — ${state.pendingForcedMove.remaining} space(s) remaining.`);
     }

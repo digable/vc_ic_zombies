@@ -91,7 +91,7 @@ function resolvePendingCombatDecision(actionCode) {
     return;
   }
 
-  const player = state.players.find((p) => p.id === pending.playerId);
+  const player = getPlayerById(pending.playerId);
   if (!player) {
     state.pendingCombatDecision = null;
     render();

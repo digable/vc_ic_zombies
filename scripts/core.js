@@ -222,6 +222,7 @@ const state = {
   combatMoveResume: null,        // STEP to return to after clearing all zombies mid-movement (MOVE or MOVE_ZOMBIES); null at start of turn
   combatZombiePhaseResume: null, // STEP to return to after clearing zombies during zombie phase (MOVE_ZOMBIES or DISCARD); null otherwise
   zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
+  playerById: new Map(),        // id → player object; rebuilt by rebuildPlayerById() after players change
   logs: [],
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
   multiplayerSession: null,     // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
@@ -232,6 +233,14 @@ const state = {
   boardPanX: 0,               // pan offset in pixels
   boardPanY: 0
 };
+
+function rebuildPlayerById() {
+  state.playerById = new Map(state.players.map((p) => [p.id, p]));
+}
+
+function getPlayerById(id) {
+  return state.playerById.get(id);
+}
 
 const refs = {
   board: document.getElementById("board"),

@@ -325,7 +325,7 @@ function renderCombatDecision() {
   const pending = state.pendingCombatDecision;
   if (!pending) { clearPanel(panel); return; }
 
-  const player = state.players.find((p) => p.id === pending.playerId);
+  const player = getPlayerById(pending.playerId);
   if (!player) { clearPanel(panel); return; }
 
   const WIN = pending.killRoll;
@@ -447,7 +447,7 @@ function renderZombieDiceChallenge() {
   const pzdc = state.pendingZombieDiceChallenge;
   if (!pzdc) { clearPanel(panel); return; }
 
-  const target = state.players.find((p) => p.id === pzdc.targetPlayerId);
+  const target = getPlayerById(pzdc.targetPlayerId);
   if (!target) { panel.classList.add("hidden"); return; }
 
   const failing = pzdc.dice.filter((d) => d <= 3);
@@ -553,7 +553,7 @@ function renderZombieReplacePanel() {
 
   const pfm = state.pendingForcedMove;
   if (pfm) {
-    const target = state.players.find((p) => p.id === pfm.targetPlayerId);
+    const target = getPlayerById(pfm.targetPlayerId);
     const targetName = target ? target.name : "opponent";
     panel.classList.remove("hidden");
     const pfmTitle = pfm.cardName || "Forced Movement";
@@ -628,7 +628,7 @@ function renderEventChoice() {
   const pending = state.pendingEventChoice;
   if (!pending) { clearPanel(panel); return; }
 
-  const player = state.players.find((p) => p.id === pending.playerId);
+  const player = getPlayerById(pending.playerId);
   if (!player) { clearPanel(panel); return; }
 
   panel.classList.remove("hidden");
@@ -651,7 +651,7 @@ function renderDuctChoice() {
   if (!panel) return;
   const pdc = state.pendingDuctChoice;
   if (!pdc) { clearPanel(panel); return; }
-  const player = state.players.find((p) => p.id === pdc.playerId);
+  const player = getPlayerById(pdc.playerId);
   if (!player) { clearPanel(panel); return; }
   panel.classList.remove("hidden");
   const destButtons = pdc.destinations

@@ -41,6 +41,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
     });
   }
 
+  rebuildPlayerById();
   state.currentPlayerIndex = 0;
   state.deckFilters = deckFilters || {};
   state.eventDeckFilters = eventFilters ?? deckFilters ?? {};
@@ -79,6 +80,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.winInfo = null;
   state.lastCombatResult = null;
   clearPendingTileState();
+  _boardBoundsCache = { minX: null, maxX: null, minY: null, maxY: null };
+  _boardCellFps.clear();
   state.logs = [];
 
   const deckMeta = {};
@@ -247,7 +250,7 @@ function drawAndPlaceTile(deckId = "base") {
 
   const cp = currentPlayer();
   if (cp.tileHijackNotify != null) {
-    const hijacker = state.players.find((p) => p.id === cp.tileHijackNotify);
+    const hijacker = getPlayerById(cp.tileHijackNotify);
     cp.tileHijackNotify = null;
     if (tile.type === "helipad") {
       logLine(`I Think It's Over Here has no effect on Helipad tiles — ${cp.name} places it normally.`);

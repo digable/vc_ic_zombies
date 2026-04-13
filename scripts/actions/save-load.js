@@ -111,6 +111,7 @@ function deserializeState(data) {
     botdPages: restoreCards(p.botdPages || []),
     pageRemovedThisRound: p.pageRemovedThisRound ?? false
   }));
+  rebuildPlayerById();
 
   state.currentPlayerIndex = data.currentPlayerIndex;
 
@@ -197,6 +198,8 @@ function deserializeState(data) {
     clearTimeout(state.zombieAnimationTimer);
     state.zombieAnimationTimer   = null;
   }
+  _boardBoundsCache = { minX: null, maxX: null, minY: null, maxY: null };
+  _boardCellFps.clear();
 }
 
 function saveGame(slot) {
