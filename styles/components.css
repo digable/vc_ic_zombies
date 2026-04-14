@@ -1176,7 +1176,26 @@
              rotateZ(calc(-1 * var(--iso-rz, 45deg)))
              rotateX(calc(-1 * var(--iso-rx, 55deg)));
 }
-#board.iso-view .mark.zombie-dog::before { display: none; }
+#board.iso-view .mark.zombie-dog::before  { display: none; }
+#board.iso-view .mark.zombie-dog::after   { display: none; }
+
+/* Outstretched arms — two bars stacked on the right side */
+#board.iso-view .mark.zombie::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 3px;
+  background: inherit;
+  left: 100%;
+  top: 3px;
+  border-radius: 1px;
+  box-shadow: 0 5px 0 0 #395b2f;  /* second arm below first */
+  pointer-events: none;
+}
+#board.iso-view .mark.zombie.zombie-enhanced::after {
+  box-shadow: 0 5px 0 0 #4a1a6e;  /* match enhanced body color */
+}
+
 #board.iso-view .mark.token { transform: translateZ(18px); }
 
 /* Token icons in iso mode — replace H/B text with symbol + count */
