@@ -1104,6 +1104,41 @@
     order: 2;
   }
 
+  .mobile-discard-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    margin-bottom: 0.6rem;
+    background: #fff5e6;
+    border: 1px solid #e0a050;
+    border-radius: 6px;
+    font-size: 0.82rem;
+  }
+
+  .mobile-discard-hint {
+    color: #7a4a10;
+  }
+
+  .mobile-discard-confirm {
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: #e07820;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mobile-discard-confirm:disabled {
+    background: #c8b090;
+    cursor: default;
+  }
+
   /* Mobile toast — shows latest log line briefly after any action */
   .mobile-toast {
     display: none;

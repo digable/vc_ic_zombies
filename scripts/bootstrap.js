@@ -828,7 +828,17 @@ function renderMobileHandPanel() {
     othersHtml = "<div class='ts-inplay-label hand-inplay-label'>Others' Cards in Play</div>" + othersHtml;
   }
 
-  panel.innerHTML = handHtml + othersHtml;
+  // Discard action bar — keeps the user on the Hand tab for the full discard flow.
+  var discardBar = "";
+  if (state.step === STEP.DISCARD) {
+    var hasSelection = state.selectedHandIndex !== null;
+    discardBar = "<div class='mobile-discard-bar'>"
+      + "<span class='mobile-discard-hint'>Select a card below, then discard it.</span>"
+      + "<button onclick='discardSelected()'" + (hasSelection ? "" : " disabled") + " class='mobile-discard-confirm'>Discard Selected</button>"
+      + "</div>";
+  }
+
+  panel.innerHTML = discardBar + handHtml + othersHtml;
 
   // Update Hand tab label with card count.
   var mp = state.multiplayerSession;
