@@ -21,80 +21,102 @@
         <div class="board-header">
           <h3>New Tile Generator</h3>
         </div>
-        <div class="tile-generator-grid">
-          <label>Name <input id="newTileName" type="text" value="New Tile" /></label>
-          <label>Type
-            <select id="newTileType">
-              <!-- populated dynamically from TILE_TYPE in constants.js -->
-            </select>
-          </label>
-          <label>Zombie Spawn Mode
-            <select id="newTileSpawnMode"></select>
-          </label>
-          <label>Zombie Count <input id="newTileZombieCount" type="number" min="0" value="0" /></label>
-          <label>Zombie Type
-            <select id="newTileZombieType"></select>
-          </label>
-          <label>Hearts (L) <input id="newTileHearts" type="number" min="0" value="0" /></label>
-          <label>Bullets (B) <input id="newTileBullets" type="number" min="0" value="0" /></label>
-        </div>
 
-        <div class="tile-generator-section">
-          <strong>Collections (count per collection)</strong>
-          <div id="newTileCollectionInputs" class="tile-generator-collections"><!-- populated by JS --></div>
-        </div>
+        <div class="tile-generator-layout">
+          <!-- LEFT: form fields -->
+          <div class="tile-generator-fields">
+            <div class="tile-generator-grid">
+              <label>Name <input id="newTileName" type="text" value="New Tile" /></label>
+              <label>Type
+                <select id="newTileType">
+                  <!-- populated dynamically from TILE_TYPE in constants.js -->
+                </select>
+              </label>
+            </div>
 
-        <div class="tile-generator-connectors">
-          <strong>Connectors</strong>
-          <label><input type="checkbox" id="newTileConnectorN" /> N</label>
-          <select id="newTileConnectorRuleN" style="font-size:0.8em"></select>
-          <label><input type="checkbox" id="newTileConnectorE" /> E</label>
-          <select id="newTileConnectorRuleE" style="font-size:0.8em"></select>
-          <label><input type="checkbox" id="newTileConnectorS" /> S</label>
-          <select id="newTileConnectorRuleS" style="font-size:0.8em"></select>
-          <label><input type="checkbox" id="newTileConnectorW" /> W</label>
-          <select id="newTileConnectorRuleW" style="font-size:0.8em"></select>
-        </div>
+            <div class="tile-generator-section">
+              <strong class="tg-section-label">Zombies</strong>
+              <div class="tile-generator-grid tile-generator-zombie-row">
+                <label>Spawn Mode <select id="newTileSpawnMode"></select></label>
+                <label>Count <input id="newTileZombieCount" type="number" min="0" value="0" /></label>
+                <label>Type <select id="newTileZombieType"></select></label>
+              </div>
+            </div>
 
-        <div class="tile-generator-section">
-          <strong>Flags</strong>
-          <div class="tile-generator-flags">
-            <label><input type="checkbox" id="newTileIsStartTile" /> isStartTile</label>
-            <label><input type="checkbox" id="newTileIsWinTile" /> isWinTile</label>
-            <label><input type="checkbox" id="newTileFirstDrawWhenSolo" /> firstDrawWhenSolo</label>
+            <div class="tile-generator-section">
+              <strong class="tg-section-label">Loot</strong>
+              <div class="tile-generator-grid tile-generator-loot-row">
+                <label>Hearts (L) <input id="newTileHearts" type="number" min="0" value="0" /></label>
+                <label>Bullets (B) <input id="newTileBullets" type="number" min="0" value="0" /></label>
+              </div>
+            </div>
+
+            <div class="tile-generator-section">
+              <strong class="tg-section-label">Collections</strong>
+              <div id="newTileCollectionInputs" class="tile-generator-collections"><!-- populated by JS --></div>
+            </div>
+
+            <div class="tile-generator-section">
+              <strong class="tg-section-label">Connectors</strong>
+              <div class="tile-generator-connector-grid">
+                <label class="tile-generator-connector-row">
+                  <input type="checkbox" id="newTileConnectorN" /><span>N</span>
+                  <select id="newTileConnectorRuleN"></select>
+                </label>
+                <label class="tile-generator-connector-row">
+                  <input type="checkbox" id="newTileConnectorE" /><span>E</span>
+                  <select id="newTileConnectorRuleE"></select>
+                </label>
+                <label class="tile-generator-connector-row">
+                  <input type="checkbox" id="newTileConnectorS" /><span>S</span>
+                  <select id="newTileConnectorRuleS"></select>
+                </label>
+                <label class="tile-generator-connector-row">
+                  <input type="checkbox" id="newTileConnectorW" /><span>W</span>
+                  <select id="newTileConnectorRuleW"></select>
+                </label>
+              </div>
+            </div>
+
+            <div class="tile-generator-section">
+              <strong class="tg-section-label">Flags</strong>
+              <div class="tile-generator-flags">
+                <label><input type="checkbox" id="newTileIsStartTile" /> isStartTile</label>
+                <label><input type="checkbox" id="newTileIsWinTile" /> isWinTile</label>
+                <label><input type="checkbox" id="newTileFirstDrawWhenSolo" /> firstDrawWhenSolo</label>
+              </div>
+            </div>
+
+            <div class="tile-generator-section">
+              <strong class="tg-section-label">Companion Tiles</strong>
+              <div class="tile-generator-companions">
+                <label>Direction
+                  <select id="newTileCompanionDir">
+                    <option value="">— none —</option>
+                    <option value="N">N</option>
+                    <option value="E">E</option>
+                    <option value="S">S</option>
+                    <option value="W">W</option>
+                  </select>
+                </label>
+                <label>Names (comma-separated)
+                  <input id="newTileCompanionNames" type="text" placeholder="e.g. Straight, 4-Way" />
+                </label>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="tile-generator-section">
-          <strong>Companion Tiles</strong>
-          <div class="tile-generator-companions">
-            <label>Companion Direction
-              <select id="newTileCompanionDir">
-                <option value="">— none —</option>
-                <option value="N">N</option>
-                <option value="E">E</option>
-                <option value="S">S</option>
-                <option value="W">W</option>
-              </select>
-            </label>
-            <label>Companion Tile Names (comma-separated)
-              <input id="newTileCompanionNames" type="text" placeholder="e.g. Straight, 4-Way" />
-            </label>
-          </div>
-        </div>
-
-        <div class="tile-generator-block">
-          <strong>SubTiles</strong>
+          <!-- RIGHT: live preview, subtile editor, code output -->
+          <div class="tile-generator-preview-panel">
             <div id="newTileLivePreview" class="deck-tile tile-generator-preview"></div>
-          <div id="newTileSubtileEditor"></div>
+            <div id="newTileSubtileEditor"></div>
+            <div class="tile-generator-actions">
+              <button id="copyNewTileCodeBtn" type="button">Copy Code</button>
+              <span id="newTileCodeStatus" aria-live="polite"></span>
+            </div>
+            <pre id="newTileCodeOutput" class="tile-generator-output"></pre>
+          </div>
         </div>
-
-        <div class="tile-generator-actions">
-          <button id="copyNewTileCodeBtn" type="button">Copy Code</button>
-          <span id="newTileCodeStatus" aria-live="polite"></span>
-        </div>
-
-        <pre id="newTileCodeOutput" class="tile-generator-output"></pre>
       </section>
 
       <section class="panel map-deck-debug-wrap">

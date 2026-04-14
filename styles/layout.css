@@ -354,6 +354,12 @@
   background: rgba(0, 0, 0, 0.12);
 }
 
+.deck-expand-btn--open {
+  background: rgba(0, 0, 0, 0.13);
+  border-color: #8a9aaa;
+  color: #1a2a3a;
+}
+
 .map-deck-group-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
