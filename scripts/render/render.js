@@ -95,6 +95,8 @@ function updateButtons() {
   refs.rotateRightBtn.disabled = !state.pendingTile || state.gameOver || state.step !== STEP.DRAW_TILE;
   refs.combatBtn.disabled = state.step !== STEP.COMBAT || state.gameOver || !combatRequired;
   refs.drawEventsBtn.disabled = state.step !== STEP.DRAW_EVENTS || state.gameOver;
+  const drawTarget = (state.useGuts && p.guts != null) ? Math.max(1, p.guts) : MAX_HAND_SIZE;
+  refs.drawEventsBtn.textContent = `Draw to ${drawTarget} Event${drawTarget !== 1 ? "s" : ""}`;
   refs.rollMoveBtn.disabled = state.step !== STEP.ROLL_MOVE || state.gameOver;
   if (state.step === STEP.ROLL_MOVE && !state.gameOver) {
     if (p.pendingDuctTeleport) {

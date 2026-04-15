@@ -138,6 +138,7 @@ function connectorRuleAllows(rule, thisTile, otherTile, onlyTarget) {
   if (!rule || rule === CONNECTOR_RULE.ANY || rule === CONNECTOR_RULE.DISABLE_ON_SOLO) return true;
   if (rule === CONNECTOR_RULE.SAME) return tilePrimaryCollection(thisTile) === tilePrimaryCollection(otherTile);
   if (rule === CONNECTOR_RULE.ONLY) return onlyTarget ? otherTile.name === onlyTarget : false;
+  if (rule === CONNECTOR_RULE.NAMED_TYPE) return otherTile.type === TILE_TYPE.NAMED;
   // specific collection key — the other tile must belong to it
   return tilePrimaryCollection(otherTile) === normalizeZone(rule);
 }
@@ -175,7 +176,11 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
           // Give the incoming tile a placedDeck so tilePrimaryCollection resolves to the
           // correct zone for shared tiles (e.g. Straight in both Z1 and Z2).
           const effectiveIncoming = tileDeck ? { ...incomingTile, placedDeck: tileDeck } : incomingTile;
-          if (!connectorRuleAllows(incomingRule, effectiveIncoming, neighbor, incomingOnly)) return false;
+          if (incomingRule === CONNECTOR_RULE.DESIGNATED) {
+            if (neighborRule !== CONNECTOR_RULE.ONLY || neighborOnly !== effectiveIncoming.name) return false;
+          } else if (!connectorRuleAllows(incomingRule, effectiveIncoming, neighbor, incomingOnly)) {
+            return false;
+          }
           if (!connectorRuleAllows(neighborRule, neighbor, effectiveIncoming, neighborOnly)) return false;
         }
       }

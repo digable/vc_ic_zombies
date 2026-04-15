@@ -37,7 +37,9 @@ const ZOMBIE_TYPES = {
 const MAX_PLAYERS       = 6;   // maximum players allowed in a single game
 const INITIAL_HEARTS    = 3;   // starting hearts for a new/respawned player
 const INITIAL_BULLETS   = 3;   // starting bullets for a new/respawned player
-const MAX_HAND_SIZE     = 3;   // maximum event cards in hand at end of turn
+const INITIAL_GUTS      = 3;   // starting guts tokens (Guts variant only)
+const MAX_GUTS          = 5;   // maximum guts tokens a player can hold
+const MAX_HAND_SIZE     = 3;   // maximum event cards in hand at end of turn (non-guts games)
 const BREAKTHROUGH_SEP  = "\u2192"; // separator used in breakthrough connection keys
 
 const KNOCKOUT_BANNER_MS  = 5000; // how long the knockout banner stays on screen (ms)
@@ -68,6 +70,8 @@ const CONNECTOR_RULE = {
   ANY_FIRST: "any_first", // this connector accepts tiles from any collection, but only when the tile is first placed (starting tile side), then it is same
   DISABLE_ON_SOLO: "disable_on_solo", // this connector is disabled if playing the map deck with only its own collection enabled (used for start tile connectors that would otherwise allow any tile to be placed first)
   ONLY: "only",  // this connector only connects to tiles in a specific tile name (used for one-way connections like UIHC-to-helipad)
+  NAMED_TYPE: "named_type",  // this connector only connects to tiles with type === TILE_TYPE.NAMED
+  DESIGNATED: "designated",  // only connects where the neighbor has CONNECTOR_RULE.ONLY targeting this tile's name
 };
 
 // Special tile names referenced in game logic (placement rules, movement, deck building)

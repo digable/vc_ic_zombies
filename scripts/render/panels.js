@@ -192,7 +192,7 @@ function renderPlayers() {
   refs.currentPlayerCard.innerHTML = `
     <div class="player-card">
       <strong>${cp.name}</strong><br />
-      Hearts: ${cp.hearts} | Bullets: ${cp.bullets} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}${cp.hasJeep ? " | Jeep" : ""} | KO: ${cp.knockouts || 0}<br />
+      Hearts: ${cp.hearts} | Bullets: ${cp.bullets}${state.useGuts && cp.guts != null ? ` | Guts: ${cp.guts}` : ""} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}${cp.hasJeep ? " | Jeep" : ""} | KO: ${cp.knockouts || 0}<br />
       Position: Tile (${cptx}, ${cpty}) / Space (${cplx}, ${cply})
     </div>
   `;
@@ -213,7 +213,7 @@ function renderPlayers() {
     el.className = "player-card";
     el.innerHTML = `
       <strong>${p.name}</strong><br />
-      Hearts: ${p.hearts} | Bullets: ${p.bullets} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}${p.hasJeep ? " | Jeep" : ""} | KO: ${p.knockouts || 0}<br />
+      Hearts: ${p.hearts} | Bullets: ${p.bullets}${state.useGuts && p.guts != null ? ` | Guts: ${p.guts}` : ""} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}${p.hasJeep ? " | Jeep" : ""} | KO: ${p.knockouts || 0}<br />
       Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
       ${itemChipsHtml}${botdChipsHtml}
     `;
@@ -688,6 +688,7 @@ function renderMeta() {
       <span class="pip-name">${p.name}</span>
       <span class="pip-stat">♥${p.hearts}</span>
       <span class="pip-stat pip-stat--bullets">⬤${p.bullets}</span>
+      ${state.useGuts && p.guts != null ? `<span class="pip-stat pip-stat--guts">★${p.guts}</span>` : ""}
     </span>`;
   }).join("");
   refs.turnInfo.innerHTML = `<div class="player-strip">${pipsHtml}</div>`;

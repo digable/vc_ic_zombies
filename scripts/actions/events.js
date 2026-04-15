@@ -17,7 +17,8 @@ function drawEventsToThree() {
   }
 
   const player = currentPlayer();
-  while (player.hand.length < 3) {
+  const drawTarget = (state.useGuts && player.guts != null) ? Math.max(1, player.guts) : MAX_HAND_SIZE;
+  while (player.hand.length < drawTarget) {
     if (state.eventDeck.length === 0) {
       if (state.eventDiscardPile.length === 0) break;
       reshuffleEventDeckIfEmpty();
@@ -664,13 +665,14 @@ function discardSelected() {
   }
 
   const player = currentPlayer();
+  const discardLimit = (state.useGuts && player.guts != null) ? Math.max(1, player.guts) : MAX_HAND_SIZE;
   if (state.selectedHandIndex !== null && player.hand[state.selectedHandIndex]) {
     const [card] = player.hand.splice(state.selectedHandIndex, 1);
     state.eventDiscardPile.push(card);
     logLine(`${player.name} discarded ${card.name}.`);
   } else {
-    if (player.inTheZone && player.hand.length > 3) {
-      logLine(`${player.name} must discard down to 3 (In the Zone — select a card to discard).`);
+    if (player.inTheZone && player.hand.length > discardLimit) {
+      logLine(`${player.name} must discard down to ${discardLimit} (In the Zone — select a card to discard).`);
       render();
       return;
     }
@@ -679,8 +681,8 @@ function discardSelected() {
 
   state.selectedHandIndex = null;
 
-  if (player.inTheZone && player.hand.length > 3) {
-    logLine(`${player.name} must discard down to 3 (In the Zone — ${player.hand.length - 3} more to discard).`);
+  if (player.inTheZone && player.hand.length > discardLimit) {
+    logLine(`${player.name} must discard down to ${discardLimit} (In the Zone — ${player.hand.length - discardLimit} more to discard).`);
     render();
     return;
   }

@@ -10,6 +10,7 @@ function handleKnockout(player, options = {}) {
   }
   player.hearts = INITIAL_HEARTS;
   player.bullets = INITIAL_BULLETS;
+  if (state.useGuts && player.guts != null) player.guts = INITIAL_GUTS;
   player.x = 1;
   player.y = 1;
   player.knockedOut = true;
@@ -377,6 +378,15 @@ function resolveCombatForPlayer(player, options = {}) {
   const roll = rollD6();
   if (player.inTheZone && roll === 6) {
     drawOneEventCardForPlayer(player, "In the Zone");
+  }
+  if (state.useGuts && player.guts != null) {
+    if (roll === 6) {
+      player.guts = Math.min(MAX_GUTS, player.guts + 1);
+      logLine(`${player.name} rolled a natural 6 — gained 1 guts (${player.guts}).`, "quiet");
+    } else if (roll === 1) {
+      player.guts = Math.max(1, player.guts - 1);
+      logLine(`${player.name} rolled a natural 1 — lost 1 guts (${player.guts}).`, "quiet");
+    }
   }
   const diePenalty = player.dieRollPenalty || 0;
   const meatCleaverBonus = player.meatCleaverActive ? 1 : 0;

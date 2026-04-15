@@ -277,6 +277,10 @@ function renderBoard() {
             <div class="small">auto-placed</div>
             <div class="micro-grid">${buildMicroGridHtml(cPreviewTile)}</div>
           `;
+        } else {
+          cell.innerHTML = "";
+          delete cell.dataset.placeX;
+          delete cell.dataset.placeY;
         }
         if (boundsChanged) refs.board.appendChild(cell);
         continue;

@@ -65,6 +65,7 @@ function serializeState() {
     doubleMovementThisTurn:  state.doubleMovementThisTurn,
     regularZombieEnhanced:   state.regularZombieEnhanced,
     forcedNextOpponentId:    state.forcedNextOpponentId,
+    useGuts:                 state.useGuts,
     deckFilters:             state.deckFilters,
     eventDeckFilters:        state.eventDeckFilters ?? state.deckFilters,
     deckStartCounts:         state.deckStartCounts,
@@ -156,6 +157,7 @@ function deserializeState(data) {
   state.doubleMovementThisTurn = data.doubleMovementThisTurn;
   state.regularZombieEnhanced  = data.regularZombieEnhanced;
   state.forcedNextOpponentId   = data.forcedNextOpponentId ?? null;
+  state.useGuts                = data.useGuts ?? false;
   state.deckFilters            = data.deckFilters;
   state.eventDeckFilters       = data.eventDeckFilters ?? data.deckFilters ?? {};
   state.deckStartCounts        = data.deckStartCounts;

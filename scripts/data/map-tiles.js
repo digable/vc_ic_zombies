@@ -179,7 +179,7 @@ const roadTiles = [
   {
     name: "Parking Lot",
     type: "road",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 2 },
     connectors: ["N", "S", "E", "W"],
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
@@ -278,8 +278,8 @@ const namedTiles = [
       "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
       "1,0": { walkable: true, type: "building", walls: ["N"] },
       "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
-      "0,1": { walkable: true, type: "building", walls: ["S", "W"], doors: ["W"] },
-      "1,1": { walkable: true, type: "building" },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
       "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
       "0,2": { walkable: true, type: "parking", walls: ["N"] },
       "1,2": { walkable: true, type: "road" },
@@ -423,7 +423,7 @@ const namedTiles = [
     bullets: 4,
     subTilesTemplate: {
       "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
-      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["N"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
       "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
       "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
       "1,1": { walkable: true, type: "building", doors: ["S"] },
@@ -1694,7 +1694,8 @@ const namedTiles = [
     name: "Hospital",
     type: "named",
     collection: { [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
-    connectors: { S: CONNECTOR_RULE.SAME },
+    connectors: { S: CONNECTOR_RULE.SAME, N: CONNECTOR_RULE.ONLY },
+    connectorOnlyTarget: { N: "Helipad (school)" },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 4,
@@ -1712,6 +1713,122 @@ const namedTiles = [
     }
   },
   {
+    name: "Science Center",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME,
+      N: CONNECTOR_RULE.ONLY,
+    },
+    connectorOnlyTarget: { N: "Helipad (school)" },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 6,
+    },
+    hearts: 3,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+  {
+    name: "Dormatory",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME,
+      N: CONNECTOR_RULE.ONLY,
+    },
+    connectorOnlyTarget: { N: "Helipad (school)" },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 6,
+    },
+    hearts: 1,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+  {
+    name: "Medical School",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME,
+      N: CONNECTOR_RULE.ONLY,
+    },
+    connectorOnlyTarget: { N: "Helipad (school)" },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 6,
+    },
+    hearts: 5,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+  {
+    name: "Admin Bldg.",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME,
+      N: CONNECTOR_RULE.ONLY,
+    },
+    connectorOnlyTarget: { N: "Helipad (school)" },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 6,
+    },
+    hearts: 1,
+    bullets: 3,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+  {
     name: "Phys Ed Bidg.",
     type: "named",
     collection: {
@@ -1719,8 +1836,10 @@ const namedTiles = [
     },
     connectors: {
       E: CONNECTOR_RULE.SAME,
-      S: CONNECTOR_RULE.SAME
+      S: CONNECTOR_RULE.SAME,
+      N: CONNECTOR_RULE.ONLY,
     },
+    connectorOnlyTarget: { N: "Helipad (school)" },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 5,
@@ -1737,6 +1856,36 @@ const namedTiles = [
       "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
       "1,2": { walkable: true, type: "road" },
       "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Rec Hall",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.ONLY,
+    },
+    connectorOnlyTarget: { W: "Helipad (school)" },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 3,
+    },
+    hearts: 1,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,0": { walkable: false },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "grass", walls: ["N"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["W"] },
+      "2,2": { walkable: true, type: "grass" }
     }
   },
   // --- Iowa City (custom expansion) ----------------------------------------
@@ -2066,8 +2215,30 @@ const specialTiles = [
   {
     name: "Helipad",
     type: "helipad",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1, [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
+    hearts: 0,
+    bullets: 0,
+    isWinTile: true,
+    subTilesTemplate: {
+      "0,0": { walkable: true },
+      "1,0": { walkable: true },
+      "2,0": { walkable: true },
+      "0,1": { walkable: true },
+      "1,1": { walkable: true },
+      "2,1": { walkable: true },
+      "0,2": { walkable: true },
+      "1,2": { walkable: true },
+      "2,2": { walkable: true }
+    }
+  },
+  {
+    name: "Helipad (school)",
+    type: "helipad",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1, [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
+    connectors: { N: CONNECTOR_RULE.DESIGNATED, E: CONNECTOR_RULE.DESIGNATED, S: CONNECTOR_RULE.DESIGNATED, W: CONNECTOR_RULE.DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
     hearts: 0,

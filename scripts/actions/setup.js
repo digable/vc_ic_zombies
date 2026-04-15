@@ -6,6 +6,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       name: `Shotgun Guy ${i + 1}`,
       hearts: INITIAL_HEARTS,
       bullets: INITIAL_BULLETS,
+      guts: state.useGuts ? INITIAL_GUTS : null,
       kills: 0,
       attack: 0,
       hand: [],

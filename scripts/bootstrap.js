@@ -109,11 +109,23 @@ function enforceCollectionCompatibility() {
   }
 }
 
+function autoCheckGutsForZ5() {
+  const gutsCheckbox = document.getElementById("useGutsCheckbox");
+  if (!gutsCheckbox) return;
+  const z5Key = COLLECTIONS.SCHOOLS_OUT_FOREVER;
+  const z5MapChecked = document.querySelector(`[data-deck-coll="${z5Key}"][data-deck-state="enabled"]`)?.checked;
+  const z5EventChecked = document.querySelector(`[data-event-coll="${z5Key}"][data-event-state="enabled"]`)?.checked;
+  if (z5MapChecked || z5EventChecked) {
+    gutsCheckbox.checked = true;
+  }
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
     const count = Number(refs.playerCount.value) || 2;
     state.gameActive = true;
+    state.useGuts = !!(document.getElementById("useGutsCheckbox")?.checked);
     setupGame(Math.max(1, Math.min(MAX_PLAYERS, count)), readCurrentFilters(), readCurrentEventFilters());
     if (window.matchMedia("(max-width: 1080px)").matches) switchMobileTab("map");
   });
@@ -137,6 +149,7 @@ function attachListeners() {
     grid.addEventListener("change", () => {
       enforceCollectionCompatibility();
       updateDeckPreviewCounts();
+      autoCheckGutsForZ5();
     });
   }
 
@@ -751,8 +764,8 @@ function syncTurnStripButtons() {
     var src = document.getElementById(pair[1]);
     if (ts && src) {
       ts.disabled = src.disabled;
-      // Keep rollMoveBtn label in sync (it changes to "Air Duct → …" etc.)
-      if (pair[0] === "ts-rollMoveBtn") ts.textContent = src.textContent;
+      // Keep dynamic button labels in sync
+      if (pair[0] === "ts-rollMoveBtn" || pair[0] === "ts-drawEventsBtn") ts.textContent = src.textContent;
     }
   });
 

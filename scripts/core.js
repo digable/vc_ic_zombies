@@ -237,6 +237,7 @@ const state = {
   zombieAnimationTimer: null,   // setTimeout ID while stepped auto-move is running; null when idle
   playerById: new Map(),        // id → player object; rebuilt by rebuildPlayerById() after players change
   logs: [],
+  useGuts: false,               // Guts Tokens variant: hand limit = guts count, gain/lose on natural 6/1 in combat
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
   multiplayerSession: null,     // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
   isoView: false,               // when true, board renders tiles in isometric projection

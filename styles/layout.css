@@ -119,6 +119,37 @@
   margin-bottom: 0.4rem;
 }
 
+.setup-variant-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.4rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border-cell);
+  border-radius: var(--radius-sm, 4px);
+  background: rgba(0,0,0,0.03);
+}
+
+.setup-variant-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.setup-variant-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+.setup-variant-label input[type="checkbox"] {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
 .setup-col-header {
   font-size: 0.75rem;
   font-weight: 600;
@@ -248,6 +279,10 @@
 
 .pip-stat--bullets {
   color: inherit;
+}
+
+.pip-stat--guts {
+  color: #c8860a;
 }
 
 .player-pip--active .pip-stat {
