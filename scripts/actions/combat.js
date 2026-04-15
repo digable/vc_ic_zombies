@@ -384,7 +384,7 @@ function resolveCombatForPlayer(player, options = {}) {
       player.guts = Math.min(MAX_GUTS, player.guts + 1);
       logLine(`${player.name} rolled a natural 6 — gained 1 guts (${player.guts}).`, "quiet");
     } else if (roll === 1) {
-      player.guts = Math.max(1, player.guts - 1);
+      player.guts = Math.max(0, player.guts - 1);
       logLine(`${player.name} rolled a natural 1 — lost 1 guts (${player.guts}).`, "quiet");
     }
   }

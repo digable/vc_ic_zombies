@@ -24,7 +24,8 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 - **Bug reports** — in-game modal attaches game state + last 20 log entries and opens a GitHub issue automatically
 - **Mobile UI** — bottom tab bar (Controls / Map / Game Info / Hand); turn-strip accordion on the Map tab; pass-device lock screen for same-device multiplayer
 - **Deck management** — "Show cards" dropdown lists the remaining deck; drag-and-drop reordering in both map and event deck panels
-- **Collections** — tile and event decks configured independently at setup; standalone collections (Z2, Z3, Z4, IC) get zone-isolated decks with gateway tiles unlocking them in mixed play
+- **School's Out Forever (Z5)** — campus tile set; introduces **guts tokens** (start with 3, max 5): roll a natural 6 in combat to gain 1, roll a natural 1 to lose 1; guts count (0–5) sets your event hand limit; you always keep at least 1 event card regardless; death resets guts to 3; the school helipad uses a `DESIGNATED` connector and can only be reached by passing through a named building
+- **Collections** — tile and event decks configured independently at setup; standalone collections (Z2, Z3, Z4, Z5, IC) get zone-isolated decks with gateway tiles unlocking them in mixed play
 
 ---
 
@@ -71,6 +72,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | `MALL_WALKERS` | Z3 | Standalone / expansion — mall tiles, air ducts, 2-floor mechanics |
 | `NOT_DEAD_YET` | Z3.5 | Event cards only — no map tiles |
 | `THE_END` | Z4 | Standalone / expansion — bridge zone, BOTD pages, Cabin Spell |
+| `SCHOOLS_OUT_FOREVER` | Z5 | Standalone / expansion — school campus; helipad only reachable through a named building's designated rooftop connector |
 | `IOWA_CITY` | IC | Standalone / expansion — Iowa City locations |
 
 ---
@@ -156,6 +158,7 @@ vc_ic_zombies/
 - **Incremental board rendering** — cells are fingerprinted each render; only changed cells rebuild their DOM; global occupant map computed once per render pass; player lookups use a `Map` keyed by id
 - **Serverless backend** — Vercel functions + MongoDB Atlas for multiplayer sessions and bug reports; polling-based sync (no WebSockets); rate-limited per IP via Atlas TTL collections
 - **Zone isolation** — standalone collection tiles connect only to their own zone except through a gateway tile with a `DISABLE_ON_SOLO` connector; gateway tile unlocks the standalone deck when placed
+- **Connector rule system** — per-connector placement rules on each tile: `SAME` (same collection), `ANY` (any tile), `ONLY` (specific tile name), `DESIGNATED` (requires neighbor to have `ONLY` targeting this tile), and collection-key rules for cross-zone restrictions; bidirectional — both sides of a road connection must agree
 
 ---
 

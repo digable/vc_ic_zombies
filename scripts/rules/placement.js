@@ -106,16 +106,26 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
 //   "any_first"       — reserved; not yet assigned to any tile
 //   "disable_on_solo" — gateway connector: ANY in mixed play, disabled in solo play of own collection
 //   "only"            — only connect to the tile named in connectorOnlyTarget for this direction
+//   "named_type"      — only connect to tiles with type === TILE_TYPE.NAMED (currently unused)
+//   "designated"      — only connect where the neighbor's connector is CONNECTOR_RULE.ONLY targeting
+//                       this tile's name; checked directly in isValidPlacement (not connectorRuleAllows)
+//                       because it requires inspecting the neighbor's rule, not just the neighbor tile
 //   "<collectionKey>" — only connect to tiles in that specific collection
 //
 // Tile data fields:
 //   connectors:           { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO }  (object format)
-//   connectorOnlyTarget:  { S: "Helipad" }  — required when a connector uses CONNECTOR_RULE.ONLY
+//   connectorOnlyTarget:  { S: TILE_NAME.HELIPAD_SCHOOL }  — required when a connector uses CONNECTOR_RULE.ONLY
 // ---------------------------------------------------------------------------
 
 // Default rule for all connectors unless overridden.
 function getDefaultConnectorRule() {
   return CONNECTOR_RULE.SAME;
+}
+
+// Returns true if this connector rule is "open" — invites any tile regardless of the other side's rule.
+// Open connectors short-circuit the bidirectional rule check entirely.
+function isOpenConnectorRule(rule) {
+  return rule === CONNECTOR_RULE.ANY || rule === CONNECTOR_RULE.DISABLE_ON_SOLO;
 }
 
 // Returns the connector rule for a placed tile at the given (already-rotated) direction.
@@ -168,8 +178,8 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
       // connector's invitation always overrides the other side's SAME restriction.
       if (incomingTile) {
         const neighborRule = getConnectorRule(neighbor, def.opposite);
-        const incomingOpen = incomingRule === CONNECTOR_RULE.ANY || incomingRule === CONNECTOR_RULE.DISABLE_ON_SOLO;
-        const neighborOpen = neighborRule === CONNECTOR_RULE.ANY || neighborRule === CONNECTOR_RULE.DISABLE_ON_SOLO;
+        const incomingOpen = isOpenConnectorRule(incomingRule);
+        const neighborOpen = isOpenConnectorRule(neighborRule);
         if (!incomingOpen && !neighborOpen) {
           const incomingOnly = incomingOnlyTarget?.[dir];
           const neighborOnly = neighbor.placedConnectorOnlyTarget?.[def.opposite];

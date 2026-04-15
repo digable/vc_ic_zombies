@@ -70,16 +70,17 @@ const CONNECTOR_RULE = {
   ANY_FIRST: "any_first", // this connector accepts tiles from any collection, but only when the tile is first placed (starting tile side), then it is same
   DISABLE_ON_SOLO: "disable_on_solo", // this connector is disabled if playing the map deck with only its own collection enabled (used for start tile connectors that would otherwise allow any tile to be placed first)
   ONLY: "only",  // this connector only connects to tiles in a specific tile name (used for one-way connections like UIHC-to-helipad)
-  NAMED_TYPE: "named_type",  // this connector only connects to tiles with type === TILE_TYPE.NAMED
+  NAMED_TYPE: "named_type",  // connects only to tiles with type === TILE_TYPE.NAMED (currently unused — available for future tiles)
   DESIGNATED: "designated",  // only connects where the neighbor has CONNECTOR_RULE.ONLY targeting this tile's name
 };
 
 // Special tile names referenced in game logic (placement rules, movement, deck building)
 const TILE_NAME = {
-  ESCALATOR:   "Escalator",
-  TOWN_SQUARE: "Town Square",
-  MOTOR_POOL:  "Motor Pool",
-  HELIPAD:     "Helipad",
+  ESCALATOR:      "Escalator",
+  TOWN_SQUARE:    "Town Square",
+  MOTOR_POOL:     "Motor Pool",
+  HELIPAD:        "Helipad",
+  HELIPAD_SCHOOL: "Helipad (school)",
 };
 
 // Subtile types — used on individual subtiles within a tile's 3×3 grid (subtile.type)

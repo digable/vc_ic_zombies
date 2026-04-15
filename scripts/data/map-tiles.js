@@ -1695,7 +1695,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME, N: CONNECTOR_RULE.ONLY },
-    connectorOnlyTarget: { N: "Helipad (school)" },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 4,
@@ -1722,7 +1722,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: "Helipad (school)" },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1751,7 +1751,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: "Helipad (school)" },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1780,7 +1780,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: "Helipad (school)" },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1809,7 +1809,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: "Helipad (school)" },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1839,7 +1839,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: "Helipad (school)" },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 5,
@@ -1869,7 +1869,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { W: "Helipad (school)" },
+    connectorOnlyTarget: { W: TILE_NAME.HELIPAD_SCHOOL },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
