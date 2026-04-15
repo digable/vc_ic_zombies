@@ -238,6 +238,26 @@ function renderCard({ tile, deckIndex }) {
         <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="isWinTile" ${tileForRender.isWinTile ? "checked" : ""} />isWinTile</label>
         <label><input type="checkbox" data-debug-tile-id="${tileId}" data-debug-field="firstDrawWhenSolo" ${tileForRender.firstDrawWhenSolo ? "checked" : ""} />firstDrawWhenSolo</label>
       </div>
+      <div class="deck-tile-edit-line">
+        <strong>Companion Dir</strong>
+        <select data-debug-tile-id="${tileId}" data-debug-field="companionDir">
+          <option value="">— none —</option>
+          ${["N","E","S","W"].map((d) => `<option value="${d}"${(tileForRender.companionDir || "") === d ? " selected" : ""}>${d}</option>`).join("")}
+        </select>
+        <strong>Companion Tile</strong>
+        <select data-debug-tile-id="${tileId}" data-debug-field="companionTiles">
+          <option value="">— none —</option>
+          ${(() => {
+            const tileCols = new Set(Object.keys(resolveCollectionCounts(tileForRender)));
+            const currentCompanion = (tileForRender.companionTiles || [])[0]?.name || "";
+            return [...new Set(
+              state.mapDeck
+                .filter((t) => t.name !== tileForRender.name && Object.keys(resolveCollectionCounts(t)).some((k) => tileCols.has(k)))
+                .map((t) => t.name)
+            )].sort().map((n) => `<option value="${n}"${currentCompanion === n ? " selected" : ""}>${n}</option>`).join("");
+          })()}
+        </select>
+      </div>
       <div class="small">Connectors: ${formatDirs(tileForRender.connectors)}</div>
       <div class="small">Z${zombieTotal}, L${tileForRender.hearts || 0}, B${tileForRender.bullets || 0}</div>
       <div class="micro-grid">${microHtml}</div>

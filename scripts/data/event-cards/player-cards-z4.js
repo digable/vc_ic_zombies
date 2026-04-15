@@ -118,6 +118,22 @@ playerEventCards.push(
     collection: { [COLLECTIONS.THE_END]: 2 },
     isItem: true,
     requiresTile: "Abandoned Cars",
+    preview(player) {
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      let spaces = 0;
+      [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => {
+        const adjTile = state.board.get(key(tx + dx, ty + dy));
+        if (!adjTile) return;
+        for (let lx = 0; lx < TILE_DIM; lx++) {
+          for (let ly = 0; ly < TILE_DIM; ly++) {
+            if (isLocalWalkable(adjTile, lx, ly)) spaces++;
+          }
+        }
+      });
+      if (spaces === 0) return "No adjacent tiles to teleport to.";
+      return `Can teleport to ${spaces} space(s) on adjacent tiles.`;
+    },
     apply(player) {
       logLine(`${player.name} placed the Amulet in front of them.`);
     },
@@ -154,6 +170,15 @@ playerEventCards.push(
     name: "Rolled-Up Newspaper",
     description: "Move 1 zombie (human or dog) from your current subtile to an opponent's subtile.",
     collection: { [COLLECTIONS.THE_END]: 2 },
+    preview(player) {
+      const zdata = state.zombies.get(key(player.x, player.y));
+      if (!zdata) return "No zombie on your subtile — no effect.";
+      const label = zdata.type === ZOMBIE_TYPE.DOG ? "zombie dog" : "zombie";
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 0) return "No other players to send a zombie to.";
+      const targets = others.map((p) => p.name).join(", ");
+      return `Will bap a ${label} toward: ${targets}.`;
+    },
     apply(player) {
       const fromKey = key(player.x, player.y);
       const zdata = state.zombies.get(fromKey);
@@ -268,6 +293,16 @@ playerEventCards.push(
     name: "Talk to the Hand",
     description: "Choose an opponent on your map tile and move them to an adjacent map tile of your choice.",
     collection: { [COLLECTIONS.THE_END]: 2 },
+    preview(player) {
+      const playerTx = spaceToTileCoord(player.x);
+      const playerTy = spaceToTileCoord(player.y);
+      const opponents = state.players.filter((p) => {
+        if (p.id === player.id) return false;
+        return spaceToTileCoord(p.x) === playerTx && spaceToTileCoord(p.y) === playerTy;
+      });
+      if (opponents.length === 0) return "No opponents on this tile — no effect.";
+      return `Can move: ${opponents.map((p) => p.name).join(", ")}`;
+    },
     apply(player) {
       const playerTx = spaceToTileCoord(player.x);
       const playerTy = spaceToTileCoord(player.y);
@@ -419,6 +454,17 @@ playerEventCards.push(
     name: "Bad Zombie, No Biscuit!",
     description: "Move all zombies on your map tile to an adjacent map tile. Cannot be used on a Cabin or Helipad tile.",
     collection: { [COLLECTIONS.THE_END]: 3 },
+    preview(player) {
+      const playerTx = spaceToTileCoord(player.x);
+      const playerTy = spaceToTileCoord(player.y);
+      let count = 0;
+      state.zombies.forEach((_z, zk) => {
+        const [zx, zy] = zk.split(",").map(Number);
+        if (spaceToTileCoord(zx) === playerTx && spaceToTileCoord(zy) === playerTy) count++;
+      });
+      if (count === 0) return "No zombies on this tile — no effect.";
+      return `Will chase ${count} zombie space(s) to an adjacent tile.`;
+    },
     canPlay() {
       const tile = getTileAtSpace(currentPlayer().x, currentPlayer().y);
       return !!(tile && tile.name !== "Cabin" && tile.type !== "helipad");
@@ -531,6 +577,19 @@ playerEventCards.push(
     name: "Fully Loaded",
     description: "Take enough bullets and life tokens to match the totals of any one other player.",
     collection: { [COLLECTIONS.THE_END]: 3 },
+    preview(player) {
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 0) return "No other players.";
+      const parts = others.map((t) => {
+        const b = Math.max(0, t.bullets - player.bullets);
+        const h = Math.max(0, Math.min(5, t.hearts) - player.hearts);
+        const bits = [];
+        if (b > 0) bits.push(`+${b} bullets`);
+        if (h > 0) bits.push(`+${h} life`);
+        return bits.length ? `${t.name}: ${bits.join(", ")}` : `${t.name}: no gain`;
+      });
+      return parts.join(" | ");
+    },
     apply(player) {
       const others = state.players.filter((p) => p.id !== player.id);
       if (others.length === 0) {
@@ -572,6 +631,19 @@ playerEventCards.push(
     name: "Clair Warlock",
     description: "Move an opponent to any woods tile adjacent to their current map tile.",
     collection: { [COLLECTIONS.THE_END]: 3 },
+    preview(player) {
+      const targetable = state.players.filter((p) => {
+        if (p.id === player.id) return false;
+        const tx = spaceToTileCoord(p.x);
+        const ty = spaceToTileCoord(p.y);
+        return [[-1, 0], [1, 0], [0, -1], [0, 1]].some(([dx, dy]) => {
+          const t = state.board.get(key(tx + dx, ty + dy));
+          return t && t.type === "woods";
+        });
+      });
+      if (targetable.length === 0) return "No opponents have adjacent woods tiles — no effect.";
+      return `Can target: ${targetable.map((p) => p.name).join(", ")}`;
+    },
     apply(player) {
       const others = state.players.filter((p) => p.id !== player.id);
       if (others.length === 0) {
@@ -670,6 +742,15 @@ playerEventCards.push(
     name: "We're All Friends Here.",
     description: "Take a Book of the Dead page card staged by another player and place it in front of you as if you had just staged it.",
     collection: { [COLLECTIONS.THE_END]: 2 },
+    preview(player) {
+      const staged = [];
+      state.players.forEach((p) => {
+        if (p.id === player.id) return;
+        (p.botdPages || []).forEach((c) => staged.push(`${c.name} (${p.name})`));
+      });
+      if (staged.length === 0) return "No opponents have staged pages — no effect.";
+      return `Can steal: ${staged.join(", ")}`;
+    },
     apply(player) {
       const stagedCards = [];
       state.players.forEach((p) => {
@@ -772,6 +853,11 @@ playerEventCards.push(
     description: "Play in a Cave. Discard to look at an opponent's hand and take 1 card. You must then discard down to 3 cards.",
     collection: { [COLLECTIONS.THE_END]: 2 },
     isItem: true,
+    preview(player) {
+      const targets = state.players.filter((p) => p.id !== player.id && p.hand.length > 0);
+      if (targets.length === 0) return "No opponents holding cards — no effect.";
+      return `Can steal from: ${targets.map((p) => `${p.name} (${p.hand.length})`).join(", ")}`;
+    },
     canPlay() {
       const tile = getTileAtSpace(currentPlayer().x, currentPlayer().y);
       return !!(tile && tile.name === "Cave");

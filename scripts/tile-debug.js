@@ -191,6 +191,19 @@ function updateMapDeckDebugEdit(tileId, coord, field, value, dir = null) {
     return;
   }
 
+  if (field === "companionDir") {
+    if (!tile) return;
+    if (value) { tile.companionDir = value; } else { delete tile.companionDir; }
+    scheduleRerenderCard(tileId);
+    return;
+  }
+
+  if (field === "companionTiles") {
+    if (!tile) return;
+    if (value) { tile.companionTiles = [{ name: value }]; } else { delete tile.companionTiles; }
+    scheduleRerenderCard(tileId);
+    return;
+  }
 
   // Subtile-level fields
   const editedCells = mapDeckDebugEdits.get(tileId);
@@ -221,10 +234,7 @@ function extractTileInputValues() {
   const hearts = Number(document.getElementById("newTileHearts")?.value || 0);
   const bullets = Number(document.getElementById("newTileBullets")?.value || 0);
   const companionDir = document.getElementById("newTileCompanionDir")?.value || "";
-  const companionNamesRaw = (document.getElementById("newTileCompanionNames")?.value || "").trim();
-  const companionNames = companionNamesRaw
-    ? companionNamesRaw.split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
+  const companionName = document.getElementById("newTileCompanionTile")?.value || "";
 
   // Per-collection counts
   const collection = {};
@@ -256,9 +266,34 @@ function extractTileInputValues() {
   if (document.getElementById("newTileIsWinTile")?.checked) result.isWinTile = true;
   if (document.getElementById("newTileFirstDrawWhenSolo")?.checked) result.firstDrawWhenSolo = true;
   if (companionDir) result.companionDir = companionDir;
-  if (companionNames.length > 0) result.companionTiles = companionNames.map((n) => ({ name: n }));
+  if (companionName) result.companionTiles = [{ name: companionName }];
 
   return result;
+}
+
+function renderNewTileCompanionSelect() {
+  const sel = document.getElementById("newTileCompanionTile");
+  if (!sel) return;
+
+  const selectedCollections = new Set(
+    Object.values(COLLECTIONS).filter((collKey) => {
+      const el = document.getElementById(`newTileCollCount_${collKey}`);
+      return Math.max(0, parseInt(el?.value || "0", 10) || 0) > 0;
+    })
+  );
+
+  const tileNames = [...new Set(
+    state.mapDeck
+      .filter((t) => {
+        const counts = resolveCollectionCounts(t);
+        return Object.keys(counts).some((k) => selectedCollections.has(k));
+      })
+      .map((t) => t.name)
+  )].sort();
+
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— none —</option>' +
+    tileNames.map((n) => `<option value="${n}"${prev === n ? " selected" : ""}>${n}</option>`).join("");
 }
 
 function renderNewTileCollectionInputs() {
@@ -302,6 +337,7 @@ function syncZombieCountToSpawnMode() {
 
 function refreshNewTilePreview() {
   syncZombieCountToSpawnMode();
+  renderNewTileCompanionSelect();
   const outputEl = document.getElementById("newTileCodeOutput");
   const statusEl = document.getElementById("newTileCodeStatus");
   const previewEl = document.getElementById("newTileLivePreview");
@@ -493,6 +529,14 @@ function attachTileDebugListeners() {
       updateMapDeckDebugEdit(tileId, null, field, target.checked, null);
       return;
     }
+    if (field === "companionDir" && target instanceof HTMLSelectElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
+    if (field === "companionTiles" && target instanceof HTMLInputElement) {
+      updateMapDeckDebugEdit(tileId, null, field, target.value, null);
+      return;
+    }
     if (!coord) {
       return;
     }
@@ -518,6 +562,7 @@ populateSpawnModeDropdown();
 populateZombieTypeDropdown();
 populateConnectorRuleSelects();
 renderNewTileCollectionInputs();
+renderNewTileCompanionSelect();
 renderNewTileSubtileEditor();
 attachNewTileSubtileEditorListeners();
 attachNewTileGenerator();

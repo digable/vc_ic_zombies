@@ -20,6 +20,7 @@ const COLLECTIONS = {
   MALL_WALKERS: "mall_walkers",
   NOT_DEAD_YET: "not_dead_yet",
   THE_END: "the_end",
+  SCHOOLS_OUT_FOREVER: "schools_out_forever",
   IOWA_CITY: "iowa_city"
 };
 
@@ -83,6 +84,18 @@ const COLLECTION_META = {
     version: "2.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 4 - The End... Director's Cut by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SCHOOLS_OUT_FOREVER]: {
+    label: "School's Out Forever",
+    shortCode: "Z5",
+    requiresBase: null,
+    year: 2008,
+    type: "Standalone / Expansion",
+    version: "2.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 5 - School's Out Forever by Todd A. Breitenstein",
     standaloneDeck: true,
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },

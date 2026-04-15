@@ -23,6 +23,11 @@ const pageEventCards = [
     name: "Twist of Fate",
     description: "Remove from play: take 1 bullet from each other player.",
     collection: { [COLLECTIONS.THE_END]: 2 },
+    preview(player) {
+      const total = state.players.filter((p) => p.id !== player.id && p.bullets > 0).length;
+      if (total === 0) return "No opponents have bullets — no effect.";
+      return `Would take ${total} bullet(s) total.`;
+    },
     apply(player) {
       state.players.forEach((other) => {
         if (other.id === player.id) return;
@@ -41,6 +46,25 @@ const pageEventCards = [
     name: "Return to Sender",
     description: "Remove from play: transport one opponent inside the Cabin to an outside subtile of the Cabin.",
     collection: { [COLLECTIONS.THE_END]: 2 },
+    preview(player) {
+      let cabinKey = null;
+      for (const [tk, tile] of state.board) {
+        if (tile.name === "Cabin") { cabinKey = tk; break; }
+      }
+      if (!cabinKey) return "Cabin not on the board — no effect.";
+      const { x: ctx, y: cty } = parseKey(cabinKey);
+      const cabinTile = state.board.get(cabinKey);
+      const targets = state.players.filter((p) => {
+        if (p.id === player.id) return false;
+        if (spaceToTileCoord(p.x) !== ctx || spaceToTileCoord(p.y) !== cty) return false;
+        const lx = getLocalCoord(p.x, ctx);
+        const ly = getLocalCoord(p.y, cty);
+        return getSubTileType(cabinTile, lx, ly) === "building";
+      });
+      if (targets.length === 0) return "No opponents inside the Cabin.";
+      if (targets.length === 1) return `Would eject: ${targets[0].name}.`;
+      return `Multiple targets inside: ${targets.map((p) => p.name).join(", ")} — you choose.`;
+    },
     apply(player) {
       // Find Cabin tile on the board
       let cabinKey = null;
@@ -115,6 +139,17 @@ const pageEventCards = [
     name: "The Trees Are Alive!",
     description: "Remove from play: all opponents on a wooded subtile must fight the trees (need 4+ to defeat).",
     collection: { [COLLECTIONS.THE_END]: 2 },
+    preview(player) {
+      const targets = state.players.filter((p) => {
+        if (p.id === player.id) return false;
+        const tile = getTileAtSpace(p.x, p.y);
+        if (!tile) return false;
+        const { lx, ly } = getSpaceLocalCoords(p.x, p.y);
+        return getSubTileType(tile, lx, ly) === "wooded" && !state.zombies.has(key(p.x, p.y));
+      });
+      if (targets.length === 0) return "No opponents on wooded subtiles — no effect.";
+      return `Would target: ${targets.map((p) => p.name).join(", ")}`;
+    },
     apply(player) {
       let count = 0;
       state.players.forEach((other) => {
@@ -141,6 +176,11 @@ const pageEventCards = [
     name: "Here Doggie!",
     description: "When staged: fills the Pet Cemetery with 9 zombie dogs. Remove from play at any time.",
     collection: { [COLLECTIONS.THE_END]: 3 },
+    preview() {
+      const onBoard = [...state.board.values()].some((t) => t.name === "Pet Cemetery");
+      if (!onBoard) return "Pet Cemetery not on the board — staging will have no effect.";
+      return "Will fill the Pet Cemetery with 9 zombie dogs on staging.";
+    },
     onStage(player) {
       let cemKey = null;
       for (const [tk, tile] of state.board) {

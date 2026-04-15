@@ -578,6 +578,11 @@
   background: #eef7f1;
 }
 
+.card-preview {
+  color: #555;
+  font-style: italic;
+}
+
 .dim {
   opacity: 0.55;
 }

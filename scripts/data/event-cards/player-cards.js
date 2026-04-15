@@ -57,6 +57,14 @@ const playerEventCards = [
     description: "Roll 1 die. 4–6: kill all zombies on up to 3 orthogonally adjacent spaces. 1–3: lose 2 life tokens.",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     isWeapon: true,
+    preview(player) {
+      const count = [...state.zombies.keys()].filter((zk) => {
+        const [zx, zy] = zk.split(",").map(Number);
+        return (Math.abs(zx - player.x) + Math.abs(zy - player.y)) === 1;
+      }).length;
+      if (count === 0) return "50% chance success — but no adjacent zombies to kill.";
+      return `50% chance success — ${count} adjacent zombie space(s) to target.`;
+    },
     apply(player) {
       const roll = rollD6();
       logLine(`${player.name} played Dynamite — rolled ${roll}.`);
@@ -391,6 +399,18 @@ const playerEventCards = [
     name: "Clearance Sale",
     description: "Remove all zombies from mall hallway spaces on your current tile. Each counts as a kill.",
     collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
+    preview(player) {
+      const tile = getTileAtSpace(player.x, player.y);
+      if (!tile?.subTiles) return "No subtile data on this tile.";
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      let count = 0;
+      forEachTileSpace(tx, ty, (lx, ly, sk) => {
+        if (tile.subTiles[key(lx, ly)]?.type === "mall hallway" && state.zombies.has(sk)) count++;
+      });
+      if (count === 0) return "No zombies on mall hallway spaces — no effect.";
+      return `Will clear ${count} zombie(s) from mall hallway spaces.`;
+    },
     apply(player) {
       const tile = getTileAtSpace(player.x, player.y);
       if (!tile?.subTiles) {
@@ -419,6 +439,16 @@ const playerEventCards = [
     description: "Play in a building or store. Remove all zombies from the tile and distribute them one at a time clockwise to all players — each counts as a kill.",
     collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
     canPlay: isOnBuildingOrStoreTile,
+    preview(player) {
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      let count = 0;
+      forEachTileSpace(tx, ty, (_lx, _ly, sk) => {
+        if (state.zombies.has(sk)) count++;
+      });
+      if (count === 0) return "No zombies on this tile — no effect.";
+      return `Will distribute ${count} zombie(s) as kills.`;
+    },
     apply(player) {
       const tx = spaceToTileCoord(player.x);
       const ty = spaceToTileCoord(player.y);
@@ -451,6 +481,19 @@ const playerEventCards = [
     description: "Play in a building or store. Remove all zombies from building/store subtiles and place them on adjacent walkway, street, grass, or parking spaces.",
     collection: { [COLLECTIONS.MALL_WALKERS]: 2 },
     canPlay: isOnBuildingOrStoreTile,
+    preview(player) {
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      const tile = state.board.get(key(tx, ty));
+      if (!tile?.subTiles) return null;
+      let count = 0;
+      forEachTileSpace(tx, ty, (lx, ly, sk) => {
+        const sub = tile.subTiles[key(lx, ly)];
+        if (sub && SUBTILE_BUILDING_TYPES.has(sub.type) && state.zombies.has(sk)) count++;
+      });
+      if (count === 0) return "No zombies in building spaces — no effect.";
+      return `Will push ${count} zombie(s) out of building spaces.`;
+    },
     apply(player) {
       const tx = spaceToTileCoord(player.x);
       const ty = spaceToTileCoord(player.y);

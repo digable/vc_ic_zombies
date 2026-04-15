@@ -156,6 +156,25 @@ const roadTiles = [
       "2,2": { walkable: false }
     }
   },
+  {
+    name: "4-Way (school)",
+    type: "road",
+    collection: { [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 5 },
+    connectors: ["N", "E", "S", "W"],
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_EXITS,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 1 },
+    subTilesTemplate: {
+      "0,0": { walkable: false, type: "grass", walls: ["N", "E", "S", "W"] },
+      "1,0": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,0": { walkable: false, type: "grass", walls: ["N", "E", "S", "W"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: false, type: "grass", walls: ["N", "E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: false, type: "grass", walls: ["N", "E", "S", "W"] },
+    }
+  },
   // 4-way (Parking Lot)
   {
     name: "Parking Lot",
@@ -1638,6 +1657,88 @@ const namedTiles = [
       "2,2": { walkable: true, type: "wooded" }
     }
   },
+// --- Zombies!!! 5: School's Out Forever! ------------------------------------
+  {
+    name: "School Entrance",
+    type: "town",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    isStartTile: true,
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.DISABLE_ON_SOLO
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 3,
+    },
+    hearts: 0,
+    bullets: 0,
+    firstDrawWhenSolo: true,
+    companionDir: "N",
+    companionTiles: [{ name: "4-Way (school)" }],
+    subTilesTemplate: {
+      "0,0": { walkable: false },
+      "1,0": { walkable: true, type: "mall hallway", doors: ["S"] },
+      "2,0": { walkable: false },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: true, type: "grass" },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "grass" }
+    }
+  },
+  {
+    name: "Hospital",
+    type: "named",
+    collection: { [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
+    connectors: { S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
+    hearts: 4,
+    bullets: 4,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+    }
+  },
+  {
+    name: "Phys Ed Bidg.",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1,
+    },
+    connectors: {
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.REGULAR]: 5,
+    },
+    hearts: 2,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: false }
+    }
+  },
   // --- Iowa City (custom expansion) ----------------------------------------
   {
     name: "Ped Mall",
@@ -1965,7 +2066,7 @@ const specialTiles = [
   {
     name: "Helipad",
     type: "helipad",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1, [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },

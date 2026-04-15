@@ -264,9 +264,11 @@ function renderHand() {
 
     const showSelect = !isBOTDPage && state.step === STEP.DISCARD && !state.pendingCombatDecision;
     const cardShortCode = getCollectionShortCode(card.collection);
+    const previewText = card.preview ? card.preview(player) : null;
     el.innerHTML = `
       <strong>${card.name}</strong>${cardShortCode ? ` <span class="coll-short-code">${cardShortCode}</span>` : ""}${isBOTDPage ? ` <span class="coll-short-code">BotD PAGE</span>` : ""}<br />
       <span class="small">${card.description}</span><br />
+      ${previewText ? `<span class="small card-preview">${previewText}</span><br />` : ""}
       ${isBOTDPage
         ? `<button ${canStage ? "" : "disabled"} data-stage-index="${index}">Stage</button>`
         : `<button ${canPlay ? "" : "disabled"} data-play-index="${index}">Play</button>`}
@@ -287,9 +289,11 @@ function renderHand() {
     player.botdPages.forEach((card, index) => {
       const el = document.createElement("div");
       el.className = "hand-card hand-item";
+      const previewText = card.preview ? card.preview(player) : null;
       el.innerHTML = `
         <strong>${card.name}</strong> <span class="coll-short-code">BotD PAGE</span><br />
         <span class="small">${card.description}</span><br />
+        ${previewText ? `<span class="small card-preview">${previewText}</span><br />` : ""}
         <button ${useDisabled ? "disabled" : ""} data-use-page-index="${index}">Use &amp; Discard</button>
       `;
       refs.handList.appendChild(el);
@@ -306,9 +310,11 @@ function renderHand() {
       const el = document.createElement("div");
       el.className = "hand-card hand-item";
       const activateDisabled = state.gameOver || Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice);
+      const previewText = card.preview ? card.preview(player) : null;
       el.innerHTML = `
         <strong>${card.name}</strong><br />
         <span class="small">${card.description}</span><br />
+        ${previewText ? `<span class="small card-preview">${previewText}</span><br />` : ""}
         ${card.combatWeapon ? `<span class="small dim">Use in combat</span>` : card.activateItem ? `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">Activate &amp; Discard</button>` : `<span class="small dim">Triggers automatically</span>`}
       `;
       refs.handList.appendChild(el);

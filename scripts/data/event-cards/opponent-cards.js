@@ -39,6 +39,11 @@ const opponentEventCards = [
     name: "You Don't Need That!",
     description: "Play when you share a space with another player. Take one weapon or item in play from them.",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    preview(player) {
+      const target = state.players.find((p) => p.id !== player.id && key(p.x, p.y) === key(player.x, player.y) && p.items && p.items.length > 0);
+      if (!target) return null;
+      return `Can steal from ${target.name}: ${target.items.map((i) => i.name).join(", ")}`;
+    },
     canPlay() {
       const cp = currentPlayer();
       return state.players.some((p) => p.id !== cp.id && key(p.x, p.y) === key(cp.x, cp.y) && p.items && p.items.length > 0);
@@ -89,6 +94,16 @@ const opponentEventCards = [
     name: "Weekend Pass: DENIED!",
     description: "Target opponent discards their entire hand.",
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
+    preview(player) {
+      const n = state.players.length;
+      for (let i = 1; i < n; i++) {
+        const p = state.players[(state.currentPlayerIndex + i) % n];
+        if (p.id === player.id) continue;
+        if (p.hand.length === 0) return `${p.name} has no cards — no effect.`;
+        return `Would discard ${p.name}'s hand (${p.hand.length} card(s)).`;
+      }
+      return "No valid target.";
+    },
     apply(player, helpers) {
       const target = helpers.getNextOpponent(player);
       if (!target) {
