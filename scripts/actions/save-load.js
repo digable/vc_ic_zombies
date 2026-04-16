@@ -35,9 +35,13 @@ function hasPendingState() {
 function serializeState() {
   const serializePlayer = (p) => ({
     ...p,
-    hand:  p.hand.map((c) => c.name),
-    items: p.items.map((c) => c.name),
-    botdPages: (p.botdPages || []).map((c) => c.name)
+    hand:      p.hand.map((c) => c.name),
+    items:     p.items.map((c) => c.name),
+    botdPages: (p.botdPages || []).map((c) => c.name),
+    // studentLoanReturn holds live card references — serialize as names only
+    studentLoanReturn: p.studentLoanReturn
+      ? p.studentLoanReturn.map((e) => ({ cardName: e.card.name, fromPlayerId: e.fromPlayerId }))
+      : null
   });
 
   return {
@@ -57,6 +61,7 @@ function serializeState() {
     movementRollFreezeCount:     state.movementRollFreezeCount,
     tokenPickupFrozenCount:      state.tokenPickupFrozenCount,
     bulletsCombatFrozenCount:    state.bulletsCombatFrozenCount,
+    pillowFightCount:            state.pillowFightCount,
     lastPlayedWeaponName:        state.lastPlayedWeaponName,
     lastPlayedWeaponByPlayerId:  state.lastPlayedWeaponByPlayerId,
     recentKillByPlayerId:        state.recentKillByPlayerId,
@@ -107,10 +112,15 @@ function deserializeState(data) {
   // Players
   state.players = data.players.map((p) => ({
     ...p,
-    hand:  restoreCards(p.hand),
-    items: restoreCards(p.items),
+    hand:      restoreCards(p.hand),
+    items:     restoreCards(p.items),
     botdPages: restoreCards(p.botdPages || []),
-    pageRemovedThisRound: p.pageRemovedThisRound ?? false
+    pageRemovedThisRound: p.pageRemovedThisRound ?? false,
+    hasBike:              p.hasBike ?? false,
+    mustMoveTowardTile:   p.mustMoveTowardTile ?? null,
+    studentLoanReturn: p.studentLoanReturn
+      ? p.studentLoanReturn.map((e) => ({ card: nameToCard[e.cardName], fromPlayerId: e.fromPlayerId })).filter((e) => e.card)
+      : null
   }));
   rebuildPlayerById();
 
@@ -148,6 +158,7 @@ function deserializeState(data) {
   state.movementRollFreezeCount    = data.movementRollFreezeCount ?? 0;
   state.tokenPickupFrozenCount     = data.tokenPickupFrozenCount ?? 0;
   state.bulletsCombatFrozenCount   = data.bulletsCombatFrozenCount ?? 0;
+  state.pillowFightCount           = data.pillowFightCount ?? 0;
   state.lastPlayedWeaponName       = data.lastPlayedWeaponName ?? null;
   state.lastPlayedWeaponByPlayerId = data.lastPlayedWeaponByPlayerId ?? null;
   state.lastPlayedEventCard        = null;

@@ -34,6 +34,21 @@ function isSpaceBuilding(sx, sy) {
   return getSubTileType(tile, lx, ly) === "building";
 }
 
+// Returns { name, cx, cy } for the "Where's the Admin Bldg.?" toward-movement target.
+// Tries the primary tile name, then fallback, then defaults to start space.
+function findAdminBldgTarget(config) {
+  for (const tileName of [config.tileName, config.fallbackTileName]) {
+    if (!tileName) continue;
+    for (const [bKey, tile] of state.board) {
+      if (tile && tile.name === tileName) {
+        const [tx, ty] = bKey.split(",").map(Number);
+        return { name: tileName, cx: tx * 3 + 1, cy: ty * 3 + 1 };
+      }
+    }
+  }
+  return { name: TILE_NAME.TOWN_SQUARE, cx: 1, cy: 1 };
+}
+
 function canPlayerReachDifferentTile(player) {
   const tileX = spaceToTileCoord(player.x);
   const tileY = spaceToTileCoord(player.y);
@@ -357,7 +372,7 @@ function handleBreakthroughAttempt(dir) {
     logLine(`${player.name} moved ${directionToArrow(dir)} to ${getTileDisplayName(toTile)} [space ${toX}, ${toY}].`, "quiet");
     if (checkWin(player)) { render(); return; }
     const playerSpaceKey = playerKey(player);
-    if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
+    if (state.zombies.has(playerSpaceKey) && !playerHasNoCombat(player)) {
       logLine(`${player.name} encountered a zombie and must fight immediately.`);
       resolveCombatForPlayer(player, {
         advanceStepWhenClear: false,
@@ -365,7 +380,7 @@ function handleBreakthroughAttempt(dir) {
         resumeStepAfterPending: state.movesRemaining > 0 ? STEP.MOVE : STEP.MOVE_ZOMBIES
       });
       if (state.step === STEP.END) { render(); return; }
-      if (state.zombies.has(playerSpaceKey) && !player.noCombatThisTurn) {
+      if (state.zombies.has(playerSpaceKey) && !playerHasNoCombat(player)) {
         state.step = STEP.COMBAT;
         render();
         return;
@@ -450,6 +465,25 @@ function movePlayer(dir) {
     }
   }
 
+  if (player.mustMoveTowardTile) {
+    const adminTarget = findAdminBldgTarget(player.mustMoveTowardTile);
+    const curDist = Math.abs(player.x - adminTarget.cx) + Math.abs(player.y - adminTarget.cy);
+    const nextDist = Math.abs(player.x + d.x - adminTarget.cx) + Math.abs(player.y + d.y - adminTarget.cy);
+    if (curDist > 0 && nextDist > curDist) {
+      // Only block if at least one valid move would reduce distance
+      const hasTowardOption = ["N", "S", "E", "W"].some((checkDir) => {
+        const cd = DIRS[checkDir];
+        if (!canMove(player, checkDir)) return false;
+        return Math.abs(player.x + cd.x - adminTarget.cx) + Math.abs(player.y + cd.y - adminTarget.cy) < curDist;
+      });
+      if (hasTowardOption) {
+        logLine(`${player.name} must move toward ${adminTarget.name} (Where's the 'Admin Bldg.?').`);
+        render();
+        return;
+      }
+    }
+  }
+
   const wasInBuilding = player.claustrophobiaActive && isSpaceBuilding(player.x, player.y);
 
   player.x += d.x;
@@ -499,9 +533,17 @@ function movePlayer(dir) {
     }
   }
 
+  // I've got a bike! — auto-discard when player enters a building subtile
+  if (player.hasBike && isSpaceBuilding(player.x, player.y)) {
+    player.hasBike = false;
+    player.movementBonus = Math.max(0, (player.movementBonus || 0) - 2);
+    consumeItemByName(player, "I've got a bike!");
+    logLine(`${player.name} entered a building — I've got a bike! is discarded.`);
+  }
+
   const playerSpaceKey = playerKey(player);
   if (state.zombies.has(playerSpaceKey)) {
-    if (player.noCombatThisTurn) {
+    if (playerHasNoCombat(player)) {
       logLine(`${player.name} is under a no-combat effect and ignores zombie battle this turn.`);
       if (state.movesRemaining <= 0) {
         moveToZombiePhase();
@@ -541,7 +583,7 @@ function movePlayer(dir) {
     const unresolvedEncounterOnCurrentSpace =
       state.zombies.has(playerSpaceKey) &&
       key(player.x, player.y) === playerSpaceKey &&
-      !player.noCombatThisTurn;
+      !playerHasNoCombat(player);
 
     if (unresolvedEncounterOnCurrentSpace) {
       state.step = STEP.COMBAT;
@@ -668,6 +710,12 @@ function endMovementEarly() {
   }
   if (player.claustrophobiaActive && isSpaceBuilding(player.x, player.y)) {
     logLine(`${player.name} cannot end movement while inside a building (Claustrophobia).`);
+    render();
+    return;
+  }
+  if (player.mustMoveTowardTile) {
+    const { name: targetName } = findAdminBldgTarget(player.mustMoveTowardTile);
+    logLine(`${player.name} must use all movement toward ${targetName} — cannot end early (Where's the 'Admin Bldg.?').`);
     render();
     return;
   }

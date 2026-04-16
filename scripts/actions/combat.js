@@ -77,6 +77,7 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
     state.combatMoveResume = null;
     state.combatZombiePhaseResume = null;
     state.step = STEP.DRAW_EVENTS;
+    autoSkipDrawEventsIfFull();
   }
 }
 
@@ -116,6 +117,8 @@ function resolvePendingCombatDecision(actionCode) {
     const lsCard = player.hand.splice(lsIndex, 1)[0];
     state.eventDiscardPile.push(lsCard);
     player.bullets -= 1;
+    if (consumeItemByName(player, "Pool Cue")) logLine(`${player.name}'s Pool Cue breaks — discarded.`);
+    if (consumeItemByName(player, "Bat")) logLine(`${player.name}'s Bat breaks — discarded.`);
     decrementZombieAt(playerSpaceKey);
     player.kills += 1;
     state.lastCombatResult = "Lucky Shot";
@@ -148,8 +151,21 @@ function resolvePendingCombatDecision(actionCode) {
     }
 
     player.bullets -= 1;
-    pending.modifiedRoll += 1;
-    logLine(`${player.name} spent 1 bullet. Combat roll is now ${pending.modifiedRoll}.`);
+    if (consumeItemByName(player, "Pool Cue")) logLine(`${player.name}'s Pool Cue breaks — discarded.`);
+    if (consumeItemByName(player, "Bat")) logLine(`${player.name}'s Bat breaks — discarded.`);
+    if (state.pillowFightCount > 0) {
+      pending.halfBulletCredit = (pending.halfBulletCredit || 0) + 1;
+      if (pending.halfBulletCredit >= 2) {
+        pending.halfBulletCredit -= 2;
+        pending.modifiedRoll += 1;
+        logLine(`${player.name} spent 2 bullets (Pillow Fight — half value). Combat roll is now ${pending.modifiedRoll}.`);
+      } else {
+        logLine(`${player.name} spent 1 bullet (Pillow Fight — spend 1 more for +1). Roll still ${pending.modifiedRoll}.`);
+      }
+    } else {
+      pending.modifiedRoll += 1;
+      logLine(`${player.name} spent 1 bullet. Combat roll is now ${pending.modifiedRoll}.`);
+    }
 
     if (pending.modifiedRoll >= pending.killRoll) {
       decrementZombieAt(playerSpaceKey);
@@ -181,6 +197,8 @@ function resolvePendingCombatDecision(actionCode) {
       return;
     }
     player.hearts -= 0.5;
+    if (consumeItemByName(player, "Pool Cue")) logLine(`${player.name}'s Pool Cue breaks — discarded.`);
+    if (consumeItemByName(player, "Bat")) logLine(`${player.name}'s Bat breaks — discarded.`);
     logLine(`${player.name} spent ½ heart and chose to reroll (${player.hearts} heart(s) remaining).`);
     const optHH = pending.options;
     state.pendingCombatDecision = null;
@@ -197,6 +215,8 @@ function resolvePendingCombatDecision(actionCode) {
     }
 
     player.hearts -= 1;
+    if (consumeItemByName(player, "Pool Cue")) logLine(`${player.name}'s Pool Cue breaks — discarded.`);
+    if (consumeItemByName(player, "Bat")) logLine(`${player.name}'s Bat breaks — discarded.`);
     logLine(`${player.name} spent 1 life token and chose to reroll.`);
     const options = pending.options;
     state.pendingCombatDecision = null;
@@ -339,7 +359,7 @@ function resolveCombatForPlayer(player, options = {}) {
     return { fought: false, knockedOut: false, pending: true };
   }
 
-  if (player.noCombatThisTurn) {
+  if (playerHasNoCombat(player)) {
     logLine(`${player.name} avoided combat due to a no-combat effect.`);
     state.lastCombatResult = "Skipped";
     if (advanceStepWhenClear && state.step === STEP.COMBAT) {
@@ -391,8 +411,11 @@ function resolveCombatForPlayer(player, options = {}) {
   const diePenalty = player.dieRollPenalty || 0;
   const meatCleaverBonus = player.meatCleaverActive ? 1 : 0;
   const macheteBonus = (player.items || []).some((c) => c.name === "Machete") ? 1 : 0;
-  const baseCombatRoll = roll - diePenalty + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus;
-  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""})`;
+  const poolCueBonus = (player.items || []).some((c) => c.name === "Pool Cue") ? 1 : 0;
+  const batBonus = (player.items || []).some((c) => c.name === "Bat") ? 2 : 0;
+  const scalpelCount = (player.items || []).filter((c) => c.name === "Scalpel").length;
+  const baseCombatRoll = roll - diePenalty - scalpelCount + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus + poolCueBonus + batBonus;
+  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""}${scalpelCount ? ` - scalpel ${scalpelCount}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""}${poolCueBonus ? ` + pool cue ${poolCueBonus}` : ""}${batBonus ? ` + bat ${batBonus}` : ""})`;
   const zombieLabel = isDog ? "zombie dog" : isEnhanced ? "government-enhanced zombie" : "zombie";
 
   if (baseCombatRoll >= killRoll) {

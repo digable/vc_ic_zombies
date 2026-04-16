@@ -315,7 +315,7 @@ function renderHand() {
         <strong>${card.name}</strong><br />
         <span class="small">${card.description}</span><br />
         ${previewText ? `<span class="small card-preview">${previewText}</span><br />` : ""}
-        ${card.combatWeapon ? `<span class="small dim">Use in combat</span>` : card.activateItem ? `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">Activate &amp; Discard</button>` : `<span class="small dim">Triggers automatically</span>`}
+        ${card.combatWeapon ? `<span class="small dim">Use in combat</span>` : card.activateItem ? `<button ${activateDisabled ? "disabled" : ""} data-activate-item-index="${index}">${card.activateLabel || "Activate &amp; Discard"}</button>` : `<span class="small dim">Triggers automatically</span>`}
       `;
       refs.handList.appendChild(el);
     });
@@ -343,9 +343,14 @@ function renderCombatDecision() {
     return `<div class="combat-action-wrap">${btnHtml}${hint}</div>`;
   }
 
-  const bulletsNeededToWin = Math.max(0, WIN - roll);
-  const bulletWins = roll + 1 >= WIN;
-  const canWinWithBullets = roll + player.bullets >= WIN;
+  const pillowFight = state.pillowFightCount > 0;
+  const halfCredit = pending.halfBulletCredit || 0;
+  const nextBulletBonus = pillowFight ? (halfCredit >= 1 ? 1 : 0) : 1;
+  const bulletsNeededToWin = pillowFight
+    ? Math.max(0, (WIN - roll) * 2 - halfCredit)
+    : Math.max(0, WIN - roll);
+  const bulletWins = roll + nextBulletBonus >= WIN;
+  const canWinWithBullets = player.bullets >= bulletsNeededToWin;
   const bulletResult = bulletWins
     ? "kills the zombie!"
     : canWinWithBullets
@@ -355,9 +360,11 @@ function renderCombatDecision() {
   const jammed = state.weaponsJammedCount > 0;
   const bulletsFrozen = state.bulletsCombatFrozenCount > 0;
   const bulletDisabled = player.bullets <= 0 || jammed || bulletsFrozen;
-  const bulletHint = jammed ? "weapons jammed" : bulletsFrozen ? "No Guts, No Glory" : player.bullets > 0 ? `→ ${bulletResult}` : null;
-  const bulletHintStyle = jammed || bulletsFrozen ? "warn" : bulletHintClass;
-  const bulletLabel = `Spend 1 Bullet (+1) — ${player.bullets} left${jammed ? " 🚫" : bulletsFrozen ? " 🚫" : ""}`;
+  const bulletHint = jammed ? "weapons jammed" : bulletsFrozen ? "No Guts, No Glory" : pillowFight ? `Pillow Fight (2=+1)${halfCredit ? " [½ credit]" : ""} → ${bulletResult}` : player.bullets > 0 ? `→ ${bulletResult}` : null;
+  const bulletHintStyle = jammed || bulletsFrozen ? "warn" : pillowFight ? "warn" : bulletHintClass;
+  const bulletLabel = pillowFight
+    ? `Spend 1 Bullet (+½) — ${player.bullets} left`
+    : `Spend 1 Bullet (+1) — ${player.bullets} left${jammed ? " 🚫" : bulletsFrozen ? " 🚫" : ""}`;
   const bulletBtn = actionWrap(
     `<button data-combat-action="B" ${bulletDisabled ? "disabled" : ""}>${bulletLabel}</button>`,
     bulletHint,
@@ -682,8 +689,9 @@ function renderLog() {
 
 function renderMeta() {
   const cp = currentPlayer();
+  const activePlayerId = getActivePlayerId();
   const pipsHtml = state.players.map((p) => {
-    const isActive = p.id === cp.id;
+    const isActive = p.id === activePlayerId;
     return `<span class="player-pip${isActive ? " player-pip--active" : ""}">
       <span class="pip-name">${p.name}</span>
       <span class="pip-stat">♥${p.hearts}</span>

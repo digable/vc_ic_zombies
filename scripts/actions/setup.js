@@ -22,6 +22,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       cannotMoveTurns: 0,
       cannotPlayCardTurns: 0,
       noCombatThisTurn: false,
+      noCombatTileKey: null,
       maxMoveNextTurn: null,
       forcedDirection: null,
       brainCramp: null,
@@ -33,12 +34,15 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       knockedOut: false,
       knockouts: 0,
       hasJeep: false,
+      hasBike: false,
       smellEffect: null,
       itemsUsedThisTurn: [],
       dieRollPenalty: 0,
       nextTurnDieRollPenalty: 0,
       pendingDuctTeleport: null,
-      spellAttemptedThisTurn: false
+      spellAttemptedThisTurn: false,
+      mustMoveTowardTile: null,
+      studentLoanReturn: null
     });
   }
 

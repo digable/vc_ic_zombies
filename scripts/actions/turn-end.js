@@ -10,6 +10,27 @@ function endTurn() {
     state.discardPile.push(card);
     logLine(`${outgoing.name} discarded ${card.name} to meet hand limit ${handLimit}.`);
   }
+  // Student Loan — return borrowed items to their original owners
+  if (outgoing.studentLoanReturn && outgoing.studentLoanReturn.length > 0) {
+    for (const { card, fromPlayerId } of outgoing.studentLoanReturn) {
+      const idx = outgoing.items.indexOf(card);
+      const originalOwner = getPlayerById(fromPlayerId);
+      if (idx >= 0) {
+        outgoing.items.splice(idx, 1);
+        if (originalOwner) {
+          originalOwner.items.push(card);
+          logLine(`${outgoing.name} returned ${card.name} to ${originalOwner.name} (Student Loan).`);
+        } else {
+          state.eventDiscardPile.push(card);
+          logLine(`${outgoing.name}'s borrowed ${card.name} could not be returned — discarded.`);
+        }
+      } else {
+        logLine(`${outgoing.name}'s borrowed ${card.name} was lost during the turn and cannot be returned.`);
+      }
+    }
+    outgoing.studentLoanReturn = null;
+  }
+
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
   outgoing.tileCombatBonus = 0;
@@ -17,6 +38,7 @@ function endTurn() {
   outgoing.itemsUsedThisTurn = [];
   outgoing.dieRollPenalty = 0;
   outgoing.noCombatThisTurn = false;
+  outgoing.noCombatTileKey = null;
   outgoing.inTheZone = false;
   if (state.regularZombieEnhanced?.playerId === outgoing.id) {
     state.regularZombieEnhanced.endTurnCount += 1;
@@ -32,6 +54,7 @@ function endTurn() {
   outgoing.claustrophobiaActive = false;
   outgoing.halfMovementNextTurn = false;
   outgoing.brainCramp = null;
+  outgoing.mustMoveTowardTile = null;
   outgoing.movementHijack = null;
   outgoing.movingTogether = null;
   outgoing.musicShieldActive = false;
@@ -49,6 +72,7 @@ function endTurn() {
   if (state.movementRollFreezeCount > 0) state.movementRollFreezeCount -= 1;
   if (state.tokenPickupFrozenCount > 0) state.tokenPickupFrozenCount -= 1;
   if (state.bulletsCombatFrozenCount > 0) state.bulletsCombatFrozenCount -= 1;
+  if (state.pillowFightCount > 0) state.pillowFightCount -= 1;
   state.playerTrail = [];
   state.lastCombatResult = null;
   state.lastPlayedEventCard = null;

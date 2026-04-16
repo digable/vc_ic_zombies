@@ -18,6 +18,14 @@ function drawEventsToThree() {
 
   const player = currentPlayer();
   const drawTarget = (state.useGuts && player.guts != null) ? Math.max(1, player.guts) : MAX_HAND_SIZE;
+
+  if (player.hand.length >= drawTarget) {
+    autoSkipDrawEventsIfFull();
+    render();
+    return;
+  }
+
+  const countBefore = player.hand.length;
   while (player.hand.length < drawTarget) {
     if (state.eventDeck.length === 0) {
       if (state.eventDiscardPile.length === 0) break;
@@ -26,7 +34,14 @@ function drawEventsToThree() {
     player.hand.push(state.eventDeck.shift());
   }
 
-  logLine(`${player.name} refilled event hand to ${player.hand.length}.`, "quiet");
+  const drew = player.hand.length - countBefore;
+  if (drew === 0) {
+    logLine(`${player.name} cannot draw — event deck is empty.`, "quiet");
+  } else if (player.hand.length < drawTarget) {
+    logLine(`${player.name} drew ${drew} event card(s) — deck exhausted (${player.hand.length} in hand).`, "quiet");
+  } else {
+    logLine(`${player.name} refilled event hand to ${player.hand.length}.`, "quiet");
+  }
   state.step = STEP.ROLL_MOVE;
   render();
 }
@@ -144,7 +159,7 @@ function playEvent(index) {
     state.eventDiscardPile.push(card);
     player.eventUsedThisRound = true;
     const pKey = playerKey(player);
-    if (state.zombies.has(pKey) && !player.noCombatThisTurn) {
+    if (state.zombies.has(pKey) && !playerHasNoCombat(player)) {
       resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
     }
     checkWin(player);
@@ -159,7 +174,7 @@ function playEvent(index) {
   player.eventUsedThisRound = true;
 
   const pKey = playerKey(player);
-  if (state.zombies.has(pKey) && !player.noCombatThisTurn) {
+  if (state.zombies.has(pKey) && !playerHasNoCombat(player)) {
     logLine(`${player.name} is in a zombie space after playing ${card.name}. Combat resolves immediately.`);
     resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
   }
@@ -529,7 +544,7 @@ function handleSpaceSelectClick(sx, sy) {
   state.pendingSpaceSelect = null;
   logLine(`${player.name} used ${pss.cardName} — moved to [${sx}, ${sy}].`);
 
-  if (state.zombies.has(spaceKey) && !player.noCombatThisTurn) {
+  if (state.zombies.has(spaceKey) && !playerHasNoCombat(player)) {
     logLine(`${player.name} landed on a zombie space — combat triggers immediately.`);
     resolveCombatForPlayer(player, { advanceStepWhenClear: false, endStepOnKnockout: true });
   }
@@ -671,8 +686,9 @@ function discardSelected() {
     state.eventDiscardPile.push(card);
     logLine(`${player.name} discarded ${card.name}.`);
   } else {
-    if (player.inTheZone && player.hand.length > discardLimit) {
-      logLine(`${player.name} must discard down to ${discardLimit} (In the Zone — select a card to discard).`);
+    if (player.hand.length > discardLimit) {
+      const reason = player.inTheZone ? "In the Zone" : `hand limit is ${discardLimit}`;
+      logLine(`${player.name} must discard down to ${discardLimit} (${reason} — select a card to discard).`);
       render();
       return;
     }
@@ -681,8 +697,9 @@ function discardSelected() {
 
   state.selectedHandIndex = null;
 
-  if (player.inTheZone && player.hand.length > discardLimit) {
-    logLine(`${player.name} must discard down to ${discardLimit} (In the Zone — ${player.hand.length - discardLimit} more to discard).`);
+  if (player.hand.length > discardLimit) {
+    const reason = player.inTheZone ? "In the Zone" : `hand limit is ${discardLimit}`;
+    logLine(`${player.name} must discard down to ${discardLimit} (${reason} — ${player.hand.length - discardLimit} more to discard).`);
     render();
     return;
   }

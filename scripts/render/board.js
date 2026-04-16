@@ -330,7 +330,7 @@ function renderBoard() {
           }
 
           if (data.players.length) {
-            const activeId = `P${currentPlayer().id}`;
+            const activeId = `P${getActivePlayerId()}`;
             data.players.forEach((pid) => {
               const cls = pid === activeId ? "mark player active" : "mark player";
               parts.push(`<span class="${cls}" data-pid="${pid}">${pid}</span>`);

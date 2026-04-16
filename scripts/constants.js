@@ -81,6 +81,7 @@ const TILE_NAME = {
   MOTOR_POOL:     "Motor Pool",
   HELIPAD:        "Helipad",
   HELIPAD_SCHOOL: "Helipad (school)",
+  ADMIN_BLDG:     "Admin Bldg.",
 };
 
 // Subtile types — used on individual subtiles within a tile's 3×3 grid (subtile.type)

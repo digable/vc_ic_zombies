@@ -491,14 +491,19 @@
 .mark.player[data-pid="P5"]    { background: #8e44ad; } /* purple */
 .mark.player[data-pid="P6"]    { background: #16a085; } /* teal */
 
-@keyframes player-pulse {
-  0%, 100% { background: #2d6a9f; }
-  50%       { background: #74b8f0; }
-}
+@keyframes player-pulse-P1 { 0%, 100% { background: #2d6a9f; } 50% { background: #74b8f0; } }
+@keyframes player-pulse-P2 { 0%, 100% { background: #c0392b; } 50% { background: #f1948a; } }
+@keyframes player-pulse-P3 { 0%, 100% { background: #27ae60; } 50% { background: #82e0aa; } }
+@keyframes player-pulse-P4 { 0%, 100% { background: #e67e22; } 50% { background: #f0b27a; } }
+@keyframes player-pulse-P5 { 0%, 100% { background: #8e44ad; } 50% { background: #c39bd3; } }
+@keyframes player-pulse-P6 { 0%, 100% { background: #16a085; } 50% { background: #76d7c4; } }
 
-.mark.player.active {
-  animation: player-pulse 1.2s ease-in-out infinite;
-}
+.mark.player.active[data-pid="P1"] { animation: player-pulse-P1 1.2s ease-in-out infinite; }
+.mark.player.active[data-pid="P2"] { animation: player-pulse-P2 1.2s ease-in-out infinite; }
+.mark.player.active[data-pid="P3"] { animation: player-pulse-P3 1.2s ease-in-out infinite; }
+.mark.player.active[data-pid="P4"] { animation: player-pulse-P4 1.2s ease-in-out infinite; }
+.mark.player.active[data-pid="P5"] { animation: player-pulse-P5 1.2s ease-in-out infinite; }
+.mark.player.active[data-pid="P6"] { animation: player-pulse-P6 1.2s ease-in-out infinite; }
 
 @keyframes trail-pulse-stroke {
   0%, 100% { stroke: #c0392b; }

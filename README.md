@@ -24,7 +24,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 - **Bug reports** — in-game modal attaches game state + last 20 log entries and opens a GitHub issue automatically
 - **Mobile UI** — bottom tab bar (Controls / Map / Game Info / Hand); turn-strip accordion on the Map tab; pass-device lock screen for same-device multiplayer
 - **Deck management** — "Show cards" dropdown lists the remaining deck; drag-and-drop reordering in both map and event deck panels
-- **School's Out Forever (Z5)** — campus tile set; introduces **guts tokens** (start with 3, max 5): roll a natural 6 in combat to gain 1, roll a natural 1 to lose 1; guts count (0–5) sets your event hand limit; you always keep at least 1 event card regardless; death resets guts to 3; the school helipad uses a `DESIGNATED` connector and can only be reached by passing through a named building
+- **School's Out Forever (Z5)** — campus tile set; introduces **guts tokens** (start with 3, max 5): roll a natural 6 in combat to gain 1, roll a natural 1 to lose 1; guts count (0–5) sets your event hand limit; you always keep at least 1 event card regardless; death resets guts to 3; the school helipad uses a `DESIGNATED` connector and can only be reached by passing through a named building; Z5 player event cards include campus items (Bat, Pool Cue, I've got a bike!), guts manipulation (Shots, Electro-Shock Therapy, Sedatives, Straight Jacket, Pillow Fight), deck management (Cram Session, Valedictorian), and social cards (Student Loan, Go Team Go!!!, Raise your hand..., Where's the Admin Bldg.?, Scalpel)
 - **Collections** — tile and event decks configured independently at setup; standalone collections (Z2, Z3, Z4, Z5, IC) get zone-isolated decks with gateway tiles unlocking them in mixed play
 
 ---
@@ -139,6 +139,7 @@ vc_ic_zombies/
 │           ├── player-cards.js       # Player buff/recovery cards (Z1/Z2/Z3)
 │           ├── player-cards-z35.js   # NOT_DEAD_YET player cards
 │           ├── player-cards-z4.js    # THE_END (Z4) player cards
+│           ├── player-cards-z5.js    # SCHOOLS_OUT_FOREVER (Z5) player cards
 │           ├── opponent-cards.js     # Opponent disruption cards
 │           ├── zombie-cards.js       # Zombie spawn/remove/move cards
 │           └── page-cards.js         # Book of the Dead page cards (Z4)
