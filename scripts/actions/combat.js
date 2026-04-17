@@ -28,7 +28,8 @@ function handleKnockout(player, options = {}) {
     state.step = STEP.END;
   }
   logLine(`${player.name} was knocked out, lost ${lostKills} kill(s), and respawned at ${respawnName}.`, "knockout");
-  state.knockoutBanner = { playerName: player.name, lostKills, respawnName };
+  const resetGuts = (state.useGuts && player.guts != null) ? player.guts : null;
+  state.knockoutBanner = { playerName: player.name, lostKills, respawnName, resetGuts };
   setTimeout(() => {
     state.knockoutBanner = null;
     render();

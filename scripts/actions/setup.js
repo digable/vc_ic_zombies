@@ -336,6 +336,7 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
       ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
     });
     stampFloorForPlacedTile(cx, cy);
+    openOnlyConnectorWalls(cx, cy);
 
     const spawnCount = getZombieSpawnCountForPlacedTile(companion, rotatedConnectors);
     if (companion.zombieSpawnMode === ZOMBIE_SPAWN_MODE.BY_EXITS) {
@@ -402,6 +403,64 @@ function stampFloorForPlacedTile(x, y) {
   if (floor === 2) state.floor2Tiles.add(key(x, y));
 }
 
+// Returns the 3 subtile coords along the edge of a tile facing `dir`.
+function getEdgeSubtileCoords(dir) {
+  const last = TILE_DIM - 1;
+  const result = [];
+  for (let i = 0; i < TILE_DIM; i++) {
+    if      (dir === "N") result.push({ lx: i,    ly: 0    });
+    else if (dir === "S") result.push({ lx: i,    ly: last });
+    else if (dir === "W") result.push({ lx: 0,    ly: i    });
+    else if (dir === "E") result.push({ lx: last, ly: i    });
+  }
+  return result;
+}
+
+// Open movement and swap wall→door on the edge subtiles of `tile` facing `dir`.
+function openEdgeWall(tile, dir) {
+  if (!tile.subTiles) return;
+  getEdgeSubtileCoords(dir).forEach(({ lx, ly }) => {
+    const cell = tile.subTiles[key(lx, ly)];
+    if (!cell || !cell.walkable) return;
+    if (cell.enterFrom[dir] && cell.exitTo[dir]) return; // already open
+    cell.enterFrom[dir] = true;
+    cell.exitTo[dir]   = true;
+    if (cell.walls) cell.walls = cell.walls.filter((w) => w !== dir);
+    if (!cell.doors) cell.doors = [];
+    if (!cell.doors.includes(dir)) cell.doors.push(dir);
+  });
+}
+
+// After any tile is placed at (tileX, tileY), find ONLY↔DESIGNATED connector pairs
+// in all 4 directions and open the blocking walls on the ONLY-connector side.
+function openOnlyConnectorWalls(tileX, tileY) {
+  const placedTile = state.board.get(key(tileX, tileY));
+  if (!placedTile) return;
+
+  Object.entries(DIRS).forEach(([dir, d]) => {
+    const neighborKey = key(tileX + d.x, tileY + d.y);
+    const neighbor = state.board.get(neighborKey);
+    if (!neighbor) return;
+
+    const backDir = DIRS[dir].opposite;
+    const placedRule   = placedTile.placedConnectorRules?.[dir];
+    const neighborRule = neighbor.placedConnectorRules?.[backDir];
+
+    // Need one ONLY side and one DESIGNATED side
+    const placedIsOnly       = placedRule   === CONNECTOR_RULE.ONLY;
+    const neighborIsOnly     = neighborRule === CONNECTOR_RULE.ONLY;
+    const placedIsDesignated = placedRule   === CONNECTOR_RULE.DESIGNATED;
+    const neighborIsDesignated = neighborRule === CONNECTOR_RULE.DESIGNATED;
+
+    if (placedIsOnly && neighborIsDesignated) {
+      openEdgeWall(placedTile, dir);
+    }
+    if (neighborIsOnly && placedIsDesignated) {
+      openEdgeWall(neighbor, backDir);
+    }
+  });
+}
+
 function placePendingTileAt(x, y) {
   if (state.step !== STEP.DRAW_TILE || state.gameOver || !state.pendingTile) {
     return;
@@ -433,6 +492,7 @@ function placePendingTileAt(x, y) {
     ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
   });
   stampFloorForPlacedTile(placement.x, placement.y);
+  openOnlyConnectorWalls(placement.x, placement.y);
 
   const placedName = getTileDisplayName(tile);
   logLine(`${currentPlayer().name} placed ${placedName} at (${placement.x}, ${placement.y}).`);

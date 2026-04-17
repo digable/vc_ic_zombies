@@ -646,7 +646,11 @@ function renderEventChoice() {
 
   panel.classList.remove("hidden");
   const buttons = pending.options
-    .map((o) => `<button data-event-choice="${o.key}">${o.label}</button>`)
+    .map((o) => {
+      const p = playerFromOpt(o.key);
+      const tag = (p && p.id === pending.playerId) ? " (You)" : "";
+      return `<button data-event-choice="${o.key}">${o.label}${tag}</button>`;
+    })
     .join("");
   const subtitle = pending.targetName
     ? `<div class="small">${player.name} chooses what to take from ${pending.targetName}.</div>`
@@ -692,11 +696,12 @@ function renderMeta() {
   const activePlayerId = getActivePlayerId();
   const pipsHtml = state.players.map((p) => {
     const isActive = p.id === activePlayerId;
-    return `<span class="player-pip${isActive ? " player-pip--active" : ""}">
+    return `<span class="player-pip${isActive ? " player-pip--active" : ""}" data-pid="${p.id}">
       <span class="pip-name">${p.name}</span>
       <span class="pip-stat">♥${p.hearts}</span>
       <span class="pip-stat pip-stat--bullets">⬤${p.bullets}</span>
       ${state.useGuts && p.guts != null ? `<span class="pip-stat pip-stat--guts">★${p.guts}</span>` : ""}
+      <span class="pip-stat pip-stat--kills">☠${p.kills}</span>
     </span>`;
   }).join("");
   refs.turnInfo.innerHTML = `<div class="player-strip">${pipsHtml}</div>`;
@@ -722,7 +727,7 @@ function renderKnockoutBanner() {
     <span class="knockout-banner-icon">💀</span>
     <span class="knockout-banner-body">
       <strong>${ko.playerName} was knocked out</strong>
-      <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at ${ko.respawnName ?? "Town Square"} with ❤️ 3 &ensp; <span class="bullet-icon">⬤</span> 3</span>
+      <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at ${ko.respawnName ?? "Town Square"} with ❤️ 3 &ensp; <span class="bullet-icon">⬤</span> 3${ko.resetGuts != null ? ` &ensp; 🩸 ${ko.resetGuts}` : ""}</span>
     </span>
     <button class="knockout-banner-dismiss" onclick="state.knockoutBanner=null;render()">✕</button>
   `;

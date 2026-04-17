@@ -80,7 +80,7 @@ const TILE_NAME = {
   TOWN_SQUARE:    "Town Square",
   MOTOR_POOL:     "Motor Pool",
   HELIPAD:        "Helipad",
-  HELIPAD_SCHOOL: "Helipad (school)",
+  HELIPAD_DESIGNATED: "Helipad (designated)",
   ADMIN_BLDG:     "Admin Bldg.",
 };
 

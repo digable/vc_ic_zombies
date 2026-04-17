@@ -65,14 +65,25 @@ function centerBoardOnPlayer(player) {
   var tileCx  = tileCol * (CELL + GAP) + CELL / 2;
   var tileCy  = tileRow * (CELL + GAP) + CELL / 2;
 
-  // Porthole center
-  var portholeW = porthole.clientWidth;
-  var portholeH = porthole.clientHeight;
   var zoom = state.boardZoom || 1.0;
+  var rect  = porthole.getBoundingClientRect();
 
-  // Pan so the tile center lands at the porthole center
-  state.boardPanX = portholeW / 2 - tileCx * zoom;
-  state.boardPanY = portholeH / 2 - tileCy * zoom;
+  // Where the tile currently sits on screen given the current pan
+  var panX = state.boardPanX || 0;
+  var panY = state.boardPanY || 0;
+  var tileScreenX = tileCx * zoom + panX;
+  var tileScreenY = tileCy * zoom + panY;
+
+  // Only pan if the tile center is outside the porthole's visible area
+  var margin = (CELL * zoom) / 2; // half a tile of breathing room
+  if (tileScreenX >= margin && tileScreenX <= rect.width  - margin &&
+      tileScreenY >= margin && tileScreenY <= rect.height - margin) {
+    return;
+  }
+
+  // Pan so the tile center lands at the porthole's true visual center
+  state.boardPanX = rect.width  / 2 - tileCx * zoom;
+  state.boardPanY = rect.height / 2 - tileCy * zoom;
   applyIsoTransform();
 }
 
@@ -155,6 +166,7 @@ function renderBoard() {
     state.pendingSpaceSelect ? (state.pendingSpaceSelect.validSpaces ? state.pendingSpaceSelect.validSpaces.size : "ss") : "",
     state.pendingZombiePlace ? (state.pendingZombiePlace.validSpaces ? state.pendingZombiePlace.validSpaces.size : "zp") : "",
     pzrState ? (pzrState.selectedZombieKey || "0") : "",
+    getActivePlayerId() || "",
   ].join("|");
 
   // Determine if the board grid dimensions changed (new tile placed, etc.)

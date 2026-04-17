@@ -790,6 +790,15 @@ function syncTurnStrip() {
   renderInPlayRow();
   var activeStep = getActiveStep();
   openTurnStep(activeStep);
+  // Show/hide the forced-discard hint in the End Turn step body.
+  var discardHint = document.getElementById("ts-discard-hint");
+  if (discardHint) {
+    var isDiscard = state.step === STEP.DISCARD;
+    discardHint.style.display = isDiscard ? "" : "none";
+    if (isDiscard) {
+      discardHint.innerHTML = "Too many cards \u2014 go to the <button class='ts-discard-hint-link' onclick='switchMobileTab(\"hand\")'><strong>Hand</strong></button> tab to discard.";
+    }
+  }
   // Auto-center the map on the moving player when the move step becomes active.
   if (activeStep === "move" && state.gameActive && !state.gameOver) {
     var mover = state.pendingForcedMove

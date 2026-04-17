@@ -261,10 +261,23 @@
   white-space: nowrap;
 }
 
+/* Inactive — light tint per player */
+.player-pip[data-pid="1"] { background: #ddeaf7; border-color: #2d6a9f; color: #1a3f5e; }
+.player-pip[data-pid="2"] { background: #fadadd; border-color: #c0392b; color: #7a1a12; }
+.player-pip[data-pid="3"] { background: #d5f5e3; border-color: #27ae60; color: #145a32; }
+.player-pip[data-pid="4"] { background: #fde8d0; border-color: #e67e22; color: #7e4400; }
+.player-pip[data-pid="5"] { background: #ead9f5; border-color: #8e44ad; color: #4a1a6e; }
+.player-pip[data-pid="6"] { background: #d0eeea; border-color: #16a085; color: #0a4a3a; }
+
+/* Active — full player color, white text */
+.player-pip--active[data-pid="1"] { background: #2d6a9f; border-color: #2d6a9f; color: #fff; }
+.player-pip--active[data-pid="2"] { background: #c0392b; border-color: #c0392b; color: #fff; }
+.player-pip--active[data-pid="3"] { background: #27ae60; border-color: #27ae60; color: #fff; }
+.player-pip--active[data-pid="4"] { background: #e67e22; border-color: #e67e22; color: #fff; }
+.player-pip--active[data-pid="5"] { background: #8e44ad; border-color: #8e44ad; color: #fff; }
+.player-pip--active[data-pid="6"] { background: #16a085; border-color: #16a085; color: #fff; }
+
 .player-pip--active {
-  background: var(--tone-warm);
-  border-color: var(--tone-warm);
-  color: #fff;
   font-weight: 700;
 }
 
@@ -283,6 +296,10 @@
 
 .pip-stat--guts {
   color: #c8860a;
+}
+
+.pip-stat--kills {
+  font-weight: 700;
 }
 
 .player-pip--active .pip-stat {
@@ -1024,6 +1041,27 @@
 
   .turn-body.turn-step--open {
     display: block;
+  }
+
+  .ts-discard-hint {
+    background: #fff8e1;
+    border: 1px solid #f5c518;
+    border-radius: 4px;
+    padding: 0.35rem 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+    color: #5a4200;
+  }
+
+  .ts-discard-hint-link {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    text-decoration: underline;
   }
 
   .ts-info-span {

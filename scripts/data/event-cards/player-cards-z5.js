@@ -171,7 +171,7 @@ playerEventCards.push(
           logLine(`${player.name} discarded 1 bullet to pass the Scalpel.`);
         } else if (payKey === "guts") {
           player.guts -= 1;
-          logLine(`${player.name} discarded 1 guts token to pass the Scalpel.`);
+          logLine(`${player.name} discarded 1 guts token to pass the Scalpel — ${player.name}: ${player.guts}.`);
         }
         target.items.push(scalpelRef);
         logLine(`${player.name} passed the Scalpel to ${target.name}. ${target.name} now suffers -1 to all combat rolls.`);
@@ -462,7 +462,7 @@ playerEventCards.push(
       const doGive = (target) => {
         const before = target.guts;
         target.guts = Math.min(MAX_GUTS, target.guts + 3);
-        logLine(`${player.name} played Electro-Shock Therapy on ${target.name} — guts: ${before} → ${target.guts}.`);
+        logLine(`${player.name} played Electro-Shock Therapy on ${target.name} — ${target.name}: ${before} → ${target.guts}.`);
       };
 
       if (state.players.length === 1) {
@@ -499,7 +499,7 @@ playerEventCards.push(
       const doStrip = (target) => {
         const lost = target.guts;
         target.guts = 0;
-        logLine(`${player.name} played Straight Jacket on ${target.name} — lost ${lost} guts token(s).`);
+        logLine(`${player.name} played Straight Jacket on ${target.name} — ${target.name}: ${lost} → 0.`);
       };
 
       const targets = state.players.filter((p) => p.guts != null && p.guts > 0);
@@ -543,8 +543,9 @@ playerEventCards.push(
       const results = [];
       state.players.forEach((p) => {
         if (p.guts != null && p.guts < MAX_GUTS) {
+          const before = p.guts;
           p.guts += 1;
-          results.push(`${p.name}: ${p.guts}`);
+          results.push(`${p.name}: ${before} → ${p.guts}`);
         }
       });
       logLine(`${player.name} played Shots! — all players gain 1 guts token. ${results.join(", ")}.`);

@@ -1695,7 +1695,7 @@ const namedTiles = [
     type: "named",
     collection: { [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
     connectors: { S: CONNECTOR_RULE.SAME, N: CONNECTOR_RULE.ONLY },
-    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
     hearts: 4,
@@ -1722,7 +1722,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1751,7 +1751,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1780,7 +1780,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1809,7 +1809,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 6,
@@ -1839,7 +1839,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       N: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 5,
@@ -1869,7 +1869,7 @@ const namedTiles = [
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.ONLY,
     },
-    connectorOnlyTarget: { W: TILE_NAME.HELIPAD_SCHOOL },
+    connectorOnlyTarget: { W: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {
       [ZOMBIE_TYPE.REGULAR]: 3,
@@ -2146,8 +2146,8 @@ const namedTiles = [
     name: "UIHC",
     type: "named",
     collection: { [COLLECTIONS.IOWA_CITY]: 1 },
-    connectors: { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.ONLY },
-    connectorOnlyTarget: { S: TILE_NAME.HELIPAD },
+    connectors: { N: CONNECTOR_RULE.ONLY, E: CONNECTOR_RULE.ONLY, W: CONNECTOR_RULE.ONLY, S: CONNECTOR_RULE.SAME },
+    connectorOnlyTarget: { N: TILE_NAME.HELIPAD_DESIGNATED, E: TILE_NAME.HELIPAD_DESIGNATED, W: TILE_NAME.HELIPAD_DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
     hearts: 6,
@@ -2215,7 +2215,7 @@ const specialTiles = [
   {
     name: "Helipad",
     type: "helipad",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1 },
     connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },
@@ -2235,9 +2235,9 @@ const specialTiles = [
     }
   },
   {
-    name: "Helipad (school)",
+    name: "Helipad (designated)",
     type: "helipad",
-    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1, [COLLECTIONS.ZOMBIE_CORPS_E_]: 1, [COLLECTIONS.MALL_WALKERS]: 1, [COLLECTIONS.IOWA_CITY]: 1, [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1 },
+    collection: { [COLLECTIONS.SCHOOLS_OUT_FOREVER]: 1, [COLLECTIONS.IOWA_CITY]: 1 },
     connectors: { N: CONNECTOR_RULE.DESIGNATED, E: CONNECTOR_RULE.DESIGNATED, S: CONNECTOR_RULE.DESIGNATED, W: CONNECTOR_RULE.DESIGNATED },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: { [ZOMBIE_TYPE.REGULAR]: 9 },

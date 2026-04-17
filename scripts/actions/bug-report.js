@@ -11,6 +11,8 @@ function openBugReportModal() {
   document.getElementById("brTitle").value = "";
   document.getElementById("brDescription").value = "";
   document.getElementById("brStatus").textContent = "";
+  const submitBtn = document.getElementById("brSubmitBtn");
+  if (submitBtn) submitBtn.disabled = false;
   modal.classList.remove("hidden");
   document.getElementById("brTitle").focus();
 }

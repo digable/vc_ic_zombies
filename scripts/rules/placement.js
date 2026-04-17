@@ -114,7 +114,7 @@ function isZoneCompatible(neighborTile, neighborConnDir, tileDeck, incomingDir, 
 //
 // Tile data fields:
 //   connectors:           { N: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.DISABLE_ON_SOLO }  (object format)
-//   connectorOnlyTarget:  { S: TILE_NAME.HELIPAD_SCHOOL }  — required when a connector uses CONNECTOR_RULE.ONLY
+//   connectorOnlyTarget:  { S: TILE_NAME.HELIPAD_DESIGNATED }  — required when a connector uses CONNECTOR_RULE.ONLY
 // ---------------------------------------------------------------------------
 
 // Default rule for all connectors unless overridden.
