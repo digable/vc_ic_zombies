@@ -415,8 +415,9 @@ function resolveCombatForPlayer(player, options = {}) {
   const poolCueBonus = (player.items || []).some((c) => c.name === "Pool Cue") ? 1 : 0;
   const batBonus = (player.items || []).some((c) => c.name === "Bat") ? 2 : 0;
   const scalpelCount = (player.items || []).filter((c) => c.name === "Scalpel").length;
-  const baseCombatRoll = roll - diePenalty - scalpelCount + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus + poolCueBonus + batBonus;
-  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""}${scalpelCount ? ` - scalpel ${scalpelCount}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""}${poolCueBonus ? ` + pool cue ${poolCueBonus}` : ""}${batBonus ? ` + bat ${batBonus}` : ""})`;
+  const allyBonus = player.zombieAllyActive ? 1 : 0;
+  const baseCombatRoll = roll - diePenalty - scalpelCount + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus + poolCueBonus + batBonus + allyBonus;
+  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""}${scalpelCount ? ` - scalpel ${scalpelCount}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""}${poolCueBonus ? ` + pool cue ${poolCueBonus}` : ""}${batBonus ? ` + bat ${batBonus}` : ""}${allyBonus ? ` + ally ${allyBonus}` : ""})`;
   const zombieLabel = isDog ? "zombie dog" : isEnhanced ? "government-enhanced zombie" : "zombie";
 
   if (baseCombatRoll >= killRoll) {

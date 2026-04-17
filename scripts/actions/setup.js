@@ -42,7 +42,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       pendingDuctTeleport: null,
       spellAttemptedThisTurn: false,
       mustMoveTowardTile: null,
-      studentLoanReturn: null
+      studentLoanReturn: null,
+      zombieAllyActive: false
     });
   }
 

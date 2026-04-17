@@ -21,7 +21,8 @@ const COLLECTIONS = {
   NOT_DEAD_YET: "not_dead_yet",
   THE_END: "the_end",
   SCHOOLS_OUT_FOREVER: "schools_out_forever",
-  IOWA_CITY: "iowa_city"
+  IOWA_CITY: "iowa_city",
+  SUBSCRIPTION: "subscription"
 };
 
 // requiresBase: null  → can be played without any other collection (standalone or add-on)
@@ -110,6 +111,17 @@ const COLLECTION_META = {
     creator: "digable",
     standaloneDeck: true,
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SUBSCRIPTION]: {
+    label: "Subscription",
+    shortCode: "SUB",
+    requiresBase: null,
+    year: 2026,
+    type: "Expansion",
+    version: "0.1.0",
+    description: "Event cards only — no map tiles. Add to any game.",
+    creator: "digable",
+    standaloneDeck: false
   }
 };
 

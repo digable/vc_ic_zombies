@@ -45,6 +45,11 @@ function forEachTileSpace(tx, ty, fn) {
 
 // Reduce target.hearts by amount; trigger knockout if hearts drop to 0 or below.
 function damagePlayer(target, amount, knockoutOptions) {
+  if (target.zombieAllyActive && amount > 0) {
+    target.zombieAllyActive = false;
+    logLine(`${target.name}'s zombie ally takes the hit! (You're not a zombie! discarded)`);
+    return;
+  }
   target.hearts -= amount;
   if (target.hearts <= 0) handleKnockout(target, knockoutOptions);
 }
