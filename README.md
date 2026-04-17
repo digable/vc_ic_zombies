@@ -74,6 +74,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | `THE_END` | Z4 | Standalone / expansion — bridge zone, BOTD pages, Cabin Spell |
 | `SCHOOLS_OUT_FOREVER` | Z5 | Standalone / expansion — school campus; helipad only reachable through a named building's designated rooftop connector |
 | `IOWA_CITY` | IC | Standalone / expansion — Iowa City locations |
+| `SUBSCRIPTION` | SUB | Event cards only — no map tiles; add to any game |
 
 ---
 
@@ -140,6 +141,8 @@ vc_ic_zombies/
 │           ├── player-cards-z35.js   # NOT_DEAD_YET player cards
 │           ├── player-cards-z4.js    # THE_END (Z4) player cards
 │           ├── player-cards-z5.js    # SCHOOLS_OUT_FOREVER (Z5) player cards
+│           ├── player-cards-ic.js    # IOWA_CITY player cards
+│           ├── player-cards-subscription.js # SUBSCRIPTION player cards (no map tiles)
 │           ├── opponent-cards.js     # Opponent disruption cards
 │           ├── zombie-cards.js       # Zombie spawn/remove/move cards
 │           └── page-cards.js         # Book of the Dead page cards (Z4)
