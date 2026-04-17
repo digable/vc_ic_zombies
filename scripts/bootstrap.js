@@ -176,6 +176,26 @@ function attachListeners() {
     });
   }
 
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea, select")) return;
+    switch (e.key) {
+      case "r": case "R": rotatePendingTile(1); break;
+      case "q": case "Q": state.isoRotateZ = (state.isoRotateZ || 45) - 45; applyIsoTransform(); break;
+      case "e": case "E": state.isoRotateZ = (state.isoRotateZ || 45) + 45; applyIsoTransform(); break;
+      case "x": case "X": state.boardPanX = 0; state.boardPanY = 0; state.boardZoom = 1.0; applyIsoTransform(); break;
+      case "z": case "Z": toggleIsoView(); break;
+      case "w": case "W": refs.moveDirBtns.find(b => b.dataset.dir === "N")?.click(); break;
+      case "s": case "S": refs.moveDirBtns.find(b => b.dataset.dir === "S")?.click(); break;
+      case "a": case "A": refs.moveDirBtns.find(b => b.dataset.dir === "W")?.click(); break;
+      case "d": case "D": refs.moveDirBtns.find(b => b.dataset.dir === "E")?.click(); break;
+      case "ArrowUp":    e.preventDefault(); state.boardPanY = (state.boardPanY || 0) - 80; applyIsoTransform(); break;
+      case "ArrowDown":  e.preventDefault(); state.boardPanY = (state.boardPanY || 0) + 80; applyIsoTransform(); break;
+      case "ArrowLeft":  e.preventDefault(); state.boardPanX = (state.boardPanX || 0) - 80; applyIsoTransform(); break;
+      case "ArrowRight": e.preventDefault(); state.boardPanX = (state.boardPanX || 0) + 80; applyIsoTransform(); break;
+      case "Enter": endTurnWithLockCheck(); break;
+    }
+  });
+
   refs.drawTileBtn.addEventListener("click", () => drawAndPlaceTile("base"));
   refs.rotateLeftBtn.addEventListener("click", () => rotatePendingTile(-1));
   refs.rotateRightBtn.addEventListener("click", () => rotatePendingTile(1));
