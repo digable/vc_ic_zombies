@@ -292,5 +292,272 @@ playerEventCards.push(
     apply(player) {
       logLine(`${player.name} picked up the Vintage Encyclopaedia from the Main Library.`);
     }
+  },
+
+  // ── Cigarettes ────────────────────────────────────────────────────────────
+
+  {
+    name: "Steady Your Nerves",
+    description: "Lose 1 life token. Gain +2 to your next combat roll this turn.",
+    collection: { [IC]: 2 },
+    apply(player) {
+      damagePlayer(player, 1, { endStep: false });
+      if (!state.gameOver) {
+        player.tempCombatBonus = (player.tempCombatBonus || 0) + 2;
+        logLine(`${player.name} played Steady Your Nerves — lost 1 life, +2 to next combat roll.`);
+      }
+    }
+  },
+
+  {
+    name: "Smoke Break",
+    description: "Lose 1 life token. Draw 2 event cards, then immediately discard 1 of them.",
+    collection: { [IC]: 2 },
+    apply(player) {
+      damagePlayer(player, 1, { endStep: false });
+      if (state.gameOver) return;
+
+      const drawn = [];
+      for (let i = 0; i < 2; i++) {
+        if (state.eventDeck.length === 0) {
+          if (state.eventDiscardPile.length === 0) break;
+          reshuffleEventDeckIfEmpty();
+        }
+        drawn.push(state.eventDeck.shift());
+      }
+
+      if (drawn.length === 0) {
+        logLine(`${player.name} played Smoke Break — lost 1 life, no cards left to draw.`);
+        return;
+      }
+
+      drawn.forEach((c) => player.hand.push(c));
+
+      if (drawn.length === 1) {
+        logLine(`${player.name} played Smoke Break — lost 1 life, drew ${drawn[0].name} (only 1 available, keeping it).`);
+        return;
+      }
+
+      logLine(`${player.name} played Smoke Break — lost 1 life, drew ${drawn.map((c) => c.name).join(" and ")}. Must discard 1.`);
+
+      const handLen = player.hand.length;
+      const idx1 = handLen - 2;
+      const idx2 = handLen - 1;
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "Smoke Break",
+        title: "Smoke Break — discard 1 of the 2 drawn cards",
+        options: [
+          { key: String(idx1), label: drawn[0].name },
+          { key: String(idx2), label: drawn[1].name },
+        ],
+        resolve(chosenKey) {
+          const idx = Number(chosenKey);
+          const discarded = player.hand.splice(idx, 1)[0];
+          state.eventDiscardPile.push(discarded);
+          logLine(`${player.name} discarded ${discarded.name} (Smoke Break).`);
+        }
+      };
+    }
+  },
+
+  {
+    name: "Bum a Smoke",
+    description: "Target another player. They lose 1 life token — you gain 1 bullet.",
+    collection: { [IC]: 2 },
+    canPlay() {
+      return state.players.length > 1;
+    },
+    apply(player) {
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 0) {
+        logLine(`${player.name} played Bum a Smoke — no other players to target.`);
+        return;
+      }
+      if (others.length === 1) {
+        const target = others[0];
+        damagePlayer(target, 1, { endStep: false });
+        player.bullets += 1;
+        logLine(`${player.name} bummed a smoke from ${target.name} — ${target.name} lost 1 life, ${player.name} gained 1 bullet.`);
+        return;
+      }
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "Bum a Smoke",
+        title: "Bum a Smoke — choose a target",
+        options: others.map((p) => ({ key: p.id, label: p.name })),
+        resolve(chosenId) {
+          const target = state.players.find((p) => p.id === chosenId);
+          if (!target) return;
+          damagePlayer(target, 1, { endStep: false });
+          player.bullets += 1;
+          logLine(`${player.name} bummed a smoke from ${target.name} — ${target.name} lost 1 life, ${player.name} gained 1 bullet.`);
+        }
+      };
+    }
+  },
+
+  // ── Pass the Bong ─────────────────────────────────────────────────────────
+
+  {
+    name: "Pass It Around",
+    description: "Each player draws 1 event card.",
+    collection: { [IC]: 2 },
+    apply(player) {
+      const drew = [];
+      state.players.forEach((p) => {
+        if (state.eventDeck.length === 0) {
+          if (state.eventDiscardPile.length === 0) return;
+          reshuffleEventDeckIfEmpty();
+        }
+        if (state.eventDeck.length === 0) return;
+        const card = state.eventDeck.shift();
+        p.hand.push(card);
+        drew.push(`${p.name} drew ${card.name}`);
+      });
+      if (drew.length === 0) {
+        logLine(`${player.name} played Pass It Around — no cards left in the deck.`);
+      } else {
+        logLine(`${player.name} played Pass It Around — ${drew.join(", ")}.`);
+      }
+    }
+  },
+
+  {
+    name: "Paranoia",
+    description: "Roll a d6. On 4–6: all players draw 1 event card. On 1–3: all players draw 1 event card, then you must immediately discard 1.",
+    collection: { [IC]: 2 },
+    apply(player) {
+      const roll = rollD6();
+      const bad = roll <= 3;
+      logLine(`${player.name} played Paranoia — rolled ${roll}.${bad ? " Paranoia sets in!" : ""}`);
+
+      const drew = [];
+      state.players.forEach((p) => {
+        if (state.eventDeck.length === 0) {
+          if (state.eventDiscardPile.length === 0) return;
+          reshuffleEventDeckIfEmpty();
+        }
+        if (state.eventDeck.length === 0) return;
+        const card = state.eventDeck.shift();
+        p.hand.push(card);
+        drew.push(p.name);
+      });
+
+      if (drew.length > 0) {
+        logLine(`${drew.join(", ")} each drew 1 event card.`);
+      }
+
+      if (!bad || player.hand.length === 0) return;
+
+      // Roll 1–3: current player must immediately discard 1 card.
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "Paranoia",
+        title: "Paranoia — discard 1 card from your hand",
+        options: player.hand.map((c, i) => ({ key: String(i), label: c.name })),
+        resolve(chosenKey) {
+          const idx = Number(chosenKey);
+          const discarded = player.hand.splice(idx, 1)[0];
+          state.eventDiscardPile.push(discarded);
+          logLine(`${player.name} discarded ${discarded.name} (Paranoia).`);
+        }
+      };
+    }
+  },
+
+  {
+    name: "Contact High",
+    description: "Give 1 card from your hand to any player. They give 1 card back. Both of you gain 1 life token.",
+    collection: { [IC]: 2 },
+    canPlay() {
+      return state.players.length > 1 && currentPlayer().hand.length >= 2;
+    },
+    apply(player) {
+      const others = state.players.filter((p) => p.id !== player.id);
+      if (others.length === 0 || player.hand.length === 0) {
+        logLine(`${player.name} played Contact High — can't complete the exchange.`);
+        return;
+      }
+
+      const doExchange = (target) => {
+        // Step 1: current player picks which card to give.
+        state.pendingEventChoice = {
+          playerId: player.id,
+          cardName: "Contact High",
+          title: `Contact High — give 1 card to ${target.name}`,
+          options: player.hand.map((c, i) => ({ key: String(i), label: c.name })),
+          resolve(chosenKey) {
+            const idx = Number(chosenKey);
+            const given = player.hand.splice(idx, 1)[0];
+            target.hand.push(given);
+            logLine(`${player.name} gave ${given.name} to ${target.name}.`);
+
+            // Step 2: target picks which card to give back.
+            if (target.hand.length === 0) {
+              player.hearts = Math.min(player.hearts + 1, MAX_HEARTS);
+              target.hearts = Math.min(target.hearts + 1, MAX_HEARTS);
+              logLine(`${target.name} had no cards to give back. Both players gain 1 life.`);
+              return;
+            }
+            state.pendingEventChoice = {
+              playerId: target.id,
+              cardName: "Contact High",
+              title: `Contact High — give 1 card back to ${player.name}`,
+              options: target.hand.map((c, i) => ({ key: String(i), label: c.name })),
+              resolve(returnKey) {
+                const retIdx = Number(returnKey);
+                const returned = target.hand.splice(retIdx, 1)[0];
+                player.hand.push(returned);
+                logLine(`${target.name} gave ${returned.name} back to ${player.name}.`);
+                player.hearts = Math.min(player.hearts + 1, MAX_HEARTS);
+                target.hearts = Math.min(target.hearts + 1, MAX_HEARTS);
+                logLine(`${player.name} and ${target.name} each gain 1 life (Contact High).`);
+              }
+            };
+          }
+        };
+      };
+
+      if (others.length === 1) {
+        doExchange(others[0]);
+        return;
+      }
+
+      state.pendingEventChoice = {
+        playerId: player.id,
+        cardName: "Contact High",
+        title: "Contact High — choose a player to exchange with",
+        options: others.map((p) => ({ key: p.id, label: p.name })),
+        resolve(chosenId) {
+          const target = state.players.find((p) => p.id === chosenId);
+          if (target) doExchange(target);
+        }
+      };
+    }
+  },
+
+  {
+    name: "Mellow Out",
+    description: "Roll a d6. On 2–6: all zombies skip their next movement phase. On 1: it backfires — 1 zombie spawns on each player's tile.",
+    collection: { [IC]: 2 },
+    apply(player) {
+      const roll = rollD6();
+      logLine(`${player.name} played Mellow Out — rolled ${roll}.`);
+
+      if (roll === 1) {
+        let spawned = 0;
+        state.players.forEach((p) => {
+          const tx = spaceToTileCoord(p.x);
+          const ty = spaceToTileCoord(p.y);
+          if (spawnZombieOnTile(tx, ty, "Mellow Out")) spawned++;
+        });
+        logLine(`Mellow Out backfired! ${spawned} zombie(s) drawn in by the noise.`);
+        return;
+      }
+
+      state.zombieMoveFreezeCount = (state.zombieMoveFreezeCount || 0) + state.players.length;
+      logLine(`Mellow Out — zombie movement frozen for the next ${state.players.length} phase(s).`);
+    }
   }
 );
