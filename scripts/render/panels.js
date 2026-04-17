@@ -234,7 +234,7 @@ function renderHand() {
     Boolean(state.pendingCombatDecision) || Boolean(state.pendingEventChoice) ||
     Boolean(state.pendingZombieReplace) || Boolean(state.pendingZombieDiceChallenge) ||
     Boolean(state.pendingZombiePlace) || Boolean(state.pendingForcedMove) ||
-    Boolean(state.pendingDynamiteTarget) || Boolean(state.pendingMinefield) ||
+    Boolean(state.pendingDynamiteTarget) || Boolean(state.pendingFrisbeeTarget) || Boolean(state.pendingMinefield) ||
     Boolean(state.pendingRocketLauncher) || Boolean(state.pendingZombieFlood) ||
     Boolean(state.pendingBuildingSelect) || Boolean(state.pendingSpaceSelect);
 
@@ -523,6 +523,19 @@ function renderZombieReplacePanel() {
       <div class="small">Click an adjacent zombie space (including diagonals) to destroy it.</div>
       <div class="combat-decision-actions">
         <button id="zombieReplaceDoneBtn">Done (skip remaining)</button>
+      </div>
+    `;
+    return;
+  }
+
+  const pft = state.pendingFrisbeeTarget;
+  if (pft) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = `
+      <div class="combat-decision-title">Frisbee — Choose a target</div>
+      <div class="small">Click a highlighted zombie within 2 tiles to take it out.</div>
+      <div class="combat-decision-actions">
+        <button id="zombieReplaceDoneBtn">Cancel</button>
       </div>
     `;
     return;

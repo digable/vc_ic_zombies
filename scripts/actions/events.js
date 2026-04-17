@@ -601,6 +601,33 @@ function finishDynamite() {
   render();
 }
 
+function handleFrisbeeTargetClick(sx, sy) {
+  const pft = state.pendingFrisbeeTarget;
+  if (!pft) return;
+
+  const spaceKey = key(sx, sy);
+  if (!pft.validSpaces.has(spaceKey)) return;
+  if (!state.zombies.has(spaceKey)) return;
+
+  const player = getPlayerById(pft.playerId);
+  if (!player) { state.pendingFrisbeeTarget = null; render(); return; }
+
+  state.zombies.delete(spaceKey);
+  player.kills += 1;
+  state.recentKillKey = spaceKey;
+  state.pendingFrisbeeTarget = null;
+  logLine(`${player.name} threw the Frisbee — zombie at [${sx}, ${sy}] taken out!`, "kill");
+  checkWin(player);
+  render();
+}
+
+function finishFrisbee() {
+  if (!state.pendingFrisbeeTarget) return;
+  state.pendingFrisbeeTarget = null;
+  logLine("Frisbee — cancelled.");
+  render();
+}
+
 function handleBuildingSelectClick(sx, sy) {
   if (!state.pendingBuildingSelect) return;
   const tile = getTileAtSpace(sx, sy);

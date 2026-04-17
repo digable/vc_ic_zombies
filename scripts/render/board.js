@@ -163,6 +163,7 @@ function renderBoard() {
     state.pendingRocketLauncher ? "rl" : "",
     state.pendingMinefield ? "mf" : "",
     state.pendingDynamiteTarget ? state.pendingDynamiteTarget.playerId : "",
+    state.pendingFrisbeeTarget ? state.pendingFrisbeeTarget.playerId : "",
     state.pendingSpaceSelect ? (state.pendingSpaceSelect.validSpaces ? state.pendingSpaceSelect.validSpaces.size : "ss") : "",
     state.pendingZombiePlace ? (state.pendingZombiePlace.validSpaces ? state.pendingZombiePlace.validSpaces.size : "zp") : "",
     pzrState ? (pzrState.selectedZombieKey || "0") : "",
@@ -386,6 +387,9 @@ function renderBoard() {
             if (dp && manhattanDist(sx, sy, dp.x, dp.y) <= 1 && !(sx === dp.x && sy === dp.y)) {
               zombieClass = " zombie-selectable";
             }
+          } else if (state.pendingFrisbeeTarget && data.zombieType &&
+                     state.pendingFrisbeeTarget.validSpaces.has(spaceKey)) {
+            zombieClass = " zombie-selectable";
           } else if (state.pendingSpaceSelect && isWalkable && adjBuildingSpaces?.has(spaceKey)) {
             zombieClass = " zombie-target";
           } else if (state.pendingZombiePlace && isWalkable && !data.zombieType &&

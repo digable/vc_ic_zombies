@@ -38,6 +38,7 @@ function endTurn() {
   outgoing.itemsUsedThisTurn = [];
   outgoing.dieRollPenalty = 0;
   outgoing.noCombatThisTurn = false;
+  outgoing.fixedGearActive = false;
   outgoing.noCombatTileKey = null;
   outgoing.inTheZone = false;
   if (state.regularZombieEnhanced?.playerId === outgoing.id) {

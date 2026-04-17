@@ -23,7 +23,7 @@ function showMobileToast(text) {
 function isPendingInteraction() {
   return !!(state.pendingCombatDecision || state.pendingEventChoice || state.pendingZombieReplace ||
     state.pendingZombieDiceChallenge || state.pendingZombiePlace || state.pendingZombieMovement ||
-    state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget ||
+    state.pendingForcedMove || state.pendingBuildingSelect || state.pendingDynamiteTarget || state.pendingFrisbeeTarget ||
     state.pendingMinefield || state.pendingRocketLauncher || state.pendingZombieFlood ||
     state.pendingBreakthrough || state.pendingSpaceSelect || state.pendingDuctChoice);
 }

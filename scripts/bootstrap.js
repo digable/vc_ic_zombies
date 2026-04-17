@@ -300,6 +300,14 @@ function attachListeners() {
       return;
     }
 
+    if (state.pendingFrisbeeTarget) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        handleFrisbeeTargetClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
     if (state.pendingBuildingSelect) {
       const mc = target.closest(".micro-cell");
       if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
@@ -361,6 +369,7 @@ function attachListeners() {
         else if (state.pendingSpaceSelect) finishSpaceSelect();
         else if (state.pendingMinefield) finishMinefield();
         else if (state.pendingDynamiteTarget) finishDynamite();
+        else if (state.pendingFrisbeeTarget) finishFrisbee();
         else if (state.pendingZombiePlace) finishZombiePlace();
         else finishZombieReplace();
       }

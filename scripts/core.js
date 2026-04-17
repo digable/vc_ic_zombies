@@ -181,6 +181,7 @@ const state = {
   //  4. pendingSpaceSelect      — generic space-pick (used by several cards)
   //  5. pendingMinefield        — place minefield micro-cell
   //  6. pendingDynamiteTarget   — choose dynamite target micro-cell
+  //  6b. pendingFrisbeeTarget   — choose frisbee kill target (zombie within 2 tiles)
   //  7. pendingBuildingSelect   — choose which building micro-cell to enter
   //  8. pendingZombiePlace      — place a zombie on a micro-cell
   //  9. pendingZombieReplace    — move a zombie to a new micro-cell
@@ -217,6 +218,7 @@ const state = {
   pendingZombieFlood: null,
   pendingMinefield: null,
   pendingDynamiteTarget: null,
+  pendingFrisbeeTarget: null,
   pendingRocketLauncher: null,
   pendingBreakthrough: null,
   pendingSpaceSelect: null,

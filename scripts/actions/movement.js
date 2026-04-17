@@ -552,6 +552,18 @@ function movePlayer(dir) {
       return;
     }
 
+    // Fixed Gear — take 1 damage and keep riding instead of stopping to fight.
+    if (player.fixedGearActive) {
+      logLine(`${player.name} rides through a zombie — takes 1 damage! (Fixed Gear)`);
+      damagePlayer(player, 1, { endStep: false });
+      if (!state.gameOver) {
+        if (state.movesRemaining <= 0) moveToZombiePhase();
+        else { state.step = STEP.MOVE; }
+      }
+      render();
+      return;
+    }
+
     // Monkeys Are Funny! — skip combat while swinging through wooded subtiles
     if (player.monkeysAreFunny) {
       const mafSkipTile = getTileAtSpace(player.x, player.y);
