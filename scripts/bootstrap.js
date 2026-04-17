@@ -504,11 +504,21 @@ function attachListeners() {
       if (!isPanning && !isSpinning) boardWrap.classList.remove("panning");
     });
 
-    // Zoom: mouse wheel
+    // Zoom: ctrl+wheel (zooms toward cursor)
     boardWrap.addEventListener("wheel", (e) => {
+      if (!e.ctrlKey) return;
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -ZOOM_INCREMENT : ZOOM_INCREMENT;
-      state.boardZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, (state.boardZoom || 1.0) + delta));
+      const porthole = boardWrap.querySelector(".porthole");
+      const rect = (porthole || boardWrap).getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const cursorY = e.clientY - rect.top;
+      const oldZoom = state.boardZoom || 1.0;
+      const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, oldZoom + (e.deltaY > 0 ? -ZOOM_INCREMENT : ZOOM_INCREMENT)));
+      const px = state.boardPanX || 0;
+      const py = state.boardPanY || 0;
+      state.boardPanX = cursorX - (cursorX - px) * (newZoom / oldZoom);
+      state.boardPanY = cursorY - (cursorY - py) * (newZoom / oldZoom);
+      state.boardZoom = newZoom;
       applyIsoTransform();
     }, { passive: false });
 
