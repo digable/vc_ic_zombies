@@ -188,6 +188,8 @@ function attachListeners() {
       case "s": case "S": refs.moveDirBtns.find(b => b.dataset.dir === "S")?.click(); break;
       case "a": case "A": refs.moveDirBtns.find(b => b.dataset.dir === "W")?.click(); break;
       case "d": case "D": refs.moveDirBtns.find(b => b.dataset.dir === "E")?.click(); break;
+      case "PageUp":   e.preventDefault(); state.boardZoom = Math.min(ZOOM_MAX, (state.boardZoom || 1.0) + ZOOM_INCREMENT); applyIsoTransform(); break;
+      case "PageDown": e.preventDefault(); state.boardZoom = Math.max(ZOOM_MIN, (state.boardZoom || 1.0) - ZOOM_INCREMENT); applyIsoTransform(); break;
       case "ArrowUp":    e.preventDefault(); state.boardPanY = (state.boardPanY || 0) - 80; applyIsoTransform(); break;
       case "ArrowDown":  e.preventDefault(); state.boardPanY = (state.boardPanY || 0) + 80; applyIsoTransform(); break;
       case "ArrowLeft":  e.preventDefault(); state.boardPanX = (state.boardPanX || 0) - 80; applyIsoTransform(); break;
