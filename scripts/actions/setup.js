@@ -42,7 +42,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       pendingDuctTeleport: null,
       subwayPending: false,
       subwayTeleport: false,
-      sewerTokensAvailable: state.useSewerTokens ? 2 : 0,
+      sewerTokensAvailable: state.useSewerTokens ? INITIAL_SEWER_TOKENS : 0,
       inSewer: false,
       spellAttemptedThisTurn: false,
       mustMoveTowardTile: null,

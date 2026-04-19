@@ -47,13 +47,17 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   }
 
   if (resumeStepAfterPending && !state.zombies.has(playerSpaceKey)) {
+    const zombiePhaseResume = state.combatZombiePhaseResume;
     state.combatMoveResume = null;
     state.combatZombiePhaseResume = null;
     checkJeepDoorOffer(player);
     checkSubwayOffer(player);
-    checkSewerOffer(player);
 
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
+      if (!state.pendingZombieMovement && zombiePhaseResume === STEP.DISCARD) {
+        state.step = STEP.DISCARD;
+        return;
+      }
       state.step = STEP.MOVE_ZOMBIES;
       if (!state.pendingZombieMovement) {
         autoSkipZombieMoveIfClear();

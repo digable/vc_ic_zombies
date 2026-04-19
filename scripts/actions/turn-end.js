@@ -131,7 +131,6 @@ function endTurn() {
       state.pendingEventChoice = {
         playerId: player.id,
         title: "Sewer Toll",
-        cardName: "Sewer Token",
         options: [
           { key: "heart", label: `Pay 1 life token (${player.hearts - 1} remaining)` },
           { key: "guts",  label: `Pay 1 guts token (${(player.guts ?? 0) - 1} remaining)` }

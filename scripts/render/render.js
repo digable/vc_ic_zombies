@@ -117,6 +117,13 @@ function updateButtons() {
     refs.placeSewerTokenBtn.disabled = !canPlace && !state.pendingSewerTokenPlace;
     refs.placeSewerTokenBtn.textContent = state.pendingSewerTokenPlace ? "Cancel Placement" : `Place Sewer Token (${p.sewerTokensAvailable ?? 0} left)`;
   }
+  if (refs.toggleSewerBtn) {
+    const onToken = state.useSewerTokens && state.gameActive && !state.gameOver &&
+      (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) &&
+      state.sewerTokenSpaces.has(key(p.x, p.y));
+    refs.toggleSewerBtn.style.display = onToken ? "" : "none";
+    refs.toggleSewerBtn.textContent = p.inSewer ? "Exit Sewer" : "Enter Sewer";
+  }
   refs.moveZombiesBtn.disabled = state.step !== STEP.MOVE_ZOMBIES || state.gameOver || state.zombies.size === 0;
   refs.discardBtn.disabled = state.step !== STEP.DISCARD || state.gameOver;
   refs.endTurnBtn.disabled = state.step !== STEP.END || state.gameOver;

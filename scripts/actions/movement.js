@@ -38,7 +38,6 @@ function checkSubwayOffer(player) {
   state.pendingEventChoice = {
     playerId: player.id,
     title: "Subway Station",
-    cardName: TILE_NAME.SUBWAY_STATION,
     options: [
       { key: "enter", label: "Use the subway system" },
       { key: "pass",  label: "Stay above ground" }
@@ -52,51 +51,6 @@ function checkSubwayOffer(player) {
       }
     }
   };
-}
-
-function checkSewerOffer(player) {
-  if (!state.useSewerTokens || state.pendingEventChoice || state.pendingCombatDecision) return;
-  const spaceKey = playerKey(player);
-  if (!state.sewerTokenSpaces.has(spaceKey)) return;
-
-  if (player.inSewer) {
-    state.pendingEventChoice = {
-      playerId: player.id,
-      title: "Sewer Exit",
-      cardName: "Sewer Token",
-      options: [
-        { key: "exit", label: "Exit the sewer" },
-        { key: "stay", label: "Stay underground" }
-      ],
-      resolve(choice) {
-        if (choice === "exit") {
-          player.inSewer = false;
-          logLine(`${player.name} climbs out of the sewer.`);
-        } else {
-          logLine(`${player.name} stays underground.`);
-        }
-      }
-    };
-  } else {
-    logLine(`${player.name} found a sewer entrance.`);
-    state.pendingEventChoice = {
-      playerId: player.id,
-      title: "Sewer Entrance",
-      cardName: "Sewer Token",
-      options: [
-        { key: "enter", label: "Enter the sewer" },
-        { key: "pass",  label: "Stay above ground" }
-      ],
-      resolve(choice) {
-        if (choice === "enter") {
-          player.inSewer = true;
-          logLine(`${player.name} drops into the sewer.`);
-        } else {
-          logLine(`${player.name} stays above ground.`);
-        }
-      }
-    };
-  }
 }
 
 function placeSewerToken(sx, sy) {
@@ -191,7 +145,6 @@ function rollMovement() {
       state.pendingEventChoice = {
         playerId: player.id,
         title: "Subway Teleport — Choose a Station",
-        cardName: TILE_NAME.SUBWAY_STATION,
         options: destinations.map((d, i) => ({ key: `subway_${i}`, label: d.label })),
         resolve(choice) {
           const idx = parseInt(choice.replace("subway_", ""), 10);
@@ -685,7 +638,6 @@ function movePlayer(dir) {
   if (player.inSewer && state.zombies.has(playerSpaceKey)) {
     logLine(`${player.name} is underground — zombie skipped.`, "quiet");
     if (state.movesRemaining <= 0) moveToZombiePhase();
-    checkSewerOffer(player);
     render();
     return;
   }
@@ -771,9 +723,6 @@ function movePlayer(dir) {
 
   // Offer subway when player enters a Subway Station building subtile.
   checkSubwayOffer(player);
-
-  // Offer sewer entry/exit when player is on a sewer token space.
-  checkSewerOffer(player);
 
   render();
 }

@@ -20,12 +20,14 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 - **Air ducts (Mall Walkers)** — duct subtiles offer teleport to any adjacent duct store; costs your next movement roll; zombies cannot use ducts
 - **Book of the Dead (Z4)** — stage pages in front of you (uses your event play slot); remove one per round for effects; staged pages reduce the Cabin Spell roll target
 - **Cabin Spell win condition (Z4)** — clear all dogs from Cabin building subtiles, be on a building subtile, roll d6 ≥ 6 minus staged page count
+- **Subway stations (Z6)** — enter any subway station building to skip your next turn (combat only); on the following turn teleport to any other station on the board; exiting the building cancels the subway use
+- **Sewer Tokens (Z6 variant)** — each player starts with 2 tokens to place on road spaces; enter the sewer at any token to move through any subtile and skip zombie combat; pay 1 life or guts per turn to remain underground; exit at any token; knockout surfaces you instantly; manhole cover icon marks placed tokens on the board
 - **Save / Load** — 5 localStorage slots; export/import as timestamped `.json`; saving blocked during pending actions
 - **Bug reports** — in-game modal attaches game state + last 20 log entries and opens a GitHub issue automatically
 - **Mobile UI** — bottom tab bar (Controls / Map / Game Info / Hand); turn-strip accordion on the Map tab; pass-device lock screen for same-device multiplayer
 - **Deck management** — "Show cards" dropdown lists the remaining deck; drag-and-drop reordering in both map and event deck panels
 - **School's Out Forever (Z5)** — campus tile set; introduces **guts tokens** (start with 3, max 5): roll a natural 6 in combat to gain 1, roll a natural 1 to lose 1; guts count (0–5) sets your event hand limit; you always keep at least 1 event card regardless; death resets guts to 3; the school helipad uses a `DESIGNATED` connector and can only be reached by passing through a named building; Z5 player event cards include campus items (Bat, Pool Cue, I've got a bike!), guts manipulation (Shots, Electro-Shock Therapy, Sedatives, Straight Jacket, Pillow Fight), deck management (Cram Session, Valedictorian), and social cards (Student Loan, Go Team Go!!!, Raise your hand..., Where's the Admin Bldg.?, Scalpel)
-- **Collections** — tile and event decks configured independently at setup; standalone collections (Z2, Z3, Z4, Z5, IC) get zone-isolated decks with gateway tiles unlocking them in mixed play
+- **Collections** — tile and event decks configured independently at setup; standalone collections (Z2, Z3, Z4, Z5, IC) get zone-isolated decks with gateway tiles unlocking them in mixed play; Z6 tiles and cards shuffle directly into the base deck
 
 ---
 
@@ -36,7 +38,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | 1 | **Draw & Place Tile** |
 | 2 | **Combat Current Space** |
 | 3 | **Draw to 3 Events** |
-| 4 | **Roll & Move** (air duct offer if on a duct space) |
+| 4 | **Roll & Move** — place sewer token before rolling (Z6 variant); air duct or subway teleport offer if applicable |
 | 5 | **Move Zombies** |
 | 6 | **Discard Event** (optional) |
 | 7 | **End Turn** |
@@ -73,8 +75,18 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | `NOT_DEAD_YET` | Z3.5 | Event cards only — no map tiles |
 | `THE_END` | Z4 | Standalone / expansion — bridge zone, BOTD pages, Cabin Spell |
 | `SCHOOLS_OUT_FOREVER` | Z5 | Standalone / expansion — school campus; helipad only reachable through a named building's designated rooftop connector |
+| `SIX_FEET_UNDER` | Z6 | Expansion (requires Z1) — tiles and cards mix directly into the base deck; subway stations, sewer token variant rule |
 | `IOWA_CITY` | IC | Standalone / expansion — Iowa City locations |
 | `SUBSCRIPTION` | SUB | Event cards only — no map tiles; add to any game |
+
+---
+
+## Variant Rules
+
+| Variant | Enabled By | Description |
+|---------|-----------|-------------|
+| Guts Tokens | Any collection | Hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat |
+| Sewer Tokens | Z6 (auto-enabled) | Each player gets 2 tokens to place on road spaces; underground movement skips zombie combat; pay 1 life or guts per turn to stay under |
 
 ---
 
@@ -117,10 +129,10 @@ vc_ic_zombies/
 │   ├── actions/
 │   │   ├── setup.js                  # Game setup, tile draw/place, companion tile logic
 │   │   ├── combat.js                 # Combat resolution and knockout
-│   │   ├── movement.js               # Player movement roll/step/end, air duct teleport
+│   │   ├── movement.js               # Player movement roll/step/end; subway and sewer token logic
 │   │   ├── zombies.js                # Zombie movement phase
 │   │   ├── events.js                 # Event hand draw/play/discard, pending action handlers
-│   │   ├── turn-end.js               # End-turn cleanup, multiplayer sync
+│   │   ├── turn-end.js               # End-turn cleanup, sewer toll, multiplayer sync
 │   │   ├── save-load.js              # Save/load/export/import game state
 │   │   ├── multiplayer.js            # Online session create/join/start/leave/poll/sync
 │   │   ├── bug-report.js             # Bug report modal, compression, API call
@@ -128,7 +140,7 @@ vc_ic_zombies/
 │   ├── rules/
 │   │   ├── placement.js              # Tile placement, connector validation, zone isolation
 │   │   ├── combat-flow.js            # Combat/zombie-step skip gating
-│   │   ├── movement.js               # Step legality, air duct destination finding
+│   │   ├── movement.js               # Step legality, air duct and subway destination finding
 │   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
 │   │   └── board-bounds.js           # Dynamic board render bounds
 │   └── data/
@@ -163,6 +175,7 @@ vc_ic_zombies/
 - **Serverless backend** — Vercel functions + MongoDB Atlas for multiplayer sessions and bug reports; polling-based sync (no WebSockets); rate-limited per IP via Atlas TTL collections
 - **Zone isolation** — standalone collection tiles connect only to their own zone except through a gateway tile with a `DISABLE_ON_SOLO` connector; gateway tile unlocks the standalone deck when placed
 - **Connector rule system** — per-connector placement rules on each tile: `SAME` (same collection), `ANY` (any tile), `ONLY` (specific tile name), `DESIGNATED` (requires neighbor to have `ONLY` targeting this tile), and collection-key rules for cross-zone restrictions; bidirectional — both sides of a road connection must agree
+- **Mixed-deck expansion** — Z6 tiles and cards have `standaloneDeck: false` and `requiresBase: DIRECTORS_CUT`; they are filtered directly into the main deck by `buildMapDeck()` with no zone isolation or gateway tiles
 
 ---
 

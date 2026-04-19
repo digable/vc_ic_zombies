@@ -238,6 +238,21 @@ function attachListeners() {
     });
   }
 
+  if (refs.toggleSewerBtn) {
+    refs.toggleSewerBtn.addEventListener("click", () => {
+      const player = currentPlayer();
+      if (!player || state.gameOver) return;
+      if (player.inSewer) {
+        player.inSewer = false;
+        logLine(`${player.name} climbs out of the sewer.`);
+      } else {
+        player.inSewer = true;
+        logLine(`${player.name} drops into the sewer.`);
+      }
+      render();
+    });
+  }
+
   refs.moveDirBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       if (state.pendingForcedMove) {

@@ -352,6 +352,7 @@ const refs = {
   isoSpinVal:    document.getElementById("isoSpinVal"),
   resetViewBtn:       document.getElementById("resetViewBtn"),
   placeSewerTokenBtn: document.getElementById("placeSewerTokenBtn"),
+  toggleSewerBtn:     document.getElementById("toggleSewerBtn"),
   sewerTokenRow:      document.getElementById("sewerTokenRow")
 };
 
