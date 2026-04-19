@@ -21,6 +21,7 @@ const COLLECTIONS = {
   NOT_DEAD_YET: "not_dead_yet",
   THE_END: "the_end",
   SCHOOLS_OUT_FOREVER: "schools_out_forever",
+  SIX_FEET_UNDER: "six_feet_under",
   IOWA_CITY: "iowa_city",
   SUBSCRIPTION: "subscription"
 };
@@ -98,6 +99,18 @@ const COLLECTION_META = {
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 5 - School's Out Forever by Todd A. Breitenstein",
     standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SIX_FEET_UNDER]: {
+    label: "Six Feet Under",
+    shortCode: "Z6",
+    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    year: 2007,
+    type: "Expansion",
+    version: "1.0",
+    description: "Tiles and event cards shuffle directly into the base deck — not zone-isolated. Add to Director's Cut for a fully mixed game.",
+    creator: "Based on the Twilight Creations Zombies!!! 6 - Six Feet Under by Todd A. Breitenstein",
+    standaloneDeck: false,
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.IOWA_CITY]: {
@@ -253,6 +266,9 @@ const state = {
   playerById: new Map(),        // id → player object; rebuilt by rebuildPlayerById() after players change
   logs: [],
   useGuts: false,               // Guts Tokens variant: hand limit = guts count, gain/lose on natural 6/1 in combat
+  useSewerTokens: false,        // Sewer Tokens variant (Z6): players place tokens on roads and travel underground
+  sewerTokenSpaces: new Map(),  // key(sx,sy) → { ownerId } — all placed sewer tokens on the board
+  pendingSewerTokenPlace: null, // { playerId } — awaiting road-space click to place a token
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
   multiplayerSession: null,     // null = same-device; { code, myPlayerId, myDeviceId, myPlayerSlot, isHost, hostId, mode:"online", pollInterval:null }
   isoView: false,               // when true, board renders tiles in isometric projection
@@ -334,7 +350,9 @@ const refs = {
   isoSpinSlider: document.getElementById("isoSpinSlider"),
   isoTiltVal:    document.getElementById("isoTiltVal"),
   isoSpinVal:    document.getElementById("isoSpinVal"),
-  resetViewBtn:  document.getElementById("resetViewBtn")
+  resetViewBtn:       document.getElementById("resetViewBtn"),
+  placeSewerTokenBtn: document.getElementById("placeSewerTokenBtn"),
+  sewerTokenRow:      document.getElementById("sewerTokenRow")
 };
 
 function resetStepProgress(nextStep = STEP.DRAW_TILE) {

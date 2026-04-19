@@ -27,6 +27,100 @@ function checkJeepDoorOffer(player) {
   };
 }
 
+function checkSubwayOffer(player) {
+  if (player.subwayPending || player.subwayTeleport || state.pendingEventChoice || state.pendingCombatDecision) return;
+  const tile = getTileAtSpace(player.x, player.y);
+  if (!tile || tile.name !== TILE_NAME.SUBWAY_STATION) return;
+  const { lx, ly } = getSpaceLocalCoords(player.x, player.y);
+  const sub = tile.subTiles?.[key(lx, ly)];
+  if (!sub || sub.type !== SUBTILE_TYPE.BUILDING) return;
+  logLine(`${player.name} found a working subway station.`);
+  state.pendingEventChoice = {
+    playerId: player.id,
+    title: "Subway Station",
+    cardName: TILE_NAME.SUBWAY_STATION,
+    options: [
+      { key: "enter", label: "Use the subway system" },
+      { key: "pass",  label: "Stay above ground" }
+    ],
+    resolve(choice) {
+      if (choice === "enter") {
+        player.subwayPending = true;
+        logLine(`${player.name} enters the subway — next turn skipped, then teleport to any other station.`);
+      } else {
+        logLine(`${player.name} decided not to use the subway.`);
+      }
+    }
+  };
+}
+
+function checkSewerOffer(player) {
+  if (!state.useSewerTokens || state.pendingEventChoice || state.pendingCombatDecision) return;
+  const spaceKey = playerKey(player);
+  if (!state.sewerTokenSpaces.has(spaceKey)) return;
+
+  if (player.inSewer) {
+    state.pendingEventChoice = {
+      playerId: player.id,
+      title: "Sewer Exit",
+      cardName: "Sewer Token",
+      options: [
+        { key: "exit", label: "Exit the sewer" },
+        { key: "stay", label: "Stay underground" }
+      ],
+      resolve(choice) {
+        if (choice === "exit") {
+          player.inSewer = false;
+          logLine(`${player.name} climbs out of the sewer.`);
+        } else {
+          logLine(`${player.name} stays underground.`);
+        }
+      }
+    };
+  } else {
+    logLine(`${player.name} found a sewer entrance.`);
+    state.pendingEventChoice = {
+      playerId: player.id,
+      title: "Sewer Entrance",
+      cardName: "Sewer Token",
+      options: [
+        { key: "enter", label: "Enter the sewer" },
+        { key: "pass",  label: "Stay above ground" }
+      ],
+      resolve(choice) {
+        if (choice === "enter") {
+          player.inSewer = true;
+          logLine(`${player.name} drops into the sewer.`);
+        } else {
+          logLine(`${player.name} stays above ground.`);
+        }
+      }
+    };
+  }
+}
+
+function placeSewerToken(sx, sy) {
+  const player = currentPlayer();
+  if (!state.pendingSewerTokenPlace || state.pendingSewerTokenPlace.playerId !== player.id) return;
+  const tile = getTileAtSpace(sx, sy);
+  if (!tile) { logLine("No tile there — cannot place sewer token."); return; }
+  const { lx, ly } = getSpaceLocalCoords(sx, sy);
+  if (getSubTileType(tile, lx, ly) !== SUBTILE_TYPE.ROAD) {
+    logLine("Sewer tokens can only be placed on road spaces.");
+    return;
+  }
+  const spaceKey = key(sx, sy);
+  if (state.sewerTokenSpaces.has(spaceKey)) {
+    logLine("A sewer token is already on that space.");
+    return;
+  }
+  state.sewerTokenSpaces.set(spaceKey, { ownerId: player.id });
+  player.sewerTokensAvailable -= 1;
+  state.pendingSewerTokenPlace = null;
+  logLine(`${player.name} placed a sewer token at [space ${sx}, ${sy}]. (${player.sewerTokensAvailable} remaining)`);
+  render();
+}
+
 function isSpaceBuilding(sx, sy) {
   const tile = getTileAtSpace(sx, sy);
   if (!tile) return false;
@@ -84,6 +178,39 @@ function rollMovement() {
     moveToZombiePhase(true);
     render();
     return;
+  }
+
+  // Subway teleport: player spent last turn in the subway — now choose a destination station.
+  if (player.subwayTeleport) {
+    const destinations = findSubwayDestinations(player);
+    player.subwayTeleport = false;
+    if (destinations.length === 0) {
+      logLine(`${player.name} cannot use the subway — no other stations on the board. Moving normally.`);
+      // Fall through to normal movement roll.
+    } else {
+      state.pendingEventChoice = {
+        playerId: player.id,
+        title: "Subway Teleport — Choose a Station",
+        cardName: TILE_NAME.SUBWAY_STATION,
+        options: destinations.map((d, i) => ({ key: `subway_${i}`, label: d.label })),
+        resolve(choice) {
+          const idx = parseInt(choice.replace("subway_", ""), 10);
+          const dest = destinations[idx];
+          player.x = dest.sx;
+          player.y = dest.sy;
+          state.currentMoveRoll = null;
+          state.movesRemaining = 0;
+          state.playerTrail = [key(dest.sx, dest.sy)];
+          collectTokensAtPlayerSpace(player);
+          logLine(`${player.name} rides the subway to ${dest.label}!`);
+          if (checkWin(player)) { render(); return; }
+          moveToZombiePhase(true);
+          render();
+        }
+      };
+      render();
+      return;
+    }
   }
 
   // Duct check: offer the duct before rolling (only if no other turn-skipping effects).
@@ -465,6 +592,12 @@ function movePlayer(dir) {
     }
   }
 
+  if (player.subwayPending && !isSpaceBuilding(player.x + d.x, player.y + d.y)) {
+    logLine(`${player.name} cannot leave the Subway Station building while committed to the subway.`);
+    render();
+    return;
+  }
+
   if (player.mustMoveTowardTile) {
     const adminTarget = findAdminBldgTarget(player.mustMoveTowardTile);
     const curDist = Math.abs(player.x - adminTarget.cx) + Math.abs(player.y - adminTarget.cy);
@@ -516,6 +649,11 @@ function movePlayer(dir) {
     logLine(`${player.name} exited the building (Claustrophobia — movement ends).`);
   }
 
+  if (player.subwayPending && !isSpaceBuilding(player.x, player.y)) {
+    player.subwayPending = false;
+    logLine(`${player.name} left the Subway Station building — subway use cancelled.`);
+  }
+
   if (checkWin(player)) {
     render();
     return;
@@ -542,6 +680,16 @@ function movePlayer(dir) {
   }
 
   const playerSpaceKey = playerKey(player);
+
+  // In the sewer — skip all zombie combat (underground, zombies can't follow).
+  if (player.inSewer && state.zombies.has(playerSpaceKey)) {
+    logLine(`${player.name} is underground — zombie skipped.`, "quiet");
+    if (state.movesRemaining <= 0) moveToZombiePhase();
+    checkSewerOffer(player);
+    render();
+    return;
+  }
+
   if (state.zombies.has(playerSpaceKey)) {
     if (playerHasNoCombat(player)) {
       logLine(`${player.name} is under a no-combat effect and ignores zombie battle this turn.`);
@@ -620,6 +768,12 @@ function movePlayer(dir) {
 
   // Offer jeep when player enters the Motor Pool door subtile and doesn't already have one.
   checkJeepDoorOffer(player);
+
+  // Offer subway when player enters a Subway Station building subtile.
+  checkSubwayOffer(player);
+
+  // Offer sewer entry/exit when player is on a sewer token space.
+  checkSewerOffer(player);
 
   render();
 }

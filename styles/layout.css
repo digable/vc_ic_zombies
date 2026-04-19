@@ -313,6 +313,17 @@
   font-weight: 700;
 }
 
+.pip-stat--sewer-tokens {
+  color: var(--text, #222);
+  font-weight: 600;
+}
+
+.pip-stat--in-sewer {
+  color: #00bcd4;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
 .player-pip--active .pip-stat {
   opacity: 0.9;
 }

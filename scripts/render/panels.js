@@ -714,6 +714,8 @@ function renderMeta() {
       <span class="pip-stat">♥${p.hearts}</span>
       <span class="pip-stat pip-stat--bullets">⬤${p.bullets}</span>
       ${state.useGuts && p.guts != null ? `<span class="pip-stat pip-stat--guts">★${p.guts}</span>` : ""}
+      ${state.useSewerTokens && (p.sewerTokensAvailable > 0) ? `<span class="pip-stat pip-stat--sewer-tokens">S×${p.sewerTokensAvailable}</span>` : ""}
+      ${state.useSewerTokens && p.inSewer ? `<span class="pip-stat pip-stat--in-sewer">SEWER</span>` : ""}
       <span class="pip-stat pip-stat--kills">☠${p.kills}</span>
     </span>`;
   }).join("");

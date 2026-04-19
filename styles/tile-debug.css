@@ -100,6 +100,21 @@
   height: 1px;
   display: inline-block;
 }
+.tile-debug-body {
+  height: auto;
+  overflow: visible;
+}
+
+.toggle-section-btn {
+  font-size: var(--font-ui);
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.tile-generator.is-collapsed .tile-generator-layout {
+  display: none;
+}
+
 .tile-debug-page {
   padding: 0.8rem;
   display: grid;
@@ -245,8 +260,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  position: sticky;
-  top: 0.5rem;
 }
 
 #newTileLivePreview.deck-tile.tile-generator-preview {

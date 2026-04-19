@@ -82,6 +82,7 @@ const TILE_NAME = {
   HELIPAD:        "Helipad",
   HELIPAD_DESIGNATED: "Helipad (designated)",
   ADMIN_BLDG:     "Admin Bldg.",
+  SUBWAY_STATION: "Subway Station",
 };
 
 // Subtile types — used on individual subtiles within a tile's 3×3 grid (subtile.type)

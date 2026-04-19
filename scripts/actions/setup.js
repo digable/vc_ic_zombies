@@ -40,6 +40,10 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       dieRollPenalty: 0,
       nextTurnDieRollPenalty: 0,
       pendingDuctTeleport: null,
+      subwayPending: false,
+      subwayTeleport: false,
+      sewerTokensAvailable: state.useSewerTokens ? 2 : 0,
+      inSewer: false,
       spellAttemptedThisTurn: false,
       mustMoveTowardTile: null,
       studentLoanReturn: null,
@@ -52,6 +56,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.deckFilters = deckFilters || {};
   state.eventDeckFilters = eventFilters ?? deckFilters ?? {};
   state.board = new Map();
+  state.sewerTokenSpaces = new Map();
+  state.pendingSewerTokenPlace = null;
   state.mapDeck = buildMapDeck(deckFilters);
   // Build standalone decks for enabled standalone collections
   state.standaloneDecks = {};

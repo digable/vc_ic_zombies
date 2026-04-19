@@ -118,7 +118,7 @@ function pickNearestZombieToMove(availableZombieKeys) {
 }
 
 function handleZombieEnteringPlayerSpace(spaceKey) {
-  const occupants = state.players.filter((p) => key(p.x, p.y) === spaceKey);
+  const occupants = state.players.filter((p) => key(p.x, p.y) === spaceKey && !p.inSewer);
   const target = chooseZombieCombatTarget(occupants);
   if (!target) {
     return false;

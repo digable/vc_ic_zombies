@@ -15,6 +15,9 @@ function handleKnockout(player, options = {}) {
   player.y = 1;
   player.knockedOut = true;
   player.hasJeep = false;
+  player.subwayPending = false;
+  player.subwayTeleport = false;
+  player.inSewer = false;
   player.knockouts = (player.knockouts || 0) + 1;
   if (player.meatCleaverActive) {
     player.meatCleaverActive = false;
@@ -47,6 +50,8 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
     state.combatMoveResume = null;
     state.combatZombiePhaseResume = null;
     checkJeepDoorOffer(player);
+    checkSubwayOffer(player);
+    checkSewerOffer(player);
 
     if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
       state.step = STEP.MOVE_ZOMBIES;

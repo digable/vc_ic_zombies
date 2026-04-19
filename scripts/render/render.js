@@ -110,6 +110,13 @@ function updateButtons() {
   }
   const mustExitBuilding = p.claustrophobiaActive && isSpaceBuilding(p.x, p.y);
   refs.endMoveBtn.disabled = state.step !== STEP.MOVE || state.gameOver || mustExitBuilding;
+
+  if (refs.sewerTokenRow) refs.sewerTokenRow.style.display = state.useSewerTokens ? "" : "none";
+  if (refs.placeSewerTokenBtn) {
+    const canPlace = state.gameActive && !state.gameOver && (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) && p.sewerTokensAvailable > 0;
+    refs.placeSewerTokenBtn.disabled = !canPlace && !state.pendingSewerTokenPlace;
+    refs.placeSewerTokenBtn.textContent = state.pendingSewerTokenPlace ? "Cancel Placement" : `Place Sewer Token (${p.sewerTokensAvailable ?? 0} left)`;
+  }
   refs.moveZombiesBtn.disabled = state.step !== STEP.MOVE_ZOMBIES || state.gameOver || state.zombies.size === 0;
   refs.discardBtn.disabled = state.step !== STEP.DISCARD || state.gameOver;
   refs.endTurnBtn.disabled = state.step !== STEP.END || state.gameOver;

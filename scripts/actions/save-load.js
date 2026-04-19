@@ -71,6 +71,8 @@ function serializeState() {
     regularZombieEnhanced:   state.regularZombieEnhanced,
     forcedNextOpponentId:    state.forcedNextOpponentId,
     useGuts:                 state.useGuts,
+    useSewerTokens:          state.useSewerTokens,
+    sewerTokenSpaces:        Array.from(state.sewerTokenSpaces.entries()),
     deckFilters:             state.deckFilters,
     eventDeckFilters:        state.eventDeckFilters ?? state.deckFilters,
     deckStartCounts:         state.deckStartCounts,
@@ -169,6 +171,8 @@ function deserializeState(data) {
   state.regularZombieEnhanced  = data.regularZombieEnhanced;
   state.forcedNextOpponentId   = data.forcedNextOpponentId ?? null;
   state.useGuts                = data.useGuts ?? false;
+  state.useSewerTokens         = data.useSewerTokens ?? false;
+  state.sewerTokenSpaces       = new Map(data.sewerTokenSpaces ?? []);
   state.deckFilters            = data.deckFilters;
   state.eventDeckFilters       = data.eventDeckFilters ?? data.deckFilters ?? {};
   state.deckStartCounts        = data.deckStartCounts;

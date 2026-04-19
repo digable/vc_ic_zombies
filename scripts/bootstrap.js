@@ -120,12 +120,23 @@ function autoCheckGutsForZ5() {
   }
 }
 
+function autoCheckSewerTokensForZ6() {
+  const sewerCheckbox = document.getElementById("useSewerTokensCheckbox");
+  if (!sewerCheckbox) return;
+  const z6Key = COLLECTIONS.SIX_FEET_UNDER;
+  const z6MapChecked = document.querySelector(`[data-deck-coll="${z6Key}"][data-deck-state="enabled"]`)?.checked;
+  if (z6MapChecked) {
+    sewerCheckbox.checked = true;
+  }
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
     const count = Number(refs.playerCount.value) || 2;
     state.gameActive = true;
     state.useGuts = !!(document.getElementById("useGutsCheckbox")?.checked);
+    state.useSewerTokens = !!(document.getElementById("useSewerTokensCheckbox")?.checked);
     setupGame(Math.max(1, Math.min(MAX_PLAYERS, count)), readCurrentFilters(), readCurrentEventFilters());
     if (window.matchMedia("(max-width: 1080px)").matches) switchMobileTab("map");
   });
@@ -150,6 +161,7 @@ function attachListeners() {
       enforceCollectionCompatibility();
       updateDeckPreviewCounts();
       autoCheckGutsForZ5();
+      autoCheckSewerTokensForZ6();
     });
   }
 
@@ -209,6 +221,22 @@ function attachListeners() {
   refs.discardBtn.addEventListener("click", discardSelected);
   refs.endTurnBtn.addEventListener("click", endTurnWithLockCheck);
   if (refs.performSpellBtn) refs.performSpellBtn.addEventListener("click", attemptSpell);
+  if (refs.placeSewerTokenBtn) {
+    refs.placeSewerTokenBtn.addEventListener("click", () => {
+      if (!state.useSewerTokens) return;
+      if (state.pendingSewerTokenPlace) {
+        state.pendingSewerTokenPlace = null;
+        logLine("Sewer token placement cancelled.");
+        render();
+        return;
+      }
+      const player = currentPlayer();
+      if (!player || player.sewerTokensAvailable <= 0 || (state.step !== STEP.ROLL_MOVE && state.step !== STEP.MOVE) || state.gameOver) return;
+      state.pendingSewerTokenPlace = { playerId: player.id };
+      logLine(`${player.name} is placing a sewer token — click any road space.`);
+      render();
+    });
+  }
 
   refs.moveDirBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -326,6 +354,14 @@ function attachListeners() {
       const mc = target.closest(".micro-cell");
       if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
         handleFrisbeeTargetClick(Number(mc.dataset.sx), Number(mc.dataset.sy));
+      }
+      return;
+    }
+
+    if (state.pendingSewerTokenPlace) {
+      const mc = target.closest(".micro-cell");
+      if (mc instanceof HTMLElement && mc.dataset.sx !== undefined) {
+        placeSewerToken(Number(mc.dataset.sx), Number(mc.dataset.sy));
       }
       return;
     }

@@ -168,6 +168,8 @@ function renderBoard() {
     state.pendingZombiePlace ? (state.pendingZombiePlace.validSpaces ? state.pendingZombiePlace.validSpaces.size : "zp") : "",
     pzrState ? (pzrState.selectedZombieKey || "0") : "",
     getActivePlayerId() || "",
+    state.pendingSewerTokenPlace ? "stp" : "",
+    state.players.map((p) => p.inSewer ? `is${p.id}` : "").join(""),
   ].join("|");
 
   // Determine if the board grid dimensions changed (new tile placed, etc.)
@@ -215,7 +217,8 @@ function renderBoard() {
         for (let ly2 = 0; ly2 < TILE_DIM; ly2 += 1) {
           for (let lx2 = 0; lx2 < TILE_DIM; lx2 += 1) {
             const d = globalOccupantMap.get(key(x * TILE_DIM + lx2, y * TILE_DIM + ly2));
-            if (d) occFp += `${lx2}${ly2}:${d.players.join("")}${d.zombieType || ""}${d.zombieCount}${d.hearts}${d.bullets};`;
+            const stk = state.sewerTokenSpaces.has(key(x * TILE_DIM + lx2, y * TILE_DIM + ly2)) ? "s" : "";
+            if (d || stk) occFp += `${lx2}${ly2}:${d ? `${d.players.join("")}${d.zombieType || ""}${d.zombieCount}${d.hearts}${d.bullets}` : ""}${stk};`;
           }
         }
         if (state.recentKillKey) {
@@ -345,8 +348,10 @@ function renderBoard() {
           if (data.players.length) {
             const activeId = `P${getActivePlayerId()}`;
             data.players.forEach((pid) => {
-              const cls = pid === activeId ? "mark player active" : "mark player";
-              parts.push(`<span class="${cls}" data-pid="${pid}">${pid}</span>`);
+              const baseCls = pid === activeId ? "mark player active" : "mark player";
+              const pidPlayer = state.players.find((p) => `P${p.id}` === pid);
+              const sewerCls = pidPlayer?.inSewer ? " in-sewer" : "";
+              parts.push(`<span class="${baseCls}${sewerCls}" data-pid="${pid}">${pid}</span>`);
             });
           }
           if (data.zombieType) {
@@ -365,6 +370,9 @@ function renderBoard() {
           }
           if (data.bullets > 0) {
             parts.push(`<span class="mark token token-bullet" data-count="${data.bullets}">B${data.bullets}</span>`);
+          }
+          if (state.useSewerTokens && state.sewerTokenSpaces.has(key(sx, sy))) {
+            parts.push(`<span class="mark token token-sewer"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5.2" fill="#3d3028" stroke="#7a6555" stroke-width="0.8"/><line x1="6" y1="1" x2="6" y2="11" stroke="#7a6555" stroke-width="0.7"/><line x1="1" y1="6" x2="11" y2="6" stroke="#7a6555" stroke-width="0.7"/><line x1="2.8" y1="2.8" x2="9.2" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><line x1="9.2" y1="2.8" x2="2.8" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><circle cx="6" cy="6" r="1.4" fill="#7a6555"/></svg></span>`);
           }
           const pzr = pzrState;
           const spaceKey = key(sx, sy);
@@ -391,6 +399,9 @@ function renderBoard() {
                      state.pendingFrisbeeTarget.validSpaces.has(spaceKey)) {
             zombieClass = " zombie-selectable";
           } else if (state.pendingSpaceSelect && isWalkable && adjBuildingSpaces?.has(spaceKey)) {
+            zombieClass = " zombie-target";
+          } else if (state.pendingSewerTokenPlace && subType === SUBTILE_TYPE.ROAD &&
+                     !state.sewerTokenSpaces.has(spaceKey)) {
             zombieClass = " zombie-target";
           } else if (state.pendingZombiePlace && isWalkable && !data.zombieType &&
                      (!state.pendingZombiePlace.validSpaces || state.pendingZombiePlace.validSpaces.has(spaceKey))) {

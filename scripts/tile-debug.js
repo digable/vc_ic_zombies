@@ -568,3 +568,12 @@ attachNewTileSubtileEditorListeners();
 attachNewTileGenerator();
 attachTileDebugListeners();
 renderMapDeckDebug();
+
+const toggleTileGeneratorBtn = document.getElementById("toggleTileGenerator");
+const tileGeneratorSection = document.getElementById("newTileGenerator");
+tileGeneratorSection.classList.add("is-collapsed");
+toggleTileGeneratorBtn.addEventListener("click", () => {
+  const collapsed = tileGeneratorSection.classList.toggle("is-collapsed");
+  toggleTileGeneratorBtn.setAttribute("aria-expanded", !collapsed);
+  toggleTileGeneratorBtn.textContent = collapsed ? "Show ▾" : "Hide ▴";
+});

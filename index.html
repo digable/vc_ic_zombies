@@ -36,6 +36,10 @@
               <input type="checkbox" id="useGutsCheckbox" />
               Guts Tokens — hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat; always keep at least 1 card
             </label>
+            <label class="setup-variant-label">
+              <input type="checkbox" id="useSewerTokensCheckbox" />
+              Sewer Tokens (Z6) — each player starts with 2 sewer tokens to place on road spaces; players in the sewer skip combat and pay 1 life/guts per turn to remain underground
+            </label>
           </div>
           <div class="row">
             <label for="playerCount">Players</label>
@@ -130,6 +134,9 @@
             <button class="moveDirBtn" data-dir="E">Move →</button>
             <button class="moveDirBtn" data-dir="S">Move ↓</button>
             <button id="endMoveBtn">End Movement</button>
+          </div>
+          <div class="row" id="sewerTokenRow" style="display:none">
+            <button id="placeSewerTokenBtn">Place Sewer Token</button>
           </div>
         </div>
 

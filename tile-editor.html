@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles/layout.css" />
     <link rel="stylesheet" href="styles/tile-debug.css" />
   </head>
-  <body>
+  <body class="tile-debug-body">
     <header class="topbar">
       <h1>Tile Editor</h1>
       <p class="subtitle">Edit subtiles and copy generated subTilesTemplate code. <a href="#newTileGenerator">Create New Tile</a> | <a href="index.html">Back to game</a></p>
@@ -20,9 +20,10 @@
       <section class="panel tile-generator" id="newTileGenerator">
         <div class="board-header">
           <h3>New Tile Generator</h3>
+          <button id="toggleTileGenerator" type="button" class="toggle-section-btn" aria-expanded="false">Show ▾</button>
         </div>
 
-        <div class="tile-generator-layout">
+        <div class="tile-generator-layout" id="tileGeneratorBody">
           <!-- LEFT: form fields -->
           <div class="tile-generator-fields">
             <div class="tile-generator-grid">

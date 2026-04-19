@@ -65,6 +65,10 @@ function canStep(fromX, fromY, toX, toY) {
 
 function canMove(player, dir) {
   const d = DIRS[dir];
+  if (player.inSewer) {
+    // Underground: can step to any space that has a tile on the board.
+    return !!getTileAtSpace(player.x + d.x, player.y + d.y);
+  }
   return canStep(player.x, player.y, player.x + d.x, player.y + d.y);
 }
 
@@ -113,4 +117,20 @@ function findFirstDuctSubTile(tile) {
     }
   }
   return null;
+}
+
+// Returns all Subway Station tiles on the board except the one the player is currently on.
+// Each result: { label, sx, sy } pointing to the building entrance subtile (1,0).
+function findSubwayDestinations(player) {
+  const currentTileX = spaceToTileCoord(player.x);
+  const currentTileY = spaceToTileCoord(player.y);
+  const results = [];
+  let idx = 1;
+  for (const [bKey, tile] of state.board) {
+    if (!tile || tile.name !== TILE_NAME.SUBWAY_STATION) continue;
+    const [tx, ty] = bKey.split(",").map(Number);
+    if (tx === currentTileX && ty === currentTileY) continue;
+    results.push({ label: `Subway Station #${idx++}`, sx: tx * TILE_DIM + 1, sy: ty * TILE_DIM });
+  }
+  return results;
 }

@@ -120,6 +120,75 @@ function endTurn() {
 
   logLine(`Turn passes to ${player.name}.`);
 
+  if (player.inSewer && state.useSewerTokens) {
+    const canPayHearts = player.hearts > 0;
+    const canPayGuts   = state.useGuts && (player.guts ?? 0) > 0;
+    if (!canPayHearts && !canPayGuts) {
+      player.inSewer = false;
+      logLine(`${player.name} has nothing left to pay the sewer toll — forced to surface!`);
+    } else if (canPayGuts) {
+      logLine(`${player.name} must pay the sewer toll to remain underground.`);
+      state.pendingEventChoice = {
+        playerId: player.id,
+        title: "Sewer Toll",
+        cardName: "Sewer Token",
+        options: [
+          { key: "heart", label: `Pay 1 life token (${player.hearts - 1} remaining)` },
+          { key: "guts",  label: `Pay 1 guts token (${(player.guts ?? 0) - 1} remaining)` }
+        ],
+        resolve(choice) {
+          if (choice === "guts") {
+            player.guts -= 1;
+            logLine(`${player.name} paid 1 guts token — remains in the sewer.`);
+          } else {
+            player.hearts -= 1;
+            logLine(`${player.name} paid 1 life token — remains in the sewer.`);
+            if (player.hearts <= 0) {
+              player.inSewer = false;
+              logLine(`${player.name} ran out of life tokens in the sewer!`);
+              handleKnockout(player, { endStep: true });
+            }
+          }
+        }
+      };
+    } else {
+      player.hearts -= 1;
+      logLine(`${player.name} paid 1 life token to remain in the sewer. (${player.hearts} remaining)`);
+      if (player.hearts <= 0) {
+        player.inSewer = false;
+        logLine(`${player.name} ran out of life tokens in the sewer!`);
+        handleKnockout(player, { endStep: true });
+        syncToCloud();
+        render();
+        return;
+      }
+    }
+  }
+
+  if (player.subwayPending) {
+    player.subwayPending = false;
+    player.subwayTeleport = true;
+    logLine(`${player.name} is in the subway system — turn skipped (combat only).`);
+    const subwaySpaceKey = playerKey(player);
+    if (state.zombies.has(subwaySpaceKey) && !player.noCombatThisTurn) {
+      state.step = STEP.COMBAT;
+      const combat = resolveCombatForPlayer(player, {
+        advanceStepWhenClear: false,
+        endStepOnKnockout: true,
+        resumeStepAfterPending: STEP.MOVE_ZOMBIES
+      });
+      if (combat.pending) {
+        logLine(`${player.name} must resolve combat on their space before the turn ends.`);
+      }
+    } else {
+      state.step = STEP.MOVE_ZOMBIES;
+      autoSkipZombieMoveIfClear();
+    }
+    syncToCloud();
+    render();
+    return;
+  }
+
   if (player.werewolfNextTurn) {
     player.werewolfNextTurn = false;
     triggerWerewolfCombat(player);
