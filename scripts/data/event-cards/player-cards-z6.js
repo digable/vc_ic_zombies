@@ -579,7 +579,7 @@ playerEventCards.push(
   {
     name: "Flood",
     description: "All players currently using the sewers are forced to the surface at their current position.",
-    collection: { [Z6]: 1 },
+    collection: { [Z6]: 2 },
     preview() {
       const inSewer = state.players.filter((p) => p.inSewer);
       if (inSewer.length === 0) return "No players are currently in the sewer.";
