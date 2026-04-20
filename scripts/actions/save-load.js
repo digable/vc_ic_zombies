@@ -58,10 +58,13 @@ function serializeState() {
     winInfo:                 state.winInfo,
     zombieMoveFreezeCount:       state.zombieMoveFreezeCount,
     weaponsJammedCount:          state.weaponsJammedCount,
+    itemsDisabledCount:          state.itemsDisabledCount,
     movementRollFreezeCount:     state.movementRollFreezeCount,
     tokenPickupFrozenCount:      state.tokenPickupFrozenCount,
     bulletsCombatFrozenCount:    state.bulletsCombatFrozenCount,
     pillowFightCount:            state.pillowFightCount,
+    doubleMovementCount:         state.doubleMovementCount,
+    blockedSewerSpaces:          Array.from(state.blockedSewerSpaces.entries()),
     lastPlayedWeaponName:        state.lastPlayedWeaponName,
     lastPlayedWeaponByPlayerId:  state.lastPlayedWeaponByPlayerId,
     recentKillByPlayerId:        state.recentKillByPlayerId,
@@ -157,10 +160,13 @@ function deserializeState(data) {
   state.winInfo                = data.winInfo;
   state.zombieMoveFreezeCount  = data.zombieMoveFreezeCount;
   state.weaponsJammedCount         = data.weaponsJammedCount ?? 0;
+  state.itemsDisabledCount         = data.itemsDisabledCount ?? 0;
   state.movementRollFreezeCount    = data.movementRollFreezeCount ?? 0;
   state.tokenPickupFrozenCount     = data.tokenPickupFrozenCount ?? 0;
   state.bulletsCombatFrozenCount   = data.bulletsCombatFrozenCount ?? 0;
   state.pillowFightCount           = data.pillowFightCount ?? 0;
+  state.doubleMovementCount        = data.doubleMovementCount ?? 0;
+  state.blockedSewerSpaces         = new Map(data.blockedSewerSpaces ?? []);
   state.lastPlayedWeaponName       = data.lastPlayedWeaponName ?? null;
   state.lastPlayedWeaponByPlayerId = data.lastPlayedWeaponByPlayerId ?? null;
   state.lastPlayedEventCard        = null;

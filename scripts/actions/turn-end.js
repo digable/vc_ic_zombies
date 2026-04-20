@@ -70,10 +70,16 @@ function endTurn() {
     outgoing.lockedToTileTurns -= 1;
   }
   if (state.weaponsJammedCount > 0) state.weaponsJammedCount -= 1;
+  if (state.itemsDisabledCount > 0) state.itemsDisabledCount -= 1;
   if (state.movementRollFreezeCount > 0) state.movementRollFreezeCount -= 1;
   if (state.tokenPickupFrozenCount > 0) state.tokenPickupFrozenCount -= 1;
   if (state.bulletsCombatFrozenCount > 0) state.bulletsCombatFrozenCount -= 1;
   if (state.pillowFightCount > 0) state.pillowFightCount -= 1;
+  if (state.doubleMovementCount > 0) state.doubleMovementCount -= 1;
+  state.blockedSewerSpaces.forEach((data, spk) => {
+    if (data.turnsLeft <= 1) state.blockedSewerSpaces.delete(spk);
+    else data.turnsLeft -= 1;
+  });
   state.playerTrail = [];
   state.lastCombatResult = null;
   state.lastPlayedEventCard = null;

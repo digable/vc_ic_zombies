@@ -690,6 +690,11 @@ function activateItem(index) {
   const player = currentPlayer();
   const card = player.items[index];
   if (!card) return;
+  if (state.itemsDisabledCount > 0) {
+    logLine(`${card.name} has no effect — Are You Scared Yet? is active.`);
+    render();
+    return;
+  }
   if (card.canActivate && !card.canActivate(player)) {
     logLine(`${player.name} cannot use ${card.name} from this space.`);
     render();

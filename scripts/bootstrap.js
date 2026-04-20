@@ -242,6 +242,12 @@ function attachListeners() {
     refs.toggleSewerBtn.addEventListener("click", () => {
       const player = currentPlayer();
       if (!player || state.gameOver) return;
+      const sewerSpaceKey = key(player.x, player.y);
+      if (state.blockedSewerSpaces && state.blockedSewerSpaces.has(sewerSpaceKey)) {
+        logLine(`This sewer space is blocked (Oh... That's New!) — cannot enter or exit here.`);
+        render();
+        return;
+      }
       if (player.inSewer) {
         player.inSewer = false;
         logLine(`${player.name} climbs out of the sewer.`);

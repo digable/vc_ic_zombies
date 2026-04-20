@@ -120,7 +120,8 @@ function findFirstDuctSubTile(tile) {
 }
 
 // Returns all Subway Station tiles on the board except the one the player is currently on.
-// Each result: { label, sx, sy } pointing to the building entrance subtile (1,0).
+// Each result: { label, sx, sy } pointing to the first walkable building subtile of that station.
+// Accounts for tile rotation — tile.subTiles already reflects the placed orientation.
 function findSubwayDestinations(player) {
   const currentTileX = spaceToTileCoord(player.x);
   const currentTileY = spaceToTileCoord(player.y);
@@ -130,7 +131,17 @@ function findSubwayDestinations(player) {
     if (!tile || tile.name !== TILE_NAME.SUBWAY_STATION) continue;
     const [tx, ty] = bKey.split(",").map(Number);
     if (tx === currentTileX && ty === currentTileY) continue;
-    results.push({ label: `Subway Station #${idx++}`, sx: tx * TILE_DIM + 1, sy: ty * TILE_DIM });
+    let destSx = tx * TILE_DIM + 1, destSy = ty * TILE_DIM;
+    const subTiles = tile.subTiles || {};
+    for (const [sk, sub] of Object.entries(subTiles)) {
+      if (sub && sub.walkable && sub.type === SUBTILE_TYPE.BUILDING) {
+        const [lx, ly] = sk.split(",").map(Number);
+        destSx = tx * TILE_DIM + lx;
+        destSy = ty * TILE_DIM + ly;
+        break;
+      }
+    }
+    results.push({ label: `Subway Station #${idx++}`, sx: destSx, sy: destSy });
   }
   return results;
 }

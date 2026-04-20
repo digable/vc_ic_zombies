@@ -298,6 +298,14 @@ function rollMovement() {
     move *= 2;
     state.doubleMovementThisTurn = false;
   }
+  if (state.doubleMovementCount > 0) {
+    move *= 2;
+    logLine(`${player.name}'s movement doubled (We gotta get out of this place!) — ${move} space(s).`);
+  }
+  if (player.inSewer && (player.items || []).some((c) => c.name === "Flashlight")) {
+    move *= 2;
+    logLine(`${player.name}'s Flashlight illuminates the tunnels — sewer movement doubled to ${move} space(s).`);
+  }
   state.movesRemaining = move;
   state.movementBonus = 0;
   state.moveFloorThisTurn = 0;
