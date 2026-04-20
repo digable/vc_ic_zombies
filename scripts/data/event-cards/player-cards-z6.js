@@ -233,11 +233,12 @@ playerEventCards.push(
       let maxCount = 0;
       let maxName = null;
       state.board.forEach((tile, bk) => {
+        if (tile.type !== TILE_TYPE.NAMED && tile.type !== TILE_TYPE.BUILDING) return;
         const [tx, ty] = bk.split(",").map(Number);
         let count = 0;
         state.zombies.forEach((zdata, zk) => {
           const [zx, zy] = zk.split(",").map(Number);
-          if (spaceToTileCoord(zx) === tx && spaceToTileCoord(zy) === ty) count += zdata.count;
+          if (spaceToTileCoord(zx) === tx && spaceToTileCoord(zy) === ty) count += zdata.count ?? 1;
         });
         if (count > maxCount) { maxCount = count; maxName = tile.name || bk; }
       });
@@ -245,14 +246,15 @@ playerEventCards.push(
       return `Will send target to ${maxName} (${maxCount} zombie(s)).`;
     },
     apply(player) {
-      // Tally zombies per tile
+      // Tally zombies per building/named tile only
       const tileCounts = new Map();
       state.board.forEach((tile, bk) => {
+        if (tile.type !== TILE_TYPE.NAMED && tile.type !== TILE_TYPE.BUILDING) return;
         const [tx, ty] = bk.split(",").map(Number);
         let count = 0;
         state.zombies.forEach((zdata, zk) => {
           const [zx, zy] = zk.split(",").map(Number);
-          if (spaceToTileCoord(zx) === tx && spaceToTileCoord(zy) === ty) count += zdata.count;
+          if (spaceToTileCoord(zx) === tx && spaceToTileCoord(zy) === ty) count += zdata.count ?? 1;
         });
         if (count > 0) tileCounts.set(bk, { tile, count, tx, ty });
       });
@@ -374,10 +376,11 @@ playerEventCards.push(
       });
 
       // Move zombies off helipad into the pool
-      state.zombies.forEach((_, zk) => {
+      const zombiesToDelete = [...state.zombies.keys()].filter((zk) => {
         const [zx, zy] = zk.split(",").map(Number);
-        if (spaceToTileCoord(zx) === hx && spaceToTileCoord(zy) === hy) state.zombies.delete(zk);
+        return spaceToTileCoord(zx) === hx && spaceToTileCoord(zy) === hy;
       });
+      zombiesToDelete.forEach((zk) => state.zombies.delete(zk));
 
       state.board.delete(helipadKey);
 
@@ -471,6 +474,8 @@ playerEventCards.push(
     collection: { [Z6]: 2 },
     requiresTile: "Liquor Store",
     preview(player) {
+      const tile = getTileAtSpace(player.x, player.y);
+      if (!tile || tile.name !== "Liquor Store") return "Must be in the Liquor Store to play.";
       const gain = 5 - player.hearts;
       if (gain <= 0) return "Already at 5 life — you'd skip a turn with no gain.";
       return `Skip next turn to gain ${gain} life token(s): ${player.hearts} → 5.`;
