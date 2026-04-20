@@ -41,7 +41,7 @@ const opponentEventCards = [
     collection: { [COLLECTIONS.ZOMBIE_CORPS_E_]: 2 },
     preview(player) {
       const target = state.players.find((p) => p.id !== player.id && key(p.x, p.y) === key(player.x, player.y) && p.items && p.items.length > 0);
-      if (!target) return null;
+      if (!target) return "No opponent sharing your space with items in play.";
       return `Can steal from ${target.name}: ${target.items.map((i) => i.name).join(", ")}`;
     },
     canPlay() {

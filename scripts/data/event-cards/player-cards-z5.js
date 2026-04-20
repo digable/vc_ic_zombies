@@ -94,10 +94,13 @@ playerEventCards.push(
         if (player.bullets > 0) parts.push(`${player.bullets} bullets`);
         if (state.useGuts && player.guts > 0) parts.push(`${player.guts} guts`);
         return parts.length > 0
-          ? `−${scalpelCount} to combat rolls. Can pay: ${parts.join(", ")}.`
+          ? `−${scalpelCount} to combat rolls. Can pay to pass: ${parts.join(", ")}.`
           : "−1 to combat rolls. No resources to pass it!";
       }
-      return null;
+      const others = state.players.filter((p) => p.id !== player.id);
+      return others.length > 0
+        ? `Play in a Hospital/Science Center/Lab to give the Scalpel to ${others.map((p) => p.name).join(" or ")}.`
+        : "Play in a Hospital, Science Center, or Lab — Scalpel stays with you (no opponents).";
     },
     apply(player) {
       // The item system already placed this card in player.items.
@@ -556,8 +559,8 @@ playerEventCards.push(
     description: "All bullet tokens are worth half their normal value (2 bullets = +1). Discarded at the end of your next turn.",
     collection: { [Z5]: 2 },
     preview() {
-      if (state.pillowFightCount > 0) return "Already active.";
-      return null;
+      if (state.pillowFightCount > 0) return `Already active — ${state.pillowFightCount} turn(s) remaining.`;
+      return `Bullets worth half value (2 = +1) for ${state.players.length + 1} turns.`;
     },
     apply(player) {
       state.pillowFightCount = state.players.length + 1;

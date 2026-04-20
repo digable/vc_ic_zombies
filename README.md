@@ -153,6 +153,7 @@ vc_ic_zombies/
 │           ├── player-cards-z35.js   # NOT_DEAD_YET player cards
 │           ├── player-cards-z4.js    # THE_END (Z4) player cards
 │           ├── player-cards-z5.js    # SCHOOLS_OUT_FOREVER (Z5) player cards
+│           ├── player-cards-z6.js    # SIX_FEET_UNDER (Z6) player cards
 │           ├── player-cards-ic.js    # IOWA_CITY player cards
 │           ├── player-cards-subscription.js # SUBSCRIPTION player cards (no map tiles)
 │           ├── opponent-cards.js     # Opponent disruption cards
