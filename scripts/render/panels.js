@@ -192,7 +192,7 @@ function renderPlayers() {
   refs.currentPlayerCard.innerHTML = `
     <div class="player-card">
       <strong>${cp.name}</strong><br />
-      Hearts: ${cp.hearts} | Bullets: ${cp.bullets}${state.useGuts && cp.guts != null ? ` | Guts: ${cp.guts}` : ""} | Kills: ${cp.kills} | Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}${cp.hasJeep ? " | Jeep" : ""} | KO: ${cp.knockouts || 0}<br />
+      ${getMarkerHtml('heart', 12)} ${cp.hearts} | ${getMarkerHtml('bullet', 8)} ${cp.bullets}${state.useGuts && cp.guts != null ? ` | ${getMarkerHtml('guts', 12)} ${cp.guts}` : ""} | ${getMarkerHtml('kills', 12)} ${cp.kills} |Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}${cp.hasJeep ? " | Jeep" : ""} | KO: ${cp.knockouts || 0}<br />
       Position: Tile (${cptx}, ${cpty}) / Space (${cplx}, ${cply})
     </div>
   `;
@@ -207,13 +207,13 @@ function renderPlayers() {
       ? `<div class="player-item-chips">${p.items.map((it) => `<span class="player-item-chip">${it.name}</span>`).join("")}</div>`
       : "";
     const botdChipsHtml = (p.botdPages && p.botdPages.length > 0)
-      ? `<div class="player-item-chips">${p.botdPages.map(() => `<span class="player-item-chip player-item-chip--botd">BotD Page</span>`).join("")}</div>`
+      ? `<div class="player-item-chips">${p.botdPages.map(() => `<span class="player-item-chip player-item-chip--botd">${getMarkerHtml('botd_page', 10)} BotD Page</span>`).join("")}</div>`
       : "";
     const el = document.createElement("div");
     el.className = "player-card";
     el.innerHTML = `
       <strong>${p.name}</strong><br />
-      Hearts: ${p.hearts} | Bullets: ${p.bullets}${state.useGuts && p.guts != null ? ` | Guts: ${p.guts}` : ""} | Kills: ${p.kills} | Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}${p.hasJeep ? " | Jeep" : ""} | KO: ${p.knockouts || 0}<br />
+      ${getMarkerHtml('heart', 12)} ${p.hearts} | ${getMarkerHtml('bullet', 8)} ${p.bullets}${state.useGuts && p.guts != null ? ` | ${getMarkerHtml('guts', 12)} ${p.guts}` : ""} | ${getMarkerHtml('kills', 12)} ${p.kills} |Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}${p.hasJeep ? " | Jeep" : ""} | KO: ${p.knockouts || 0}<br />
       Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
       ${itemChipsHtml}${botdChipsHtml}
     `;
@@ -446,7 +446,7 @@ function renderCombatDecision() {
       Rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}) — need ${WIN}+ to win.<br />
       Current total: <span class="combat-roll-total">${roll}</span>
     </div>
-    <div class="combat-resources"><span class="bullet-icon">⬤</span> ${player.bullets}&ensp;·&ensp;❤️ ${player.hearts}${jammed ? `&ensp;·&ensp;<span class="warn">🚫 Weapons Jammed</span>` : ""}</div>
+    <div class="combat-resources">${getMarkerHtml('bullet', 9)} ${player.bullets}&ensp;·&ensp;${getMarkerHtml('heart', 13)} ${player.hearts}${jammed ? `&ensp;·&ensp;<span class="warn">🚫 Weapons Jammed</span>` : ""}</div>
     <div class="combat-decision-actions">
       ${bulletBtn}${rerollBtn}${halfHeartRerollBtn}${fakBtn}${luckyShotBtn}${weaponBtns}${loseBtn}
     </div>
@@ -711,12 +711,12 @@ function renderMeta() {
     const isActive = p.id === activePlayerId;
     return `<span class="player-pip${isActive ? " player-pip--active" : ""}" data-pid="${p.id}">
       <span class="pip-name">${p.name}</span>
-      <span class="pip-stat">♥${p.hearts}</span>
-      <span class="pip-stat pip-stat--bullets">⬤${p.bullets}</span>
-      ${state.useGuts && p.guts != null ? `<span class="pip-stat pip-stat--guts">★${p.guts}</span>` : ""}
-      ${state.useSewerTokens && (p.sewerTokensAvailable > 0) ? `<span class="pip-stat pip-stat--sewer-tokens">S×${p.sewerTokensAvailable}</span>` : ""}
+      <span class="pip-stat">${getMarkerHtml('heart', 11)}${p.hearts}</span>
+      <span class="pip-stat pip-stat--bullets">${getMarkerHtml('bullet', 7)}${p.bullets}</span>
+      ${state.useGuts && p.guts != null ? `<span class="pip-stat pip-stat--guts">${getMarkerHtml('guts', 11)}${p.guts}</span>` : ""}
+      ${state.useSewerTokens && (p.sewerTokensAvailable > 0) ? `<span class="pip-stat pip-stat--sewer-tokens">${getMarkerHtml('sewer', 11)}${p.sewerTokensAvailable}</span>` : ""}
       ${state.useSewerTokens && p.inSewer ? `<span class="pip-stat pip-stat--in-sewer">SEWER</span>` : ""}
-      <span class="pip-stat pip-stat--kills">☠${p.kills}</span>
+      <span class="pip-stat pip-stat--kills">${getMarkerHtml('kills', 11)}${p.kills}</span>
     </span>`;
   }).join("");
   refs.turnInfo.innerHTML = `<div class="player-strip">${pipsHtml}</div>`;

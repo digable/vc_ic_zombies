@@ -483,13 +483,13 @@
   z-index: 2;
 }
 
-.mark.player                    { background: #2d6a9f; } /* P1 — blue (default) */
+.mark.player                    { background: #2d6a9f; }
 .mark.player[data-pid="P1"]    { background: #2d6a9f; }
-.mark.player[data-pid="P2"]    { background: #c0392b; } /* red */
-.mark.player[data-pid="P3"]    { background: #27ae60; } /* green */
-.mark.player[data-pid="P4"]    { background: #e67e22; } /* orange */
-.mark.player[data-pid="P5"]    { background: #8e44ad; } /* purple */
-.mark.player[data-pid="P6"]    { background: #16a085; } /* teal */
+.mark.player[data-pid="P2"]    { background: #c0392b; }
+.mark.player[data-pid="P3"]    { background: #27ae60; }
+.mark.player[data-pid="P4"]    { background: #e67e22; }
+.mark.player[data-pid="P5"]    { background: #8e44ad; }
+.mark.player[data-pid="P6"]    { background: #16a085; }
 
 @keyframes player-pulse-P1 { 0%, 100% { background: #2d6a9f; } 50% { background: #74b8f0; } }
 @keyframes player-pulse-P2 { 0%, 100% { background: #c0392b; } 50% { background: #f1948a; } }
@@ -504,6 +504,11 @@
 .mark.player.active[data-pid="P4"] { animation: player-pulse-P4 1.2s ease-in-out infinite; }
 .mark.player.active[data-pid="P5"] { animation: player-pulse-P5 1.2s ease-in-out infinite; }
 .mark.player.active[data-pid="P6"] { animation: player-pulse-P6 1.2s ease-in-out infinite; }
+
+@keyframes player-sprite-pulse {
+  0%, 100% { filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5)); }
+  50%       { filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.95)); }
+}
 
 @keyframes trail-pulse-stroke {
   0%, 100% { stroke: #c0392b; }
@@ -1168,77 +1173,62 @@
   outline: inherit;
 }
 
-/* Full inverse of board rotation so pawns are screen-vertical and touch the floor */
+/* Full inverse of board rotation so sprites are screen-vertical and touch the floor */
 #board.iso-view .mark.player {
-  transform: translateZ(2px)
-             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
-             rotateX(calc(-1 * var(--iso-rx, 55deg)));
-}
-#board.iso-view .mark.zombie {
-  transform: translateZ(2px)
-             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
-             rotateX(calc(-1 * var(--iso-rx, 55deg)));
-}
-/* Zombie dog — horizontal dog silhouette instead of upright pawn */
-#board.iso-view .mark.zombie-dog {
-  width: 22px;
-  height: 14px;
-  padding: 0;
+  width: auto;
+  height: auto;
   font-size: 0;
-  background-color: transparent;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 14'><path d='M3 8.5C1 6 1.5 2 3.5 1' stroke='%23384530' stroke-width='2.5' fill='none' stroke-linecap='round'/><ellipse cx='9' cy='10' rx='6' ry='3' fill='%23384530'/><ellipse cx='14' cy='7.5' rx='2.2' ry='3' fill='%23384530'/><circle cx='15.5' cy='6' r='3.5' fill='%23384530'/><ellipse cx='16.5' cy='2.8' rx='2' ry='2.8' fill='%231c2418' transform='rotate(10 16.5 2.8)'/><ellipse cx='18.5' cy='7' rx='2' ry='1.3' fill='%23384530'/><ellipse cx='20' cy='6.5' rx='0.9' ry='0.7' fill='%230a0c08'/><rect x='12.5' y='12.5' width='2.5' height='1.5' rx='0.8' fill='%23384530'/><rect x='6.5' y='12.5' width='2.5' height='1.5' rx='0.8' fill='%23384530'/><circle cx='17' cy='5.8' r='1.4' fill='%23700000'/><circle cx='17' cy='5.8' r='0.8' fill='%23e82828'/></svg>");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center bottom;
+  font-weight: normal;
+  line-height: 0;
+  text-align: left;
+  border-radius: 0;
+  background: transparent;
+  transform: translateZ(2px)
+             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
+             rotateX(calc(-1 * var(--iso-rx, 55deg)));
+}
+/* Sprite has its own head — suppress the CSS pseudo-element */
+#board.iso-view .mark.player::before { display: none; }
+#board.iso-view .mark.player.active { animation: player-sprite-pulse 1.2s ease-in-out infinite; }
+#board.iso-view .mark.zombie {
+  width: auto;
+  height: auto;
+  font-size: 0;
+  font-weight: normal;
+  line-height: 0;
+  text-align: left;
+  border-radius: 0;
+  background: transparent;
+  transform: translateZ(2px)
+             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
+             rotateX(calc(-1 * var(--iso-rx, 55deg)));
+}
+#board.iso-view .mark.zombie::before { display: none; }
+#board.iso-view .mark.zombie::after  { display: none; }
+#board.iso-view .mark.zombie-dog {
+  width: auto;
+  height: auto;
+  background-image: none;
   border-radius: 0;
   outline: none;
-  overflow: visible;
-  position: relative;
-  transform-origin: center bottom;
-  transform: translateZ(2px)
-             rotateZ(calc(-1 * var(--iso-rz, 45deg)))
-             rotateX(calc(-1 * var(--iso-rx, 55deg)));
 }
-#board.iso-view .mark.zombie-dog::before  { display: none; }
-#board.iso-view .mark.zombie-dog::after   { display: none; }
 
-/* Outstretched arms — two bars stacked on the right side */
-#board.iso-view .mark.zombie::after {
-  content: "";
-  position: absolute;
-  width: 7px;
-  height: 3px;
-  background: inherit;
-  left: 100%;
-  top: 3px;
-  border-radius: 1px;
-  box-shadow: 0 5px 0 0 #395b2f;  /* second arm below first */
-  pointer-events: none;
-}
-#board.iso-view .mark.zombie.zombie-enhanced::after {
-  box-shadow: 0 5px 0 0 #4a1a6e;  /* match enhanced body color */
-}
 
 #board.iso-view .mark.token { transform: translateZ(18px); }
 
-/* Token icons in iso mode — replace H/B text with symbol + count */
+/* Token icons in iso mode — sprite SVGs injected by board.js */
 #board.iso-view .mark.token-heart,
 #board.iso-view .mark.token-bullet {
   font-size: 0;
-  min-width: 16px;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
   text-align: center;
 }
 
-#board.iso-view .mark.token-heart::before {
-  content: "♥" attr(data-count);
-  font-size: 0.58rem;
-  color: #f87171;
-}
-
+#board.iso-view .mark.token-heart::before,
 #board.iso-view .mark.token-bullet::before {
-  content: "⬡" attr(data-count);
-  font-size: 0.58rem;
-  color: #fde68a;
+  content: none;
 }
 
 /* ── Vertical walls in iso mode ──────────────────────────────────────── */

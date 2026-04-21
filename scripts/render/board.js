@@ -93,6 +93,8 @@ function toggleIsoView() {
   updateIsoBtnIcon();
   if (refs.isoControls) refs.isoControls.classList.toggle("hidden", !state.isoView);
   applyIsoTransform();
+  _boardCellFps.clear();
+  renderBoard();
   renderPlayerTrailSvg();
 }
 
@@ -351,28 +353,34 @@ function renderBoard() {
               const baseCls = pid === activeId ? "mark player active" : "mark player";
               const pidPlayer = state.players.find((p) => `P${p.id}` === pid);
               const sewerCls = pidPlayer?.inSewer ? " in-sewer" : "";
-              parts.push(`<span class="${baseCls}${sewerCls}" data-pid="${pid}">${pid}</span>`);
+              const content = state.isoView ? getSpriteForPlayer(pidPlayer, 14) : pid;
+              parts.push(`<span class="${baseCls}${sewerCls}" data-pid="${pid}">${content}</span>`);
             });
           }
           if (data.zombieType) {
             if (data.zombieType === ZOMBIE_TYPE.DOG) {
               const dogCount = data.zombieCount ?? 1;
               for (let i = 0; i < dogCount; i++) {
-                parts.push(`<span class="mark zombie zombie-dog">D</span>`);
+                const content = state.isoView ? getSprite('zombie_dog', 20) : 'D';
+                parts.push(`<span class="mark zombie zombie-dog">${content}</span>`);
               }
             } else {
               const zombieCls = data.zombieType === ZOMBIE_TYPE.ENHANCED ? "mark zombie zombie-enhanced" : "mark zombie";
-              parts.push(`<span class="${zombieCls}">Z</span>`);
+              const content = state.isoView ? getSpriteForZombie({ enhanced: data.zombieType === ZOMBIE_TYPE.ENHANCED }, 14) : 'Z';
+              parts.push(`<span class="${zombieCls}">${content}</span>`);
             }
           }
           if (data.hearts > 0) {
-            parts.push(`<span class="mark token token-heart" data-count="${data.hearts}">H${data.hearts}</span>`);
+            const heartContent = state.isoView ? getMarkerHtml('heart', 11) : `H${data.hearts}`;
+            parts.push(`<span class="mark token token-heart" data-count="${data.hearts}">${heartContent}</span>`);
           }
           if (data.bullets > 0) {
-            parts.push(`<span class="mark token token-bullet" data-count="${data.bullets}">B${data.bullets}</span>`);
+            const bulletContent = state.isoView ? getMarkerHtml('bullet', 7) : `B${data.bullets}`;
+            parts.push(`<span class="mark token token-bullet" data-count="${data.bullets}">${bulletContent}</span>`);
           }
           if (state.useSewerTokens && state.sewerTokenSpaces.has(key(sx, sy))) {
-            parts.push(`<span class="mark token token-sewer"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5.2" fill="#3d3028" stroke="#7a6555" stroke-width="0.8"/><line x1="6" y1="1" x2="6" y2="11" stroke="#7a6555" stroke-width="0.7"/><line x1="1" y1="6" x2="11" y2="6" stroke="#7a6555" stroke-width="0.7"/><line x1="2.8" y1="2.8" x2="9.2" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><line x1="9.2" y1="2.8" x2="2.8" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><circle cx="6" cy="6" r="1.4" fill="#7a6555"/></svg></span>`);
+            const sewerContent = state.isoView ? getMarkerHtml('sewer', 11) : `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5.2" fill="#3d3028" stroke="#7a6555" stroke-width="0.8"/><line x1="6" y1="1" x2="6" y2="11" stroke="#7a6555" stroke-width="0.7"/><line x1="1" y1="6" x2="11" y2="6" stroke="#7a6555" stroke-width="0.7"/><line x1="2.8" y1="2.8" x2="9.2" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><line x1="9.2" y1="2.8" x2="2.8" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><circle cx="6" cy="6" r="1.4" fill="#7a6555"/></svg>`;
+            parts.push(`<span class="mark token token-sewer">${sewerContent}</span>`);
           }
           const pzr = pzrState;
           const spaceKey = key(sx, sy);
