@@ -285,7 +285,8 @@ const _SVG_DEFS = {
   <rect x="10" y="15" width="4" height="1" fill="#3a4a2a"/>
 </svg>`,
 
-  // ── MAP TILES (48×48, 3×3 subtile grid) ────────────────────────────────────
+  // ── MAP TILES (48×48, 3×3 subtile grid) — unused, getSpriteForTile not wired up yet ──
+  /*
 
   tile_road_straight: `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="image-rendering:pixelated;shape-rendering:crispEdges">
@@ -538,6 +539,8 @@ const _SVG_DEFS = {
   <rect x="20" y="20" width="8" height="8" fill="#ddd0aa"/>
 </svg>`,
 
+  */ // end unused tile sprites
+
   // ── MARKERS ────────────────────────────────────────────────────────────────
 
   marker_heart: `
@@ -552,7 +555,8 @@ const _SVG_DEFS = {
   <rect x="7" y="4" width="2" height="2" fill="#ff8888"/>
 </svg>`,
 
-  marker_half_heart: `
+  // marker_half_heart — unused (no call site yet)
+  /* marker_half_heart: `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" style="image-rendering:pixelated;shape-rendering:crispEdges">
   <rect x="1" y="3" width="4" height="2" fill="#ff4444"/>
   <rect x="7" y="3" width="4" height="2" fill="#884444"/>
@@ -564,7 +568,7 @@ const _SVG_DEFS = {
   <rect x="7" y="12" width="4" height="2" fill="#884444"/>
   <rect x="2" y="4" width="2" height="3" fill="#ff8888"/>
   <line x1="7" y1="3" x2="7" y2="14" stroke="#222" stroke-width="1"/>
-</svg>`,
+</svg>`, */
 
   marker_bullet: `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 16" style="image-rendering:pixelated;shape-rendering:crispEdges">
@@ -736,17 +740,7 @@ function getSpriteForZombie(zombie, size = 28) {
   return getSprite('zombie_regular', size);
 }
 
-/**
- * getSpriteForTile(tile, size)
- * Maps a tile definition object to the matching tile sprite.
- * Falls back to tile_building for named tiles without a dedicated sprite.
- *
- * Checks (in order): tile.sprite, tile.name keywords, tile.type
- *
- * @param  {{sprite?: string, name?: string, type?: string}} tile
- * @param  {number} size  — default 48 (one full tile)
- * @returns {string}
- */
+// getSpriteForTile — unused until tile image overlay is wired up in board.js
 function getSpriteForTile(tile, size = 48) {
   if (!tile) return '';
 
@@ -789,7 +783,7 @@ function getSpriteForTile(tile, size = 48) {
 
 var _MARKER_KEYS = {
   heart:     'marker_heart',
-  half_heart:'marker_half_heart',
+  // half_heart: 'marker_half_heart', // sprite commented out
   bullet:    'marker_bullet',
   sewer:     'marker_sewer',
   guts:      'marker_guts',
@@ -811,38 +805,5 @@ function getMarkerHtml(type, size) {
   return getSprite(key, size).replace('<svg ', '<svg style="vertical-align:middle;margin:0 1px" ');
 }
 
-// ---------------------------------------------------------------------------
-// ISOMETRIC HELPERS
-// ---------------------------------------------------------------------------
-
-/**
- * wrapSpriteForIso(svgString, tileSize, isoMode)
- * Wraps a sprite in a <div> with correct isometric positioning styles.
- * - bottom-anchored so the sprite stands ON the tile surface
- * - counter-rotation handled by the caller (board.js already does this)
- *
- * @param  {string}  svgString
- * @param  {number}  tileSize   — TILE_DIM from constants.js
- * @param  {boolean} isoMode    — pass state.isoMode
- * @returns {string}             — HTML string
- */
-function wrapSpriteForIso(svgString, tileSize, isoMode) {
-  if (!isoMode) return svgString;
-  return `<div style="
-    position:absolute;
-    bottom:0;
-    left:50%;
-    transform:translateX(-50%);
-    pointer-events:none;
-    z-index:10;
-    image-rendering:pixelated;
-  ">${svgString}</div>`;
-}
-
-/**
- * spriteHeightForTile(tileSize)
- * Characters should be ~1.5× tileSize tall so they read in isometric view.
- */
-function spriteHeightForTile(tileSize) {
-  return Math.round(tileSize * 1.5);
-}
+// wrapSpriteForIso — unused (board.js uses CSS counter-rotation instead)
+// spriteHeightForTile — unused
