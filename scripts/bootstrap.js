@@ -891,7 +891,9 @@ function syncTurnStrip() {
   // Show/hide the forced-discard hint in the End Turn step body.
   var discardHint = document.getElementById("ts-discard-hint");
   if (discardHint) {
-    var isDiscard = state.step === STEP.DISCARD;
+    var _cp = currentPlayer();
+    var _handLimit = (state.useGuts && _cp.guts != null) ? Math.max(1, _cp.guts) : MAX_HAND_SIZE;
+    var isDiscard = state.step === STEP.DISCARD && _cp.hand.length > _handLimit;
     discardHint.style.display = isDiscard ? "" : "none";
     if (isDiscard) {
       discardHint.innerHTML = "Too many cards \u2014 go to the <button class='ts-discard-hint-link' onclick='switchMobileTab(\"hand\")'><strong>Hand</strong></button> tab to discard.";
