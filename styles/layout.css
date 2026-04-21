@@ -1378,3 +1378,15 @@ kbd {
   color: #1a4a1a;
 }
 
+.player-status-chip--bad {
+  background: #f5dada;
+  border-color: #c0443a;
+  color: #6b1a16;
+}
+
+.player-status-chip--info {
+  background: #d8eaf8;
+  border-color: #5a8ab0;
+  color: #1a3a52;
+}
+

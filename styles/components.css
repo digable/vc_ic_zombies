@@ -879,11 +879,6 @@
   margin-left: 0.1em;
 }
 
-.bullet-icon {
-  color: #b8972a;
-  font-size: 0.7em;
-  vertical-align: middle;
-}
 
 /* Save / Load collapsible */
 .save-load-details {
@@ -1173,8 +1168,11 @@
   outline: inherit;
 }
 
-/* Full inverse of board rotation so sprites are screen-vertical and touch the floor */
+/* Full inverse of board rotation so sprites are screen-vertical and centred on their subtile */
 #board.iso-view .mark.player {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: auto;
   height: auto;
   font-size: 0;
@@ -1183,14 +1181,26 @@
   text-align: left;
   border-radius: 0;
   background: transparent;
-  transform: translateZ(2px)
+  transform: translateX(-50%) translateY(-50%) translateZ(2px)
              rotateZ(calc(-1 * var(--iso-rz, 45deg)))
              rotateX(calc(-1 * var(--iso-rx, 55deg)));
 }
+/* Per-slot ground-plane positions — top/left = far/back, bottom/right = near/front.
+   Diagonal spread means board rotation naturally reorders front-to-back depth. */
+#board.iso-view .mark.player[data-slot="0"] { left: 38%; top: 38%; }
+#board.iso-view .mark.player[data-slot="1"] { left: 62%; top: 62%; }
+#board.iso-view .mark.player[data-slot="2"] { left: 62%; top: 38%; }
+#board.iso-view .mark.player[data-slot="3"] { left: 38%; top: 62%; }
+#board.iso-view .mark.player[data-slot="4"] { left: 50%; top: 28%; }
+#board.iso-view .mark.player[data-slot="5"] { left: 50%; top: 72%; }
+
 /* Sprite has its own head — suppress the CSS pseudo-element */
 #board.iso-view .mark.player::before { display: none; }
 #board.iso-view .mark.player.active { animation: player-sprite-pulse 1.2s ease-in-out infinite; }
 #board.iso-view .mark.zombie {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: auto;
   height: auto;
   font-size: 0;
@@ -1199,7 +1209,7 @@
   text-align: left;
   border-radius: 0;
   background: transparent;
-  transform: translateZ(2px)
+  transform: translateX(-50%) translateY(-50%) translateZ(2px)
              rotateZ(calc(-1 * var(--iso-rz, 45deg)))
              rotateX(calc(-1 * var(--iso-rx, 55deg)));
 }

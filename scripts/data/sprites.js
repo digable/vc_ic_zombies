@@ -545,14 +545,19 @@ const _SVG_DEFS = {
 
   marker_heart: `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" style="image-rendering:pixelated;shape-rendering:crispEdges">
-  <rect x="1" y="3" width="4" height="2" fill="#ff4444"/>
-  <rect x="7" y="3" width="4" height="2" fill="#ff4444"/>
-  <rect x="0" y="5" width="14" height="4" fill="#ff4444"/>
-  <rect x="1" y="9" width="12" height="3" fill="#ff4444"/>
-  <rect x="3" y="12" width="8" height="2" fill="#ff4444"/>
-  <rect x="5" y="13" width="4" height="1" fill="#ff4444"/>
-  <rect x="2" y="4" width="2" height="3" fill="#ff8888"/>
-  <rect x="7" y="4" width="2" height="2" fill="#ff8888"/>
+  <!-- 2x-scaled classic 7×6 pixel heart: each logical pixel = 2×2 block -->
+  <!-- top lobes -->
+  <rect x="2"  y="1"  width="4"  height="2" fill="#dd2020"/>
+  <rect x="8"  y="1"  width="4"  height="2" fill="#dd2020"/>
+  <!-- full-width body (rows 1-2 merged) -->
+  <rect x="0"  y="3"  width="14" height="4" fill="#dd2020"/>
+  <!-- tapering bottom -->
+  <rect x="2"  y="7"  width="10" height="2" fill="#dd2020"/>
+  <rect x="4"  y="9"  width="6"  height="2" fill="#dd2020"/>
+  <rect x="6"  y="11" width="2"  height="2" fill="#dd2020"/>
+  <!-- highlights (upper-left of each lobe) -->
+  <rect x="2"  y="1"  width="2"  height="2" fill="#ff6060"/>
+  <rect x="8"  y="1"  width="2"  height="1" fill="#ff6060"/>
 </svg>`,
 
   // marker_half_heart — unused (no call site yet)
@@ -582,18 +587,24 @@ const _SVG_DEFS = {
 
   marker_sewer: `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" style="image-rendering:pixelated;shape-rendering:crispEdges">
-  <!-- manhole cover -->
-  <rect x="1" y="1" width="12" height="12" fill="#445533" rx="0"/>
-  <rect x="2" y="2" width="10" height="10" fill="#334422"/>
-  <!-- grate pattern -->
-  <rect x="3" y="3" width="2" height="2" fill="#556644"/>
-  <rect x="7" y="3" width="2" height="2" fill="#556644"/>
-  <rect x="5" y="5" width="2" height="2" fill="#556644"/>
-  <rect x="9" y="5" width="2" height="2" fill="#556644"/>
-  <rect x="3" y="7" width="2" height="2" fill="#556644"/>
-  <rect x="7" y="7" width="2" height="2" fill="#556644"/>
-  <rect x="5" y="9" width="2" height="2" fill="#556644"/>
-  <rect x="9" y="9" width="2" height="2" fill="#556644"/>
+  <!-- pixel circle rim — clipped corners give roundness -->
+  <rect x="4"  y="0"  width="6"  height="14" fill="#445533"/>
+  <rect x="0"  y="4"  width="14" height="6"  fill="#445533"/>
+  <rect x="2"  y="1"  width="10" height="12" fill="#445533"/>
+  <rect x="1"  y="2"  width="12" height="10" fill="#445533"/>
+  <!-- inner dark fill -->
+  <rect x="4"  y="1"  width="6"  height="12" fill="#334422"/>
+  <rect x="1"  y="4"  width="12" height="6"  fill="#334422"/>
+  <rect x="2"  y="2"  width="10" height="10" fill="#334422"/>
+  <!-- grate lines — cross + ring -->
+  <rect x="6"  y="2"  width="2"  height="10" fill="#556644"/>
+  <rect x="2"  y="6"  width="10" height="2"  fill="#556644"/>
+  <rect x="4"  y="3"  width="6"  height="1"  fill="#556644"/>
+  <rect x="4"  y="10" width="6"  height="1"  fill="#556644"/>
+  <rect x="3"  y="4"  width="1"  height="6"  fill="#556644"/>
+  <rect x="10" y="4"  width="1"  height="6"  fill="#556644"/>
+  <!-- centre highlight -->
+  <rect x="6"  y="6"  width="2"  height="2"  fill="#667755"/>
 </svg>`,
 
   marker_guts: `
@@ -740,7 +751,7 @@ function getSpriteForZombie(zombie, size = 28) {
   return getSprite('zombie_regular', size);
 }
 
-// getSpriteForTile — unused until tile image overlay is wired up in board.js
+/* getSpriteForTile — unused until tile image overlay is wired up in board.js
 function getSpriteForTile(tile, size = 48) {
   if (!tile) return '';
 
@@ -775,7 +786,7 @@ function getSpriteForTile(tile, size = 48) {
   // Named building fallback
   if (tile.name)                         return getSprite('tile_building',        size);
   return '';
-}
+} */
 
 // ---------------------------------------------------------------------------
 // MARKER HELPER
@@ -795,7 +806,7 @@ var _MARKER_KEYS = {
  * getMarkerHtml(type, size)
  * Returns an inline-ready SVG for a marker token, vertically aligned for text contexts.
  *
- * @param  {string} type  — 'heart' | 'half_heart' | 'bullet' | 'sewer' | 'guts' | 'botd_page'
+ * @param  {string} type  — 'heart' | 'bullet' | 'sewer' | 'guts' | 'botd_page' | 'kills'
  * @param  {number} size  — rendered pixel width
  * @returns {string}
  */

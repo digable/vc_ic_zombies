@@ -349,12 +349,12 @@ function renderBoard() {
 
           if (data.players.length) {
             const activeId = `P${getActivePlayerId()}`;
-            data.players.forEach((pid) => {
+            data.players.forEach((pid, slotIdx) => {
               const baseCls = pid === activeId ? "mark player active" : "mark player";
               const pidPlayer = state.players.find((p) => `P${p.id}` === pid);
               const sewerCls = pidPlayer?.inSewer ? " in-sewer" : "";
               const content = state.isoView ? getSpriteForPlayer(pidPlayer, 14) : pid;
-              parts.push(`<span class="${baseCls}${sewerCls}" data-pid="${pid}">${content}</span>`);
+              parts.push(`<span class="${baseCls}${sewerCls}" data-pid="${pid}" data-slot="${slotIdx}">${content}</span>`);
             });
           }
           if (data.zombieType) {
@@ -372,11 +372,11 @@ function renderBoard() {
           }
           if (data.hearts > 0) {
             const heartContent = state.isoView ? getMarkerHtml('heart', 11) : `H${data.hearts}`;
-            parts.push(`<span class="mark token token-heart" data-count="${data.hearts}">${heartContent}</span>`);
+            parts.push(`<span class="mark token token-heart">${heartContent}</span>`);
           }
           if (data.bullets > 0) {
             const bulletContent = state.isoView ? getMarkerHtml('bullet', 7) : `B${data.bullets}`;
-            parts.push(`<span class="mark token token-bullet" data-count="${data.bullets}">${bulletContent}</span>`);
+            parts.push(`<span class="mark token token-bullet">${bulletContent}</span>`);
           }
           if (state.useSewerTokens && state.sewerTokenSpaces.has(key(sx, sy))) {
             const sewerContent = state.isoView ? getMarkerHtml('sewer', 11) : `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5.2" fill="#3d3028" stroke="#7a6555" stroke-width="0.8"/><line x1="6" y1="1" x2="6" y2="11" stroke="#7a6555" stroke-width="0.7"/><line x1="1" y1="6" x2="11" y2="6" stroke="#7a6555" stroke-width="0.7"/><line x1="2.8" y1="2.8" x2="9.2" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><line x1="9.2" y1="2.8" x2="2.8" y2="9.2" stroke="#7a6555" stroke-width="0.7"/><circle cx="6" cy="6" r="1.4" fill="#7a6555"/></svg>`;

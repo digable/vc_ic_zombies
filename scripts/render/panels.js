@@ -182,41 +182,77 @@ function renderEventDeckInfo(previewDeck) {
   `;
 }
 
+function buildPlayerCardHtml(p, tx, ty, lx, ly) {
+  const gutsHtml     = state.useGuts && p.guts != null ? ` | ${getMarkerHtml('guts', 12)} ${p.guts}` : "";
+  const sewerTokHtml = state.useSewerTokens ? ` | ${getMarkerHtml('sewer', 11)} ${p.sewerTokensAvailable}` : "";
+  const resourcesHtml = `${getMarkerHtml('heart', 12)} ${p.hearts} | ${getMarkerHtml('bullet', 8)} ${p.bullets}${gutsHtml}${sewerTokHtml} | ${getMarkerHtml('kills', 12)} ${p.kills}`;
+
+  const bonusParts = [`Atk: ${p.attack || 0}`];
+  if (p.tempCombatBonus)  bonusParts.push(`+${p.tempCombatBonus} (turn)`);
+  if (p.tileCombatBonus)  bonusParts.push(`+${p.tileCombatBonus} (tile)`);
+  if (p.shotgunCharges)   bonusParts.push(`Shotgun ×${p.shotgunCharges}`);
+  if (p.movementBonus)    bonusParts.push(`Move +${p.movementBonus}`);
+  if (p.dieRollPenalty)   bonusParts.push(`Die -${p.dieRollPenalty}`);
+  if (p.hasJeep)          bonusParts.push("Jeep");
+  if (p.hasBike)          bonusParts.push("Bike");
+  bonusParts.push(`KO: ${p.knockouts || 0}`);
+
+  const statusChips = [];
+  if (p.knockedOut)               statusChips.push({ label: "Knocked Out",                   bad: true });
+  if (p.inSewer)                  statusChips.push({ label: "In Sewer",                       bad: false });
+  if (p.cannotMoveTurns > 0)      statusChips.push({ label: `Can't Move (${p.cannotMoveTurns})`, bad: true });
+  if (p.cannotPlayCardTurns > 0)  statusChips.push({ label: `No Cards (${p.cannotPlayCardTurns})`, bad: true });
+  if (p.noCombatThisTurn)         statusChips.push({ label: "No Combat",                      bad: true });
+  if (p.halfMovementNextTurn)     statusChips.push({ label: "Half Move (next turn)",           bad: true });
+  if (p.claustrophobiaActive)     statusChips.push({ label: "Claustrophobia",                 bad: true });
+  if (p.brainCramp)               statusChips.push({ label: `Brain Cramp: ${p.brainCramp}`,  bad: true });
+  if (p.smellEffect)              statusChips.push({ label: `Smell: ${p.smellEffect}`,        bad: false });
+  if (p.zombieAllyActive)         statusChips.push({ label: "Zombie Ally",                    bad: false });
+  if (p.maxMoveNextTurn != null)  statusChips.push({ label: `Max Move: ${p.maxMoveNextTurn}`, bad: true });
+  if (p.forcedDirection)          statusChips.push({ label: `Forced: ${p.forcedDirection}`,   bad: true });
+  if (p.mustMoveTowardTile)       statusChips.push({ label: "Must Move Toward Tile",          bad: true });
+
+  const statusHtml = statusChips.length
+    ? `<div class="player-item-chips">${statusChips.map((c) =>
+        `<span class="player-item-chip player-status-chip${c.bad ? " player-status-chip--bad" : " player-status-chip--info"}">${c.label}</span>`
+      ).join("")}</div>`
+    : "";
+
+  const itemChipsHtml = (p.items && p.items.length > 0)
+    ? `<div class="player-item-chips">${p.items.map((it) => `<span class="player-item-chip">${it.name}</span>`).join("")}</div>`
+    : "";
+  const botdChipsHtml = (p.botdPages && p.botdPages.length > 0)
+    ? `<div class="player-item-chips">${p.botdPages.map(() =>
+        `<span class="player-item-chip player-item-chip--botd">${getMarkerHtml('botd_page', 10)} BotD Page</span>`
+      ).join("")}</div>`
+    : "";
+
+  return `
+    <strong>${p.name}</strong><br />
+    ${resourcesHtml}<br />
+    ${bonusParts.join(" | ")}<br />
+    Position: Tile (${tx}, ${ty}) / Space (${lx}, ${ly})
+    ${statusHtml}${itemChipsHtml}${botdChipsHtml}
+  `;
+}
+
 function renderPlayers() {
   const cp = currentPlayer();
-  const cptx = spaceToTileCoord(cp.x);
-  const cpty = spaceToTileCoord(cp.y);
-  const cplx = getLocalCoord(cp.x, cptx);
-  const cply = getLocalCoord(cp.y, cpty);
-
-  refs.currentPlayerCard.innerHTML = `
-    <div class="player-card">
-      <strong>${cp.name}</strong><br />
-      ${getMarkerHtml('heart', 12)} ${cp.hearts} | ${getMarkerHtml('bullet', 8)} ${cp.bullets}${state.useGuts && cp.guts != null ? ` | ${getMarkerHtml('guts', 12)} ${cp.guts}` : ""} | ${getMarkerHtml('kills', 12)} ${cp.kills} |Attack: ${cp.attack || 0}${cp.tempCombatBonus ? ` (+${cp.tempCombatBonus} turn)` : ""}${cp.shotgunCharges ? ` | Shotgun: ${cp.shotgunCharges}` : ""}${cp.movementBonus ? ` | Move +${cp.movementBonus}` : ""}${cp.hasJeep ? " | Jeep" : ""} | KO: ${cp.knockouts || 0}<br />
-      Position: Tile (${cptx}, ${cpty}) / Space (${cplx}, ${cply})
-    </div>
-  `;
+  refs.currentPlayerCard.innerHTML = `<div class="player-card">${buildPlayerCardHtml(
+    cp,
+    spaceToTileCoord(cp.x), spaceToTileCoord(cp.y),
+    getLocalCoord(cp.x, spaceToTileCoord(cp.x)), getLocalCoord(cp.y, spaceToTileCoord(cp.y))
+  )}</div>`;
 
   refs.playersList.innerHTML = "";
   state.players.forEach((p) => {
-    const ptx = spaceToTileCoord(p.x);
-    const pty = spaceToTileCoord(p.y);
-    const plx = getLocalCoord(p.x, ptx);
-    const ply = getLocalCoord(p.y, pty);
-    const itemChipsHtml = (p.items && p.items.length > 0)
-      ? `<div class="player-item-chips">${p.items.map((it) => `<span class="player-item-chip">${it.name}</span>`).join("")}</div>`
-      : "";
-    const botdChipsHtml = (p.botdPages && p.botdPages.length > 0)
-      ? `<div class="player-item-chips">${p.botdPages.map(() => `<span class="player-item-chip player-item-chip--botd">${getMarkerHtml('botd_page', 10)} BotD Page</span>`).join("")}</div>`
-      : "";
     const el = document.createElement("div");
     el.className = "player-card";
-    el.innerHTML = `
-      <strong>${p.name}</strong><br />
-      ${getMarkerHtml('heart', 12)} ${p.hearts} | ${getMarkerHtml('bullet', 8)} ${p.bullets}${state.useGuts && p.guts != null ? ` | ${getMarkerHtml('guts', 12)} ${p.guts}` : ""} | ${getMarkerHtml('kills', 12)} ${p.kills} |Attack: ${p.attack || 0}${p.tempCombatBonus ? ` (+${p.tempCombatBonus} turn)` : ""}${p.shotgunCharges ? ` | Shotgun: ${p.shotgunCharges}` : ""}${p.movementBonus ? ` | Move +${p.movementBonus}` : ""}${p.hasJeep ? " | Jeep" : ""} | KO: ${p.knockouts || 0}<br />
-      Position: Tile (${ptx}, ${pty}) / Space (${plx}, ${ply})
-      ${itemChipsHtml}${botdChipsHtml}
-    `;
+    el.innerHTML = buildPlayerCardHtml(
+      p,
+      spaceToTileCoord(p.x), spaceToTileCoord(p.y),
+      getLocalCoord(p.x, spaceToTileCoord(p.x)), getLocalCoord(p.y, spaceToTileCoord(p.y))
+    );
     refs.playersList.appendChild(el);
   });
 }
@@ -742,7 +778,7 @@ function renderKnockoutBanner() {
     <span class="knockout-banner-icon">💀</span>
     <span class="knockout-banner-body">
       <strong>${ko.playerName} was knocked out</strong>
-      <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at ${ko.respawnName ?? "Town Square"} with ❤️ 3 &ensp; <span class="bullet-icon">⬤</span> 3${ko.resetGuts != null ? ` &ensp; 🩸 ${ko.resetGuts}` : ""}</span>
+      <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at ${ko.respawnName ?? "Town Square"} with ${getMarkerHtml('heart', 12)} 3 &ensp; ${getMarkerHtml('bullet', 8)} 3${ko.resetGuts != null ? ` &ensp; ${getMarkerHtml('guts', 12)} ${ko.resetGuts}` : ""}</span>
     </span>
     <button class="knockout-banner-dismiss" onclick="state.knockoutBanner=null;render()">✕</button>
   `;

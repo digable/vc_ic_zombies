@@ -192,8 +192,8 @@ function attachListeners() {
     if (e.target.matches("input, textarea, select")) return;
     switch (e.key) {
       case "r": case "R": rotatePendingTile(1); break;
-      case "q": case "Q": state.isoRotateZ = (state.isoRotateZ || 45) - 45; applyIsoTransform(); break;
-      case "e": case "E": state.isoRotateZ = (state.isoRotateZ || 45) + 45; applyIsoTransform(); break;
+      case "q": case "Q": state.isoRotateZ -= 45; applyIsoTransform(); break;
+      case "e": case "E": state.isoRotateZ += 45; applyIsoTransform(); break;
       case "x": case "X": state.boardPanX = 0; state.boardPanY = 0; state.boardZoom = 1.0; applyIsoTransform(); break;
       case "z": case "Z": toggleIsoView(); break;
       case "w": case "W": refs.moveDirBtns.find(b => b.dataset.dir === "N")?.click(); break;
