@@ -15,7 +15,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 - **Isometric view** — toggle 3D perspective at any time; tilt/spin sliders, zoom (0.3×–3.0×), click-drag pan; pawns counter-rotate to always face the camera; zombie dogs render as a low dog silhouette
 - **Online multiplayer** — 4-character room codes, host-controlled start, automatic state sync every 1.5 s via polling; rejoining via invite link is always supported
 - **Combat** — d6 + bonuses; spend bullets or hearts to reroll/boost; weapon items; mid-movement combat resolves and resumes; knockout respawns you at the nearest start tile
-- **Zombie AI** — moves toward nearest player each phase; respects walls, doors, and connectors; government-enhanced zombies move 2 spaces; zombie dogs move 2 spaces, deal ½ heart damage, and can stack 2 per subtile
+- **Zombie AI** — moves toward nearest player each phase; respects walls, doors, and connectors; government-enhanced zombies move 2 spaces; zombie dogs move 2 spaces, deal ½ heart damage, and can stack 2 per subtile; zombie clowns use regular stats but have a unique sprite and token
 - **Event cards** — draw up to 3 per turn, play one; includes player buffs, opponent disruption, zombie manipulation, and Book of the Dead page cards (Z4)
 - **Air ducts (Mall Walkers)** — duct subtiles offer teleport to any adjacent duct store; costs your next movement roll; zombies cannot use ducts
 - **Book of the Dead (Z4)** — stage pages in front of you (uses your event play slot); remove one per round for effects; staged pages reduce the Cabin Spell roll target
@@ -62,6 +62,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | Regular | 4+ | 1 space | 1 heart |
 | Government-Enhanced | 5+ | 2 spaces | 1 heart |
 | Zombie Dog | 4+ | 2 spaces | ½ heart |
+| Zombie Clown *(Z7)* | 4+ | 1 space | 1 heart |
 
 ---
 
@@ -76,6 +77,7 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | `THE_END` | Z4 | Standalone / expansion — bridge zone, BOTD pages, Cabin Spell |
 | `SCHOOLS_OUT_FOREVER` | Z5 | Standalone / expansion — school campus; helipad only reachable through a named building's designated rooftop connector |
 | `SIX_FEET_UNDER` | Z6 | Expansion (requires Z1) — tiles and cards mix directly into the base deck; subway stations, sewer token variant rule |
+| `SEND_IN_THE_CLOWNS` | Z7 | Standalone / expansion — circus-themed; introduces zombie clowns; Big Top is a paired two-tile structure (Big Top 1 + Big Top 2 auto-placed, connected N-to-N) |
 | `IOWA_CITY` | IC | Standalone / expansion — Iowa City locations |
 | `SUBSCRIPTION` | SUB | Event cards only — no map tiles; add to any game |
 
@@ -176,6 +178,7 @@ vc_ic_zombies/
 - **Serverless backend** — Vercel functions + MongoDB Atlas for multiplayer sessions and bug reports; polling-based sync (no WebSockets); rate-limited per IP via Atlas TTL collections
 - **Zone isolation** — standalone collection tiles connect only to their own zone except through a gateway tile with a `DISABLE_ON_SOLO` connector; gateway tile unlocks the standalone deck when placed
 - **Connector rule system** — per-connector placement rules on each tile: `SAME` (same collection), `ANY` (any tile), `ONLY` (specific tile name), `DESIGNATED` (requires neighbor to have `ONLY` targeting this tile), and collection-key rules for cross-zone restrictions; bidirectional — both sides of a road connection must agree
+- **Companion tiles** — some tiles auto-place one or more tiles from the deck (or a set-aside reserve) when drawn; companions can be placed with a rotation offset relative to the main tile (e.g. Big Top 2 rotates 180° to connect N-to-N with Big Top 1); `companionOnly: true` tiles are never shuffled into any deck
 - **Mixed-deck expansion** — Z6 tiles and cards have `standaloneDeck: false` and `requiresBase: DIRECTORS_CUT`; they are filtered directly into the main deck by `buildMapDeck()` with no zone isolation or gateway tiles
 
 ---

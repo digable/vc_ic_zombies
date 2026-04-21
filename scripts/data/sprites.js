@@ -258,6 +258,52 @@ const _SVG_DEFS = {
   <rect x="9" y="24" width="6" height="4" fill="#1a0828"/>
 </svg>`,
 
+  zombie_clown: `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 28" style="image-rendering:pixelated;shape-rendering:crispEdges;overflow:visible">
+  <!-- wild orange hair -->
+  <rect x="0" y="0" width="16" height="2" fill="#cc5500"/>
+  <rect x="1" y="2" width="14" height="2" fill="#ee7700"/>
+  <!-- rotting zombie face -->
+  <rect x="3" y="3" width="10" height="6" fill="#7daa6a"/>
+  <!-- glowing red eyes -->
+  <rect x="4" y="5" width="3" height="2" fill="#cc4422"/>
+  <rect x="9" y="5" width="3" height="2" fill="#cc4422"/>
+  <!-- big round red nose -->
+  <rect x="7" y="7" width="2" height="2" fill="#ff2020"/>
+  <!-- wide painted clown smile -->
+  <rect x="3" y="8" width="10" height="2" fill="#ff44aa"/>
+  <rect x="5" y="8" width="1" height="2" fill="#2a0a0a"/>
+  <rect x="8" y="8" width="1" height="2" fill="#2a0a0a"/>
+  <rect x="11" y="8" width="1" height="2" fill="#2a0a0a"/>
+  <!-- white ruffled collar -->
+  <rect x="0" y="10" width="16" height="2" fill="#eeeeee"/>
+  <rect x="2" y="11" width="12" height="2" fill="#dddddd"/>
+  <!-- purple polka-dot suit body -->
+  <rect x="2" y="12" width="12" height="7" fill="#882299"/>
+  <rect x="4" y="13" width="2" height="2" fill="#ffee00"/>
+  <rect x="10" y="13" width="2" height="2" fill="#ffee00"/>
+  <rect x="7" y="16" width="2" height="2" fill="#ffee00"/>
+  <!-- zombie arms (green, one outstretched) -->
+  <rect x="0" y="12" width="2" height="7" fill="#7daa6a"/>
+  <rect x="0" y="12" width="9" height="2" fill="#7daa6a"/>
+  <rect x="14" y="12" width="2" height="7" fill="#7daa6a"/>
+  <!-- clawed hands -->
+  <rect x="0" y="19" width="2" height="2" fill="#6a9a5a"/>
+  <rect x="14" y="19" width="2" height="2" fill="#6a9a5a"/>
+  <!-- baggy striped pants -->
+  <rect x="3" y="19" width="4" height="5" fill="#882299"/>
+  <rect x="9" y="19" width="4" height="5" fill="#882299"/>
+  <rect x="3" y="20" width="4" height="1" fill="#ffee00"/>
+  <rect x="9" y="20" width="4" height="1" fill="#ffee00"/>
+  <rect x="3" y="22" width="4" height="1" fill="#ffee00"/>
+  <rect x="9" y="22" width="4" height="1" fill="#ffee00"/>
+  <!-- huge red clown shoes (overflow viewBox for extra width) -->
+  <rect x="-2" y="24" width="9" height="4" fill="#dd2211"/>
+  <rect x="9"  y="24" width="9" height="4" fill="#dd2211"/>
+  <rect x="-2" y="24" width="9" height="1" fill="#ff4433"/>
+  <rect x="9"  y="24" width="9" height="1" fill="#ff4433"/>
+</svg>`,
+
   zombie_dog: `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16" style="image-rendering:pixelated;shape-rendering:crispEdges;overflow:visible">
   <!-- body -->
@@ -748,6 +794,7 @@ function getSpriteForZombie(zombie, size = 28) {
   if (!zombie) return getSprite('zombie_regular', size);
   if (zombie.dog)                           return getSprite('zombie_dog',   size * 0.6 | 0);
   if (zombie.enhanced || zombie.government) return getSprite('zombie_govt',  size);
+  if (zombie.clown)                         return getSprite('zombie_clown', size);
   return getSprite('zombie_regular', size);
 }
 

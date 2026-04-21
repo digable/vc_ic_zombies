@@ -20,6 +20,7 @@ const ZOMBIE_TYPE = {
   REGULAR:  "regular",
   ENHANCED: "government_enhanced",
   DOG:      "dog",
+  CLOWN:    "clown"
 };
 
 // Per-type zombie stats. Add new types here — combat and movement read from this table.
@@ -32,6 +33,7 @@ const ZOMBIE_TYPES = {
   [ZOMBIE_TYPE.REGULAR]:  { movement: 1, killRoll: 4, maxPerSpace: 1, halfHeartDamage: false, halfHeartReroll: false },
   [ZOMBIE_TYPE.ENHANCED]: { movement: 2, killRoll: 5, maxPerSpace: 1, halfHeartDamage: false, halfHeartReroll: false },
   [ZOMBIE_TYPE.DOG]:      { movement: 2, killRoll: 5, maxPerSpace: 2, halfHeartDamage: true,  halfHeartReroll: true  },
+  [ZOMBIE_TYPE.CLOWN]:    { movement: 1, killRoll: 4, maxPerSpace: 1, halfHeartDamage: false, halfHeartReroll: false },
 };
 
 const MAX_PLAYERS       = 6;   // maximum players allowed in a single game
@@ -84,6 +86,8 @@ const TILE_NAME = {
   HELIPAD_DESIGNATED: "Helipad (designated)",
   ADMIN_BLDG:     "Admin Bldg.",
   SUBWAY_STATION: "Subway Station",
+  BIG_TOP_1:      "Big Top 1",
+  BIG_TOP_2:      "Big Top 2"
 };
 
 // Subtile types — used on individual subtiles within a tile's 3×3 grid (subtile.type)

@@ -209,7 +209,7 @@ function renderBoard() {
         if (state.pendingTile && pendingCoords.has(ck)) {
           cellFp = `po|${ck}|${state.pendingRotation}`;
         } else if (companionPreviewMap.has(ck)) {
-          cellFp = `cp|${companionPreviewMap.get(ck).tile.name}`;
+          cellFp = `cp|${companionPreviewMap.get(ck).tile.name}|${state.pendingRotation}`;
         } else {
           cellFp = "e";
         }
@@ -282,9 +282,10 @@ function renderBoard() {
           const { tile: cTile } = companionPreviewMap.get(ck);
           cell.classList.add("companion-preview");
           cell.classList.add(getTileClassName(cTile));
-          const rotatedConnectors = getRotatedConnectors(cTile.connectors, state.pendingRotation);
+          const companionRotation = (state.pendingRotation + (cTile._rotationOffset || 0)) % 4;
+          const rotatedConnectors = getRotatedConnectors(cTile.connectors, companionRotation);
           const cSourceSubTiles = getTileSubTileMap(cTile);
-          const cRotatedSubTiles = getRotatedSubTiles(cSourceSubTiles, state.pendingRotation);
+          const cRotatedSubTiles = getRotatedSubTiles(cSourceSubTiles, companionRotation);
           const cPreviewTile = {
             type: cTile.type,
             connectors: rotatedConnectors,
@@ -365,8 +366,10 @@ function renderBoard() {
                 parts.push(`<span class="mark zombie zombie-dog">${content}</span>`);
               }
             } else {
-              const zombieCls = data.zombieType === ZOMBIE_TYPE.ENHANCED ? "mark zombie zombie-enhanced" : "mark zombie";
-              const content = state.isoView ? getSpriteForZombie({ enhanced: data.zombieType === ZOMBIE_TYPE.ENHANCED }, 14) : 'Z';
+              const isEnhanced = data.zombieType === ZOMBIE_TYPE.ENHANCED;
+              const isClown = data.zombieType === ZOMBIE_TYPE.CLOWN;
+              const zombieCls = isEnhanced ? "mark zombie zombie-enhanced" : isClown ? "mark zombie zombie-clown" : "mark zombie";
+              const content = state.isoView ? getSpriteForZombie({ enhanced: isEnhanced, clown: isClown }, 14) : isClown ? 'C' : 'Z';
               parts.push(`<span class="${zombieCls}">${content}</span>`);
             }
           }

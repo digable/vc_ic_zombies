@@ -556,6 +556,7 @@ refs.mapDeckDebug = document.getElementById("mapDeckDebug");
 refs.mapDeckDebugCount = document.getElementById("mapDeckDebugCount");
 
 state.mapDeck = buildMapDeck(null);
+state.companionReserve = [];
 state.mapDeck.push(buildTownSquareTile());
 populateTileTypeDropdown();
 populateSpawnModeDropdown();

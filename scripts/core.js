@@ -22,6 +22,7 @@ const COLLECTIONS = {
   THE_END: "the_end",
   SCHOOLS_OUT_FOREVER: "schools_out_forever",
   SIX_FEET_UNDER: "six_feet_under",
+  SEND_IN_THE_CLOWNS: "send_in_the_clowns",
   IOWA_CITY: "iowa_city",
   SUBSCRIPTION: "subscription"
 };
@@ -111,6 +112,18 @@ const COLLECTION_META = {
     description: "Tiles and event cards shuffle directly into the base deck — not zone-isolated. Add to Director's Cut for a fully mixed game.",
     creator: "Based on the Twilight Creations Zombies!!! 6 - Six Feet Under by Todd A. Breitenstein",
     standaloneDeck: false,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SEND_IN_THE_CLOWNS]: {
+    label: "Send in the Clowns",
+    shortCode: "Z7",
+    requiresBase: null,
+    year: 2008,
+    type: "Standalone / Expansion",
+    version: "1.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 7 - Send in the Clowns by Todd A. Breitenstein",
+    standaloneDeck: true,
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.IOWA_CITY]: {
@@ -255,6 +268,7 @@ const state = {
   pendingRotation: 0,
   pendingTileOptions: [],
   pendingCompanionTiles: [], // tiles reserved from deck when main tile is drawn (e.g. Front Gate companions)
+  companionReserve: [],      // set-aside tiles (companionOnly:true) — never in any deck, available to companion lookup
   standaloneDecks: {},          // { [collKey]: tile[] } — one deck per enabled standalone collection
   activeStandaloneDecks: new Set(), // collKeys whose gateway tile is now on the board
   pendingTileDeck: "base",      // "base" | collKey — which deck the current pending tile came from

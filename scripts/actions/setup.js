@@ -75,6 +75,16 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       if (!hasBaseCollection) state.activeStandaloneDecks.add(collKey);
     });
   }
+  // Build reserve of set-aside companion tiles (companionOnly:true) for enabled collections.
+  const allTileDefs = [...roadTiles, ...namedTiles, ...specialTiles];
+  state.companionReserve = allTileDefs
+    .filter((t) => {
+      if (!t.companionOnly) return false;
+      if (!deckFilters) return true;
+      return Object.keys(resolveCollectionCounts(t)).some((c) => deckFilters[c]?.enabled);
+    })
+    .map((t) => ({ ...t }));
+
   state.eventDeck = buildEventDeck(eventFilters ?? deckFilters);
   state.eventDiscardPile = [];
   state.breakthroughConnections = new Set();
@@ -240,10 +250,14 @@ function drawAndPlaceTile(deckId = "base") {
   state.pendingCompanionTiles = [];
 
   if (tile.companionTiles && tile.companionTiles.length > 0) {
-    tile.companionTiles.forEach(({ name }) => {
-      // Search current deck first, then base deck, then all standalone decks.
-      let idx = deck.findIndex((t) => t.name === name);
-      let sourceDeck = deck;
+    tile.companionTiles.forEach(({ name, rotationOffset }) => {
+      // Search companion reserve first (set-aside tiles), then current deck, base deck, standalone decks.
+      let idx = (state.companionReserve || []).findIndex((t) => t.name === name);
+      let sourceDeck = state.companionReserve;
+      if (idx === -1) {
+        idx = deck.findIndex((t) => t.name === name);
+        sourceDeck = deck;
+      }
       if (idx === -1) {
         const baseIdx = state.mapDeck.findIndex((t) => t.name === name);
         if (baseIdx !== -1) { idx = baseIdx; sourceDeck = state.mapDeck; }
@@ -255,9 +269,11 @@ function drawAndPlaceTile(deckId = "base") {
         }
       }
       if (idx !== -1) {
-        state.pendingCompanionTiles.push(sourceDeck.splice(idx, 1)[0]);
+        const companionTile = sourceDeck.splice(idx, 1)[0];
+        if (rotationOffset) companionTile._rotationOffset = rotationOffset;
+        state.pendingCompanionTiles.push(companionTile);
       } else {
-        logLine(`Note: companion tile "${name}" not found in any deck — will be skipped when placed.`);
+        logLine(`Note: companion tile "${name}" not found in any deck or reserve — will be skipped when placed.`);
       }
     });
   }
@@ -330,16 +346,17 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
       return;
     }
 
-    const rotatedConnectors = getRotatedConnectors(companion.connectors, tileRotation);
+    const companionRotation = (tileRotation + (companion._rotationOffset || 0)) % 4;
+    const rotatedConnectors = getRotatedConnectors(companion.connectors, companionRotation);
     const sourceSubTiles = getTileSubTileMap(companion);
-    const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, tileRotation);
-    const companionPlacedRules = getRotatedConnectorRules(companion.connectors, tileRotation);
+    const rotatedSubTiles = getRotatedSubTiles(sourceSubTiles, companionRotation);
+    const companionPlacedRules = getRotatedConnectorRules(companion.connectors, companionRotation);
     addTile(cx, cy, {
       ...companion,
       connectors: rotatedConnectors,
       ...(companionPlacedRules ? { placedConnectorRules: companionPlacedRules } : {}),
       placedDeck: companionDeck,
-      placedRotation: tileRotation,
+      placedRotation: companionRotation,
       ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
     });
     stampFloorForPlacedTile(cx, cy);

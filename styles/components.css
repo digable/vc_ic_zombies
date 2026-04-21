@@ -546,6 +546,12 @@
   outline: 1px solid #cc2020;
 }
 
+.mark.zombie.zombie-clown {
+  background: #7a1a99;
+  color: #ffee00;
+  outline: 1px solid #ff44aa;
+}
+
 .mark.token {
   background: #8f6b40;
 }

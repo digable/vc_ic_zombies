@@ -92,6 +92,7 @@ function serializeState() {
     board:          [...state.board.entries()],
     mapDeck:        state.mapDeck,
     standaloneDecks: state.standaloneDecks,
+    companionReserve: state.companionReserve || [],
     discardPile:    state.discardPile,
 
     // Sets / Maps
@@ -135,6 +136,7 @@ function deserializeState(data) {
   state.board          = new Map(data.board);
   state.mapDeck        = data.mapDeck;
   state.standaloneDecks = data.standaloneDecks;
+  state.companionReserve = data.companionReserve || [];
   state.discardPile    = data.discardPile;
 
   // Sets
