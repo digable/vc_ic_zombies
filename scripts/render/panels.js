@@ -195,6 +195,7 @@ function buildPlayerCardHtml(p, tx, ty, lx, ly) {
   if (p.dieRollPenalty)   bonusParts.push(`Die -${p.dieRollPenalty}`);
   if (p.hasJeep)          bonusParts.push("Jeep");
   if (p.hasBike)          bonusParts.push("Bike");
+  if (p.hasClownCar)      bonusParts.push(p.clownCarPending ? "Clown Car (next turn)" : "Clown Car +2");
   bonusParts.push(`KO: ${p.knockouts || 0}`);
 
   const statusChips = [];
@@ -211,11 +212,15 @@ function buildPlayerCardHtml(p, tx, ty, lx, ly) {
   if (p.maxMoveNextTurn != null)  statusChips.push({ label: `Max Move: ${p.maxMoveNextTurn}`, bad: true });
   if (p.forcedDirection)          statusChips.push({ label: `Forced: ${p.forcedDirection}`,   bad: true });
   if (p.mustMoveTowardTile)       statusChips.push({ label: "Must Move Toward Tile",          bad: true });
+  if (p.hasJeep)                  statusChips.push({ label: "Jeep",                           movement: true });
+  if (p.hasBike)                  statusChips.push({ label: "Bike +2",                        movement: true });
+  if (p.hasClownCar)              statusChips.push({ label: p.clownCarPending ? "Clown Car (next turn)" : "Clown Car +2", movement: true });
 
   const statusHtml = statusChips.length
-    ? `<div class="player-item-chips">${statusChips.map((c) =>
-        `<span class="player-item-chip player-status-chip${c.bad ? " player-status-chip--bad" : " player-status-chip--info"}">${c.label}</span>`
-      ).join("")}</div>`
+    ? `<div class="player-item-chips">${statusChips.map((c) => {
+        const mod = c.movement ? " player-status-chip--movement" : c.bad ? " player-status-chip--bad" : " player-status-chip--info";
+        return `<span class="player-item-chip player-status-chip${mod}">${c.label}</span>`;
+      }).join("")}</div>`
     : "";
 
   const itemChipsHtml = (p.items && p.items.length > 0)
@@ -757,7 +762,8 @@ function renderMeta() {
   }).join("");
   refs.turnInfo.innerHTML = `<div class="player-strip">${pipsHtml}</div>`;
   const jeepHint = cp.hasJeep ? "  |  Jeep: doubles roll on road — entering a building ends it at turn's end" : "";
-  refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}${jeepHint}`;
+  const clownCarHint = cp.hasClownCar && !cp.clownCarPending ? "  |  Clown Car: +2 movement" : "";
+  refs.moveRollOutput.textContent = `Move Roll: ${state.currentMoveRoll ?? "-"} | Remaining: ${state.movesRemaining}${jeepHint}${clownCarHint}`;
   refs.zombieRollOutput.textContent = `Zombie Roll: ${state.currentZombieRoll ?? "-"}`;
   if (state.pendingTile) {
     const companions = state.pendingCompanionTiles && state.pendingCompanionTiles.length > 0
@@ -781,6 +787,24 @@ function renderKnockoutBanner() {
       <span>Lost ${ko.lostKills} kill${ko.lostKills !== 1 ? "s" : ""} — respawned at ${ko.respawnName ?? "Town Square"} with ${getMarkerHtml('heart', 12)} 3 &ensp; ${getMarkerHtml('bullet', 8)} 3${ko.resetGuts != null ? ` &ensp; ${getMarkerHtml('guts', 12)} ${ko.resetGuts}` : ""}</span>
     </span>
     <button class="knockout-banner-dismiss" onclick="state.knockoutBanner=null;render()">✕</button>
+  `;
+  el.classList.remove("hidden");
+}
+
+function renderItemAcquiredBanner() {
+  const el = refs.itemAcquiredBanner;
+  if (!el) return;
+  const b = state.itemAcquiredBanner;
+  if (!b) { clearPanel(el); return; }
+  // Shift down if knockout banner is also visible so they don't overlap.
+  el.classList.toggle("has-knockout", !!state.knockoutBanner);
+  el.innerHTML = `
+    <span class="item-acquired-banner-icon">${b.icon || "★"}</span>
+    <span class="item-acquired-banner-body">
+      <strong>${b.playerName} found a ${b.itemName}!</strong>
+      <span>${b.description}</span>
+    </span>
+    <button class="item-acquired-banner-dismiss" onclick="state.itemAcquiredBanner=null;render()">✕</button>
   `;
   el.classList.remove("hidden");
 }

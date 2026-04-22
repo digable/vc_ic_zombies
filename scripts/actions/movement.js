@@ -19,12 +19,23 @@ function checkJeepDoorOffer(player) {
     resolve(choice) {
       if (choice === "acquire") {
         player.hasJeep = true;
+        state.itemAcquiredBanner = { playerName: player.name, itemName: "Jeep", icon: "🚗", description: "Movement doubles while on roads. Lost if you start a turn inside a building." };
         logLine(`${player.name} acquired a jeep! Movement doubles while on roads.`);
       } else {
         logLine(`${player.name} left the jeep behind.`);
       }
     }
   };
+}
+
+function checkClownCarAward(player) {
+  if (player.hasClownCar) return;
+  const tile = getTileAtSpace(player.x, player.y);
+  if (!tile || (tile.name !== TILE_NAME.BIG_TOP_1 && tile.name !== TILE_NAME.BIG_TOP_2)) return;
+  player.hasClownCar = true;
+  player.clownCarPending = true;
+  state.itemAcquiredBanner = { playerName: player.name, itemName: "Clown Car", icon: "★", description: "+2 to all movement rolls. Active from next turn." };
+  logLine(`${player.name} found a Clown Car at the ${tile.name}! +2 movement starting next turn.`);
 }
 
 function checkSubwayOffer(player) {
@@ -282,6 +293,10 @@ function rollMovement() {
     move = Math.floor(move / 2);
     player.halfMovementNextTurn = false;
     logLine(`${player.name}'s movement is halved (Your Shoe's Untied) — ${move} space(s).`);
+  }
+  if (player.hasClownCar && !player.clownCarPending) {
+    move += 2;
+    logLine(`${player.name}'s Clown Car adds +2 movement — ${move} space(s).`);
   }
   if (player.hasJeep) {
     const jeepTile = getTileAtSpace(player.x, player.y);
@@ -725,6 +740,9 @@ function movePlayer(dir) {
   if (state.movesRemaining <= 0) {
     moveToZombiePhase();
   }
+
+  // Award Clown Car when player enters either Big Top tile (no offer needed — automatic).
+  checkClownCarAward(player);
 
   // Offer jeep when player enters the Motor Pool door subtile and doesn't already have one.
   checkJeepDoorOffer(player);

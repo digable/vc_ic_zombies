@@ -273,7 +273,8 @@ const state = {
   activeStandaloneDecks: new Set(), // collKeys whose gateway tile is now on the board
   pendingTileDeck: "base",      // "base" | collKey — which deck the current pending tile came from
   playerTrail: [], // ordered space keys visited this turn: [startKey, ...moves]
-  knockoutBanner: null, // { playerName, lostKills } — shown briefly after knockout
+  knockoutBanner: null,      // { playerName, lostKills } — shown briefly after knockout
+  itemAcquiredBanner: null,  // { playerName, itemName, description } — shown briefly when movement item obtained
   recentKillKey: null,
   recentKillByPlayerId: null,
   zombieMovedSpaces: new Set(), // space keys where zombies arrived this turn — cleared at turn end
@@ -361,6 +362,7 @@ const refs = {
   gameOverMessage: document.getElementById("gameOverMessage"),
   gameOverNewGameBtn: document.getElementById("gameOverNewGameBtn"),
   knockoutBanner: document.getElementById("knockoutBanner"),
+  itemAcquiredBanner: document.getElementById("itemAcquiredBanner"),
   isoToggleBtn:  document.getElementById("isoToggleBtn"),
   isoControls:   document.getElementById("isoControls"),
   isoTiltSlider: document.getElementById("isoTiltSlider"),

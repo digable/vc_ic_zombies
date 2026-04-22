@@ -341,6 +341,7 @@ playerEventCards.push(
     apply(player) {
       player.hasBike = true;
       player.movementBonus = (player.movementBonus || 0) + 2;
+      state.itemAcquiredBanner = { playerName: player.name, itemName: "Bike", icon: "🚲", description: "+2 to all movement rolls while on non-building tiles." };
       logLine(`${player.name} placed I've got a bike! — +2 to all movement rolls while in play.`);
     }
   },

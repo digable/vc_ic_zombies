@@ -54,6 +54,7 @@ function endTurn() {
   outgoing.tileHijackNotify = null;
   outgoing.claustrophobiaActive = false;
   outgoing.halfMovementNextTurn = false;
+  if (outgoing.clownCarPending) outgoing.clownCarPending = false;
   outgoing.brainCramp = null;
   outgoing.mustMoveTowardTile = null;
   outgoing.movementHijack = null;

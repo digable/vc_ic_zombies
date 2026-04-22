@@ -217,6 +217,7 @@ function deserializeState(data) {
   state.lastCombatResult         = null;
   state.recentKillKey            = null;
   state.knockoutBanner           = null;
+  state.itemAcquiredBanner       = null;
   state.currentZombieRoll        = null;
   state.zombieMovedSpaces        = new Set();
   if (state.zombieAnimationTimer !== null) {

@@ -35,6 +35,8 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       knockouts: 0,
       hasJeep: false,
       hasBike: false,
+      hasClownCar: false,
+      clownCarPending: false,
       smellEffect: null,
       itemsUsedThisTurn: [],
       dieRollPenalty: 0,

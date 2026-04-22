@@ -167,6 +167,7 @@ function render() {
   renderMoveStatus();
   renderGameOver();
   renderKnockoutBanner();
+  renderItemAcquiredBanner();
   renderSaveLoadPanel();
   if (typeof syncTurnStrip === "function") syncTurnStrip();
   if (typeof renderMobileHandPanel === "function") renderMobileHandPanel();
