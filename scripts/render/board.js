@@ -514,10 +514,17 @@ function renderPlayerTrailSvg() {
   const NS = "http://www.w3.org/2000/svg";
   const boardRect = refs.board.getBoundingClientRect();
 
+  // Build sx,sy → element map in one pass so per-point lookup is O(1).
+  // Previously this did a querySelector per trail point, which scans the
+  // entire board subtree (81+ micro-cells) every time.
+  const cellByKey = new Map();
+  refs.board.querySelectorAll("[data-sx]").forEach((el) => {
+    cellByKey.set(`${el.dataset.sx},${el.dataset.sy}`, el);
+  });
+
   const points = [];
   for (const spaceKey of state.playerTrail) {
-    const { x: sx, y: sy } = parseKey(spaceKey);
-    const cell = refs.board.querySelector(`[data-sx="${sx}"][data-sy="${sy}"]`);
+    const cell = cellByKey.get(spaceKey);
     if (!cell) continue;
     const r = cell.getBoundingClientRect();
     points.push({ x: r.left - boardRect.left + r.width / 2, y: r.top - boardRect.top + r.height / 2 });

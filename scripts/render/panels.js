@@ -233,7 +233,7 @@ function buildPlayerCardHtml(p, tx, ty, lx, ly) {
     : "";
 
   return `
-    <strong>${p.name}</strong><br />
+    <strong>${escapeHtml(p.name)}</strong><br />
     ${resourcesHtml}<br />
     ${bonusParts.join(" | ")}<br />
     Position: Tile (${tx}, ${ty}) / Space (${lx}, ${ly})
@@ -482,7 +482,7 @@ function renderCombatDecision() {
 
   panel.classList.remove("hidden");
   panel.innerHTML = `
-    <div class="combat-decision-title">Combat vs ${zombieLabel}: ${player.name}</div>
+    <div class="combat-decision-title">Combat vs ${zombieLabel}: ${escapeHtml(player.name)}</div>
     <div class="small">
       Rolled ${pending.baseRoll} (d6 ${pending.roll} + attack ${pending.permanentBonus} + temp ${pending.tempBonus}) — need ${WIN}+ to win.<br />
       Current total: <span class="combat-roll-total">${roll}</span>
@@ -506,21 +506,21 @@ function renderZombieDiceChallenge() {
 
   const failing = pzdc.dice.filter((d) => d <= 3);
   const outcome = failing.length > 0
-    ? `<span style="color:#c0392b">Fail — ${failing.length} die(dice) ≤ 3. ${target.name} loses 2 kills.</span>`
+    ? `<span style="color:#c0392b">Fail — ${failing.length} die(dice) ≤ 3. ${escapeHtml(target.name)} loses 2 kills.</span>`
     : `<span style="color:#27ae60">Pass — all dice above 3. No kills lost.</span>`;
 
   panel.classList.remove("hidden");
   panel.innerHTML = `
-    <div class="combat-decision-title">Zombie Dice Challenge — ${target.name}</div>
+    <div class="combat-decision-title">Zombie Dice Challenge — ${escapeHtml(target.name)}</div>
     <div class="small">
       Dice: [${pzdc.dice.join("] [")}] — ${outcome}<br/>
-      ${target.name} may spend bullets or hearts to modify the dice.
+      ${escapeHtml(target.name)} may spend bullets or hearts to modify the dice.
     </div>
     <div class="combat-decision-actions">
-      <button data-zdice-action="B0" ${target.bullets > 0 ? "" : "disabled"}>Spend Bullet (+1 to die 1: ${pzdc.dice[0]})</button>
-      <button data-zdice-action="B1" ${target.bullets > 0 ? "" : "disabled"}>Spend Bullet (+1 to die 2: ${pzdc.dice[1]})</button>
-      <button data-zdice-action="H0" ${target.hearts > 0 ? "" : "disabled"}>Spend Heart (reroll die 1: ${pzdc.dice[0]})</button>
-      <button data-zdice-action="H1" ${target.hearts > 0 ? "" : "disabled"}>Spend Heart (reroll die 2: ${pzdc.dice[1]})</button>
+      <button data-zdice-action="B0" ${target.bullets > 0 && pzdc.dice[0] < 4 ? "" : "disabled"}>Spend Bullet (die 1: ${pzdc.dice[0]} → ${pzdc.dice[0] + 1})</button>
+      <button data-zdice-action="B1" ${target.bullets > 0 && pzdc.dice[1] < 4 ? "" : "disabled"}>Spend Bullet (die 2: ${pzdc.dice[1]} → ${pzdc.dice[1] + 1})</button>
+      <button data-zdice-action="H0" ${target.hearts > 0 && pzdc.dice[0] < 4 ? "" : "disabled"}>Spend Heart (reroll die 1: ${pzdc.dice[0]})</button>
+      <button data-zdice-action="H1" ${target.hearts > 0 && pzdc.dice[1] < 4 ? "" : "disabled"}>Spend Heart (reroll die 2: ${pzdc.dice[1]})</button>
       <button data-zdice-action="ACCEPT">Accept Result</button>
     </div>
   `;
@@ -707,11 +707,11 @@ function renderEventChoice() {
     })
     .join("");
   const subtitle = pending.targetName
-    ? `<div class="small">${player.name} chooses what to take from ${pending.targetName}.</div>`
+    ? `<div class="small">${escapeHtml(player.name)} chooses what to take from ${escapeHtml(pending.targetName)}.</div>`
     : "";
   const titleText = pending.title || `Card Choice: ${pending.cardName}`;
   panel.innerHTML = `
-    <div class="combat-decision-title">${titleText} — ${player.name}</div>
+    <div class="combat-decision-title">${titleText} — ${escapeHtml(player.name)}</div>
     ${subtitle}
     <div class="combat-decision-actions">${buttons}</div>
   `;
@@ -729,7 +729,7 @@ function renderDuctChoice() {
     .map((d, i) => `<button data-duct-dest="${i}">${d.tileName}</button>`)
     .join("");
   panel.innerHTML = `
-    <div class="combat-decision-title">Air Duct — ${player.name}</div>
+    <div class="combat-decision-title">Air Duct — ${escapeHtml(player.name)}</div>
     <div class="small">Using the duct costs your next movement roll. Choose a destination store, or stay here.</div>
     <div class="combat-decision-actions">
       ${destButtons}
@@ -741,7 +741,7 @@ function renderDuctChoice() {
 function renderLog() {
   refs.log.innerHTML = state.logs.map((entry) => {
     const typeClass = entry.type ? ` log-line--${entry.type}` : "";
-    return `<div class="log-line${typeClass}">${entry.text}</div>`;
+    return `<div class="log-line${typeClass}">${escapeHtml(entry.text)}</div>`;
   }).join("");
 }
 
@@ -751,7 +751,7 @@ function renderMeta() {
   const pipsHtml = state.players.map((p) => {
     const isActive = p.id === activePlayerId;
     return `<span class="player-pip${isActive ? " player-pip--active" : ""}" data-pid="${p.id}">
-      <span class="pip-name">${p.name}</span>
+      <span class="pip-name">${escapeHtml(p.name)}</span>
       <span class="pip-stat">${getMarkerHtml('heart', 11)}${p.hearts}</span>
       <span class="pip-stat pip-stat--bullets">${getMarkerHtml('bullet', 7)}${p.bullets}</span>
       ${state.useGuts && p.guts != null ? `<span class="pip-stat pip-stat--guts">${getMarkerHtml('guts', 11)}${p.guts}</span>` : ""}

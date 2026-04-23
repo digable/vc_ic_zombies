@@ -17,6 +17,7 @@ function playerHasNoCombat(player) {
 
 function isCombatRequiredForCurrentPlayer() {
   const player = currentPlayer();
+  if (player.inSewer) return false;
   if (playerHasNoCombat(player)) {
     return false;
   }

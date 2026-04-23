@@ -1,0 +1,276 @@
+// --- Zombies!!! (Director's Cut) — Named Tiles ------------------------------
+const namedTilesZ1 = [
+  {
+    name: "Town Square",
+    type: "town",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    isStartTile: true,
+    connectors: { N: CONNECTOR_RULE.SAME, E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+      "1,0": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,0": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: true, type: "grass", walls: ["N", "E", "S", "W"] }
+    }
+  },
+  {
+    name: "Army Surplus",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 2 },
+    hearts: 0,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road", walls: ["S"] },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: false },
+      "1,2": { walkable: false },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Gas Station",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 1,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Police Station",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
+    hearts: 2,
+    bullets: 4,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "parking", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "parking", walls: ["N"] }
+    }
+  },
+  {
+    name: "Hospital",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 8 },
+    hearts: 4,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+    }
+  },
+  {
+    name: "Drug Store",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 3,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road", walls: ["S"] },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: false },
+      "1,2": { walkable: false },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Fire Station",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
+    hearts: 4,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "road", walls: ["N"], doors: ["W"] },
+      "1,1": { walkable: true, type: "road", walls: ["E"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "W"] },
+      "0,2": { walkable: true, type: "parking" },
+      "1,2": { walkable: true, type: "road", walls: ["E"] },
+      "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+    }
+  },
+  {
+    name: "Toy Store",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 1,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N", "S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+      "1,1": { walkable: true, type: "road", walls: ["N"] },
+      "2,1": { walkable: true, type: "road", walls: ["N"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Skate Shop",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 0,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Florist",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME, W: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 1,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "S", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Sporting Goods Store",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
+    hearts: 2,
+    bullets: 4,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "parking", walls: ["N"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: true, type: "parking", walls: ["N"] }
+    }
+  },
+  {
+    name: "Lawn & Garden Store",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 6 },
+    hearts: 2,
+    bullets: 3,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road", walls: ["E", "W"] },
+      "2,2": { walkable: true, type: "building", walls: ["E", "S", "W"] }
+    }
+  },
+  {
+    name: "Hardware Store",
+    type: "named",
+    collection: { [COLLECTIONS.DIRECTORS_CUT]: 1 },
+    connectors: { E: CONNECTOR_RULE.SAME, S: CONNECTOR_RULE.SAME },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: { [ZOMBIE_TYPE.REGULAR]: 3 },
+    hearts: 1,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"], doors: ["S"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E", "S"] },
+      "0,1": { walkable: true, type: "building", walls: ["W"], doors: ["E"] },
+      "1,1": { walkable: true, type: "road" },
+      "2,1": { walkable: true, type: "road", walls: ["N", "S"] },
+      "0,2": { walkable: true, type: "building", walls: ["E", "S", "W"] },
+      "1,2": { walkable: true, type: "road" },
+      "2,2": { walkable: false },
+    }
+  },
+];

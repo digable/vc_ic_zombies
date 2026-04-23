@@ -118,10 +118,13 @@ function updateButtons() {
     refs.placeSewerTokenBtn.textContent = state.pendingSewerTokenPlace ? "Cancel Placement" : `Place Sewer Token (${p.sewerTokensAvailable ?? 0} left)`;
   }
   if (refs.toggleSewerBtn) {
-    const onToken = state.useSewerTokens && state.gameActive && !state.gameOver &&
-      (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) &&
+    const sewerActive = state.useSewerTokens && state.gameActive && !state.gameOver;
+    const canEnter = (state.step === STEP.ROLL_MOVE || state.step === STEP.MOVE) &&
       state.sewerTokenSpaces.has(key(p.x, p.y));
-    refs.toggleSewerBtn.style.display = onToken ? "" : "none";
+    // While underground, always surface the Exit button so the player isn't stranded
+    // if the turn advanced past MOVE (card effects, combat deferral, etc.).
+    const show = sewerActive && (p.inSewer || canEnter);
+    refs.toggleSewerBtn.style.display = show ? "" : "none";
     refs.toggleSewerBtn.textContent = p.inSewer ? "Exit Sewer" : "Enter Sewer";
   }
   refs.moveZombiesBtn.disabled = state.step !== STEP.MOVE_ZOMBIES || state.gameOver || state.zombies.size === 0;

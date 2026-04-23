@@ -826,7 +826,7 @@ function buildInPlayHtml(excludeCurrentPlayer) {
     var chipsHtml = cards.map(function(c) {
       return "<span class='ts-inplay-chip" + (c.botd ? " ts-inplay-chip--botd" : "") + "' title='" + (c.desc || "").replace(/'/g, "\u2019") + "'>" + c.name + "</span>";
     }).join("");
-    rows.push("<div class='ts-inplay-player'><span class='ts-inplay-name'>" + p.name + "</span>" + chipsHtml + "</div>");
+    rows.push("<div class='ts-inplay-player'><span class='ts-inplay-name'>" + escapeHtml(p.name) + "</span>" + chipsHtml + "</div>");
   });
   return rows.join("");
 }
@@ -843,44 +843,53 @@ function renderInPlayRow() {
   }
 }
 
+// Turn-strip DOM mirrors — cached once so syncTurnStripButtons avoids
+// ~15 getElementById / querySelectorAll calls on every render.
+var tsRefs = null;
+function getTsRefs() {
+  if (tsRefs) return tsRefs;
+  tsRefs = {
+    pairs: [
+      [document.getElementById("ts-drawTileBtn"),     refs.drawTileBtn,     false],
+      [document.getElementById("ts-rotateLeftBtn"),   refs.rotateLeftBtn,   false],
+      [document.getElementById("ts-rotateRightBtn"),  refs.rotateRightBtn,  false],
+      [document.getElementById("ts-combatBtn"),       refs.combatBtn,       false],
+      [document.getElementById("ts-drawEventsBtn"),   refs.drawEventsBtn,   true],
+      [document.getElementById("ts-rollMoveBtn"),     refs.rollMoveBtn,     true],
+      [document.getElementById("ts-endMoveBtn"),      refs.endMoveBtn,      false],
+      [document.getElementById("ts-moveZombiesBtn"),  refs.moveZombiesBtn,  false],
+      [document.getElementById("ts-discardBtn"),      refs.discardBtn,      false],
+      [document.getElementById("ts-endTurnBtn"),      refs.endTurnBtn,      false],
+      [document.getElementById("ts-performSpellBtn"), refs.performSpellBtn, false],
+    ],
+    dirBtns: Array.from(document.querySelectorAll(".ts-moveDirBtn")),
+    moveRollOutput: document.getElementById("ts-moveRollOutput"),
+    zombieRollOutput: document.getElementById("ts-zombieRollOutput"),
+    pendingTileInfo: document.getElementById("ts-pendingTileInfo"),
+    discardHint: document.getElementById("ts-discard-hint"),
+  };
+  return tsRefs;
+}
+
 function syncTurnStripButtons() {
-  // Sync disabled state from the canonical refs buttons to the turn-strip proxy buttons.
-  [
-    ["ts-drawTileBtn",    "drawTileBtn"],
-    ["ts-rotateLeftBtn",  "rotateLeftBtn"],
-    ["ts-rotateRightBtn", "rotateRightBtn"],
-    ["ts-combatBtn",      "combatBtn"],
-    ["ts-drawEventsBtn",  "drawEventsBtn"],
-    ["ts-rollMoveBtn",    "rollMoveBtn"],
-    ["ts-endMoveBtn",     "endMoveBtn"],
-    ["ts-moveZombiesBtn", "moveZombiesBtn"],
-    ["ts-discardBtn",     "discardBtn"],
-    ["ts-endTurnBtn",     "endTurnBtn"],
-    ["ts-performSpellBtn","performSpellBtn"],
-  ].forEach(function(pair) {
-    var ts  = document.getElementById(pair[0]);
-    var src = document.getElementById(pair[1]);
+  var t = getTsRefs();
+  for (var i = 0; i < t.pairs.length; i++) {
+    var ts = t.pairs[i][0], src = t.pairs[i][1], mirrorText = t.pairs[i][2];
     if (ts && src) {
       ts.disabled = src.disabled;
-      // Keep dynamic button labels in sync
-      if (pair[0] === "ts-rollMoveBtn" || pair[0] === "ts-drawEventsBtn") ts.textContent = src.textContent;
+      if (mirrorText) ts.textContent = src.textContent;
     }
-  });
+  }
 
-  // Direction buttons
-  document.querySelectorAll(".ts-moveDirBtn").forEach(function(btn) {
-    var dir = btn.dataset.dir;
-    var src = refs.moveDirBtns.find(function(b) { return b.dataset.dir === dir; });
+  // Direction buttons — matched by dataset.dir order to refs.moveDirBtns.
+  t.dirBtns.forEach(function(btn) {
+    var src = refs.moveDirBtns.find(function(b) { return b.dataset.dir === btn.dataset.dir; });
     if (src) btn.disabled = src.disabled;
   });
 
-  // Text span mirrors
-  var tsMove = document.getElementById("ts-moveRollOutput");
-  if (tsMove && refs.moveRollOutput) tsMove.textContent = refs.moveRollOutput.textContent;
-  var tsZombie = document.getElementById("ts-zombieRollOutput");
-  if (tsZombie && refs.zombieRollOutput) tsZombie.textContent = refs.zombieRollOutput.textContent;
-  var tsPending = document.getElementById("ts-pendingTileInfo");
-  if (tsPending && refs.pendingTileInfo) tsPending.textContent = refs.pendingTileInfo.textContent;
+  if (t.moveRollOutput && refs.moveRollOutput)       t.moveRollOutput.textContent   = refs.moveRollOutput.textContent;
+  if (t.zombieRollOutput && refs.zombieRollOutput)   t.zombieRollOutput.textContent = refs.zombieRollOutput.textContent;
+  if (t.pendingTileInfo && refs.pendingTileInfo)     t.pendingTileInfo.textContent  = refs.pendingTileInfo.textContent;
 }
 
 function syncTurnStrip() {
@@ -889,7 +898,7 @@ function syncTurnStrip() {
   var activeStep = getActiveStep();
   openTurnStep(activeStep);
   // Show/hide the forced-discard hint in the End Turn step body.
-  var discardHint = document.getElementById("ts-discard-hint");
+  var discardHint = getTsRefs().discardHint;
   if (discardHint) {
     var _cp = currentPlayer();
     var _handLimit = (state.useGuts && _cp.guts != null) ? Math.max(1, _cp.guts) : MAX_HAND_SIZE;

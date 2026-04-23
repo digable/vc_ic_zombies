@@ -18,6 +18,24 @@ function isMyTurn() {
   return mp ? state.currentPlayerIndex === mp.myPlayerSlot : true;
 }
 
+// Multiplayer DOM refs — cached on first access. Used by pollers and banner
+// updates that fire every 1.5s, so we avoid repeated getElementById cost.
+let _mpRefs = null;
+function mpRefs() {
+  if (_mpRefs) return _mpRefs;
+  _mpRefs = {
+    lobbyStatus:  document.getElementById("mpLobbyStatus"),
+    playerList:   document.getElementById("mpPlayerList"),
+    shareCode:    document.getElementById("mpShareCode"),
+    startBtn:     document.getElementById("mpStartBtn"),
+    turnBanner:   document.getElementById("mpTurnBanner"),
+    mobileToast:  document.getElementById("mobileToast"),
+    mapTabBtn:    document.querySelector('.mobile-tab-btn[data-tab="map"]'),
+    panel:        document.getElementById("mpPanel"),
+  };
+  return _mpRefs;
+}
+
 function getOrCreateDeviceId() {
   let id = sessionStorage.getItem("vc_deviceId");
   if (!id) {
@@ -43,7 +61,7 @@ async function apiFetch(path, options = {}) {
 }
 
 function setLobbyStatus(msg, isError = false) {
-  const el = document.getElementById("mpLobbyStatus");
+  const el = mpRefs().lobbyStatus;
   if (!el) return;
   el.textContent = msg;
   el.className = "mp-lobby-status" + (isError ? " mp-lobby-error" : "");
@@ -51,20 +69,28 @@ function setLobbyStatus(msg, isError = false) {
 
 function renderLobbyPanel(session) {
   const players = session?.players || [];
-  const listEl = document.getElementById("mpPlayerList");
+  const r = mpRefs();
+  const listEl = r.playerList;
   if (listEl) {
     listEl.innerHTML = players.length === 0
       ? "<em>Waiting for players...</em>"
-      : players.map((p) => `<div class="mp-player-entry">${p.name}</div>`).join("");
+      : players.map((p) => `<div class="mp-player-entry">${escapeHtml(p.name)}</div>`).join("");
   }
-  const codeEl = document.getElementById("mpShareCode");
+  const codeEl = r.shareCode;
   if (codeEl && session?.code) {
-    const url = `${location.origin}${location.pathname}?game=${session.code}`;
-    codeEl.innerHTML = `Code: <strong>${session.code}</strong> &nbsp;|&nbsp;
-      <button onclick="navigator.clipboard.writeText('${url}')" class="mp-copy-btn">Copy Link</button>`;
+    const url = `${location.origin}${location.pathname}?game=${encodeURIComponent(session.code)}`;
+    codeEl.textContent = "";
+    const codeLabel = document.createElement("span");
+    codeLabel.innerHTML = `Code: <strong>${escapeHtml(session.code)}</strong> &nbsp;|&nbsp; `;
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "mp-copy-btn";
+    copyBtn.textContent = "Copy Link";
+    copyBtn.addEventListener("click", () => navigator.clipboard.writeText(url));
+    codeEl.appendChild(codeLabel);
+    codeEl.appendChild(copyBtn);
   }
   const mp = mpSession();
-  const startBtn = document.getElementById("mpStartBtn");
+  const startBtn = r.startBtn;
   if (startBtn) {
     const isHost = mp?.isHost === true;
     startBtn.style.display = isHost ? "" : "none";
@@ -87,7 +113,7 @@ function showCreateJoinSection() {
 
 // Called once the game is live — collapses the MP panel for both host and joiner
 function hideMpPanel() {
-  const panel = document.getElementById("mpPanel");
+  const panel = mpRefs().panel;
   if (panel) panel.removeAttribute("open");
 }
 
@@ -178,14 +204,14 @@ async function pollFromCloud() {
       if (typeof logLine === "function") logLine(`${dep.name} left the game.`);
     }
     if (departures.length === 1) {
-      const el = document.getElementById("mobileToast");
+      const el = mpRefs().mobileToast;
       if (el) {
         el.textContent = `${departures[0].name} left the game`;
         el.classList.add("mobile-toast--visible");
         setTimeout(() => el.classList.remove("mobile-toast--visible"), 5000);
       }
     } else if (departures.length > 1) {
-      const el = document.getElementById("mobileToast");
+      const el = mpRefs().mobileToast;
       if (el) {
         el.textContent = `${departures.length} players left the game`;
         el.classList.add("mobile-toast--visible");
@@ -412,11 +438,12 @@ async function leaveMultiplayerGame() {
 // ---------------------------------------------------------------------------
 
 function updateMpTurnBanner() {
-  const el = document.getElementById("mpTurnBanner");
+  const r = mpRefs();
+  const el = r.turnBanner;
   if (!el) return;
   const mp = mpSession();
 
-  const mapBtn = document.querySelector('.mobile-tab-btn[data-tab="map"]');
+  const mapBtn = r.mapTabBtn;
 
   if (!mp || !mp.gameStarted) {
     el.classList.add("hidden");
@@ -446,7 +473,7 @@ function showMpTurnNotification() {
   // Flash the Map tab button first — must happen before switchMobileTab because
   // switchMobileTab calls syncMobilePanels which moves DOM nodes and triggers a
   // reflow, which would make the void-offsetWidth restart trick a no-op.
-  const mapTabBtn = document.querySelector('.mobile-tab-btn[data-tab="map"]');
+  const mapTabBtn = mpRefs().mapTabBtn;
   if (mapTabBtn) {
     mapTabBtn.classList.remove("mobile-tab-btn--your-turn");
     void mapTabBtn.offsetWidth; // force reflow so the animation restarts cleanly
@@ -472,7 +499,7 @@ function showMpTurnNotification() {
   }
 
   // Toast (visible on any screen size for multiplayer turns)
-  const el = document.getElementById("mobileToast");
+  const el = mpRefs().mobileToast;
   if (el) {
     el.textContent = "Your turn!";
     el.classList.add("mobile-toast--visible");
