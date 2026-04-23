@@ -1221,7 +1221,8 @@
 }
 #board.iso-view .mark.zombie::before { display: none; }
 #board.iso-view .mark.zombie::after  { display: none; }
-#board.iso-view .mark.zombie-dog {
+#board.iso-view .mark.zombie-dog,
+#board.iso-view .mark.zombie-clown {
   width: auto;
   height: auto;
   background-image: none;
