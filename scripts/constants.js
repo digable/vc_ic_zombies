@@ -51,6 +51,13 @@ const ZOOM_MIN            = 0.3;  // minimum board zoom level
 const ZOOM_MAX            = 3.0;  // maximum board zoom level
 const ISO_SPIN_SNAP       = 15;   // degrees per snap increment when right-click spinning
 
+const SAVE_SLOTS = 5; // number of localStorage save slots
+
+// Sentinel deck key for the shared base map deck (distinct from per-collection standalone decks)
+const TILE_DECK = {
+  BASE: "base",
+};
+
 const CARD_TYPE = {
   EVENT: "event",
   BOTD_PAGE:  "botd_page" // "Book of the Dead" page cards that start in front of the player and have special staging rules
@@ -108,3 +115,201 @@ const SUBTILE_TYPE = {
 // Subtile type groupings used for event card and combat logic
 const SUBTILE_BUILDING_TYPES = new Set([SUBTILE_TYPE.BUILDING, SUBTILE_TYPE.MALL_STORE]);
 const SUBTILE_OUTSIDE_TYPES  = new Set([SUBTILE_TYPE.ROAD, SUBTILE_TYPE.GRASS, SUBTILE_TYPE.PARKING, SUBTILE_TYPE.MALL_HALLWAY]);
+
+// ---------------------------------------------------------------------------
+// Direction and geometry constants — used by placement, movement, and rendering
+// ---------------------------------------------------------------------------
+
+const DIRS = {
+  N: { x: 0, y: -1, opposite: "S" },
+  E: { x: 1, y: 0, opposite: "W" },
+  S: { x: 0, y: 1, opposite: "N" },
+  W: { x: -1, y: 0, opposite: "E" }
+};
+
+const TILE_CENTER = Math.floor(TILE_DIM / 2); // local coord of the middle subtile (1 in a 3×3 grid)
+
+const DOOR_LOCAL = {
+  N: { x: TILE_CENTER,    y: 0            },
+  E: { x: TILE_DIM - 1,  y: TILE_CENTER  },
+  S: { x: TILE_CENTER,    y: TILE_DIM - 1 },
+  W: { x: 0,              y: TILE_CENTER  }
+};
+
+// ---------------------------------------------------------------------------
+// Collections — expansion set identifiers and metadata
+// ---------------------------------------------------------------------------
+
+const COLLECTIONS = {
+  DIRECTORS_CUT: "directors_cut",
+  ZOMBIE_CORPS_E_: "zombie_corps_e_",
+  MALL_WALKERS: "mall_walkers",
+  NOT_DEAD_YET: "not_dead_yet",
+  THE_END: "the_end",
+  SCHOOLS_OUT_FOREVER: "schools_out_forever",
+  SIX_FEET_UNDER: "six_feet_under",
+  SEND_IN_THE_CLOWNS: "send_in_the_clowns",
+  IOWA_CITY: "iowa_city",
+  SUBSCRIPTION: "subscription"
+};
+
+// requiresBase: null  → can be played without any other collection (standalone or add-on)
+// requiresBase: string → always requires that collection to be enabled
+// compatibleWith: string[] → other collections this can be mixed with in multi-deck play.
+//   Absent or empty means: solo only (no multi-deck pairing defined).
+//   The UI will auto-enable Z1 when two expansions with compatibleWith are combined.
+const COLLECTION_META = {
+  [COLLECTIONS.DIRECTORS_CUT]: {
+    label: "Director's Cut",
+    shortCode: "Z1",
+    requiresBase: null,
+    year: 2004,
+    type: "Base Game",
+    version: "2nd Edition",
+    description: "The core tile set. Standalone — no other collection required.",
+    creator: "Based on the Twilight Creations Zombies!!! by Todd A. Breitenstein"
+  },
+  [COLLECTIONS.ZOMBIE_CORPS_E_]: {
+    label: "Zombie Corps(e)",
+    shortCode: "Z2",
+    requiresBase: null,
+    year: 2007,
+    type: "Standalone / Expansion",
+    version: "2nd Edition",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 2 - Zombie Corps(e) by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.MALL_WALKERS]: {
+    label: "Mall Walkers",
+    shortCode: "Z3",
+    requiresBase: null,
+    year: 2007,
+    type: "Standalone / Expansion",
+    version: "1.0.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 3 - Mall Walkers by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.NOT_DEAD_YET]: {
+    label: "Not Dead Yet!",
+    shortCode: "Z3.5",
+    requiresBase: null,
+    year: 2003,
+    type: "Expansion",
+    version: "1.0.0",
+    description: "Event cards only — no map tiles. Add to any standalone or base game collection.",
+    creator: "Based on the Twilight Creations Zombies!!! 3.5 - Not Dead Yet! by Todd A. Breitenstein",
+    standaloneDeck: false
+  },
+  [COLLECTIONS.THE_END]: {
+    label: "The End... Director's Cut",
+    shortCode: "Z4",
+    requiresBase: null,
+    year: 2004,
+    type: "Standalone / Expansion",
+    version: "2.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 4 - The End... Director's Cut by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SCHOOLS_OUT_FOREVER]: {
+    label: "School's Out Forever",
+    shortCode: "Z5",
+    requiresBase: null,
+    year: 2008,
+    type: "Standalone / Expansion",
+    version: "2.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 5 - School's Out Forever by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SIX_FEET_UNDER]: {
+    label: "Six Feet Under",
+    shortCode: "Z6",
+    requiresBase: COLLECTIONS.DIRECTORS_CUT,
+    year: 2007,
+    type: "Expansion",
+    version: "1.0",
+    description: "Tiles and event cards shuffle directly into the base deck — not zone-isolated. Add to Director's Cut for a fully mixed game.",
+    creator: "Based on the Twilight Creations Zombies!!! 6 - Six Feet Under by Todd A. Breitenstein",
+    standaloneDeck: false,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SEND_IN_THE_CLOWNS]: {
+    label: "Send in the Clowns",
+    shortCode: "Z7",
+    requiresBase: null,
+    year: 2008,
+    type: "Standalone / Expansion",
+    version: "1.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 7 - Send in the Clowns by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.IOWA_CITY]: {
+    label: "Iowa City",
+    shortCode: "IC",
+    requiresBase: null,
+    year: 2026,
+    type: "Standalone / Expansion",
+    version: "0.1.0",
+    description: "Iowa City themed locations. Playable standalone or alongside Director's Cut.",
+    creator: "digable",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.SUBSCRIPTION]: {
+    label: "Subscription",
+    shortCode: "SUB",
+    requiresBase: null,
+    year: 2026,
+    type: "Expansion",
+    version: "0.1.0",
+    description: "Event cards only — no map tiles. Add to any game.",
+    creator: "digable",
+    standaloneDeck: false
+  }
+};
+
+// Returns the key of the first standalone base collection (requiresBase === null).
+function getBaseCollection() {
+  const entry = Object.entries(COLLECTION_META).find(([, meta]) => meta.requiresBase === null);
+  return entry ? entry[0] : Object.values(COLLECTIONS)[0];
+}
+
+// Normalise a tile or card's collection field into { [collectionKey]: count }.
+// Object collection  → use as-is
+// String/array + count integer → { col: count } for each listed collection
+// String/array, no count → { col: 1 }
+// No collection → { [baseCollection]: count || 1 }
+function resolveCollectionCounts(item) {
+  if (item.collection !== null && typeof item.collection === "object" && !Array.isArray(item.collection)) {
+    return item.collection;
+  }
+  const cols = Array.isArray(item.collection)
+    ? item.collection
+    : [item.collection || getBaseCollection()];
+  const perCol = Math.max(1, item.count || 1);
+  return Object.fromEntries(cols.map((c) => [c, perCol]));
+}
+
+// ---------------------------------------------------------------------------
+// Turn step enum — the ordered phases of a player's turn
+// ---------------------------------------------------------------------------
+
+const STEP = {
+  DRAW_TILE:    "DRAW_TILE",
+  COMBAT:       "COMBAT",
+  DRAW_EVENTS:  "DRAW_EVENTS",
+  ROLL_MOVE:    "ROLL_MOVE",
+  MOVE:         "MOVE",
+  MOVE_ZOMBIES: "MOVE_ZOMBIES",
+  DISCARD:      "DISCARD",
+  END:          "END"
+};

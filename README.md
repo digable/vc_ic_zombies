@@ -115,8 +115,10 @@ vc_ic_zombies/
 │       ├── start.js                  # POST start game (host only)
 │       └── leave.js                  # POST leave session
 ├── scripts/
-│   ├── constants.js                  # Shared numeric constants (TILE_DIM, WIN_KILLS, etc.)
-│   ├── core.js                       # State, collections, shared helpers
+│   ├── constants.js                  # All immutable config: TILE_DIM, WIN_KILLS, STEP, COLLECTIONS,
+│   │                                 #   COLLECTION_META, DIRS, DOOR_LOCAL, ZOMBIE_TYPE, CONNECTOR_RULE,
+│   │                                 #   TILE_DECK, SAVE_SLOTS, and collection helper functions
+│   ├── core.js                       # Runtime state object and shared helpers (key, playerKey, etc.)
 │   ├── bootstrap.js                  # Event listener wiring, game boot
 │   ├── tile-debug.js                 # Tile editor page logic
 │   ├── subtile-editor-row.js         # Subtile editor row renderer
@@ -146,7 +148,18 @@ vc_ic_zombies/
 │   │   ├── zombie-ai.js              # Zombie targeting and one-step movement
 │   │   └── board-bounds.js           # Dynamic board render bounds
 │   └── data/
-│       ├── map-tiles.js              # Tile definitions (roadTiles, namedTiles, specialTiles)
+│       ├── map-tiles.js              # Barrel — assembles namedTiles from per-collection files below
+│       ├── map-tiles/                # Per-collection tile definitions (load before map-tiles.js)
+│       │   ├── road.js               # roadTiles — shared road/intersection tiles (all collections)
+│       │   ├── z1.js                 # namedTilesZ1 — Director's Cut named tiles
+│       │   ├── z2.js                 # namedTilesZ2 — Zombie Corps(e) named tiles
+│       │   ├── z3.js                 # namedTilesZ3 — Mall Walkers named tiles
+│       │   ├── z4.js                 # namedTilesZ4 — The End named tiles
+│       │   ├── z5.js                 # namedTilesZ5 — School's Out Forever named tiles
+│       │   ├── z6.js                 # namedTilesZ6 — Six Feet Under named tiles
+│       │   ├── z7.js                 # namedTilesZ7 — Send in the Clowns named tiles
+│       │   ├── ic.js                 # namedTilesIC  — Iowa City named tiles
+│       │   └── special.js            # specialTiles  — win/start tiles (Helipad variants)
 │       ├── map-deck.js               # buildMapDeck(), buildStartTile(), tile filtering/shuffling
 │       ├── event-deck.js             # Event deck builder
 │       └── event-cards/
@@ -162,7 +175,8 @@ vc_ic_zombies/
 │           ├── zombie-cards.js       # Zombie spawn/remove/move cards
 │           └── page-cards.js         # Book of the Dead page cards (Z4)
 └── styles/
-    ├── base.css                      # Design tokens, CSS variables, global element defaults
+    ├── base.css                      # Design tokens, CSS custom properties (colors, spacing, player palette),
+    │                                 #   and global element defaults
     ├── layout.css                    # Page layout, panels, topbar
     ├── components.css                # Tiles, micro-grid, badges, markers, multiplayer UI, bug report modal
     └── tile-debug.css                # Tile editor specific styles
@@ -173,8 +187,10 @@ vc_ic_zombies/
 ## Technical Notes
 
 - **Pure Vanilla JS** — no frameworks, no bundler, no build step; everything loads via `<script>` tags in order; global scope throughout
+- **Constants / core split** — `constants.js` holds all immutable config (`STEP`, `COLLECTIONS`, `COLLECTION_META`, `DIRS`, `TILE_DECK`, etc.) and loads first; `core.js` holds only the runtime `state` object and helpers; tile data loads after both
 - **3×3 subtile grid** — each map tile has a 3×3 movement grid with per-subtile walkability, walls, doors, and air ducts defined in `subTilesTemplate`
 - **Incremental board rendering** — cells are fingerprinted each render; only changed cells rebuild their DOM; global occupant map computed once per render pass; player lookups use a `Map` keyed by id
+- **CSS design tokens** — `base.css` defines all colors, spacing, and player palette as CSS custom properties (`--player-P1`, `--cell-width`, `--wall-thickness`, `--lane-color`, etc.); components reference variables, not raw values
 - **Serverless backend** — Vercel functions + MongoDB Atlas for multiplayer sessions and bug reports; polling-based sync (no WebSockets); rate-limited per IP via Atlas TTL collections
 - **Zone isolation** — standalone collection tiles connect only to their own zone except through a gateway tile with a `DISABLE_ON_SOLO` connector; gateway tile unlocks the standalone deck when placed
 - **Connector rule system** — per-connector placement rules on each tile: `SAME` (same collection), `ANY` (any tile), `ONLY` (specific tile name), `DESIGNATED` (requires neighbor to have `ONLY` targeting this tile), and collection-key rules for cross-zone restrictions; bidirectional — both sides of a road connection must agree

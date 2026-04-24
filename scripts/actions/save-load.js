@@ -6,7 +6,6 @@
 // Save is blocked while any pending state is active (those have closures).
 // ---------------------------------------------------------------------------
 
-const SAVE_SLOTS = 5;
 const SAVE_KEY  = (slot) => `vc_ic_save_${slot}`;
 const META_KEY  = (slot) => `vc_ic_meta_${slot}`;
 
@@ -210,7 +209,7 @@ function deserializeState(data) {
   state.pendingRotation          = 0;
   state.pendingTileOptions       = [];
   state.pendingCompanionTiles    = [];
-  state.pendingTileDeck          = "base";
+  state.pendingTileDeck          = TILE_DECK.BASE;
   state.pendingBreakthrough      = null;
   state.pendingSpaceSelect       = null;
   state.selectedHandIndex        = null;

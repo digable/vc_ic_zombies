@@ -56,10 +56,10 @@ function mustBeFloor2(tile) {
   return hasEscalator;
 }
 
-// "directors_cut" and "base" are the same zone: tiles drawn from the base map deck always
-// receive tileDeck="base" while the Town Square start tile is stamped "directors_cut" in mixed play.
+// "directors_cut" and TILE_DECK.BASE are the same zone: tiles drawn from the base map deck always
+// receive tileDeck=TILE_DECK.BASE while the Town Square start tile is stamped "directors_cut" in mixed play.
 function normalizeZone(deck) {
-  return deck === "directors_cut" ? "base" : (deck || "base");
+  return deck === "directors_cut" ? TILE_DECK.BASE : (deck || TILE_DECK.BASE);
 }
 
 // Returns true if the tile being placed (with tileDeck) may connect to neighborTile
@@ -220,7 +220,7 @@ function isValidPlacement(x, y, connectors, tileDeck, incomingGatewayDirs, lenie
   return true;
 }
 
-function getPlacementOptions(tile, tileDeck = "base") {
+function getPlacementOptions(tile, tileDeck = TILE_DECK.BASE) {
   const frontier = new Set();
   state.board.forEach((_, k) => {
     const { x, y } = parseKey(k);

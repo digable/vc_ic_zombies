@@ -19,7 +19,7 @@ function isOnZ5Tile(player) {
 function buildMapStacks(activeOnly = false) {
   const stacks = [];
   if (state.mapDeck.length > 0) {
-    stacks.push({ id: "base", label: "Base Deck", shortLabel: "Base", deck: state.mapDeck });
+    stacks.push({ id: TILE_DECK.BASE, label: "Base Deck", shortLabel: "Base", deck: state.mapDeck });
   }
   Object.entries(state.standaloneDecks).forEach(([collKey, deck]) => {
     if (deck.length === 0) return;

@@ -49,7 +49,7 @@ function renderDeckInfo(previewDeck) {
     const meta = state.deckStartCounts?.[t.name];
     const total = meta?.count ?? 1;
     const copy = total > 1 ? `${t._copyNum}/${total}` : null;
-    return tileRow(t, `#${i + 1}`, false, copy, "base", i);
+    return tileRow(t, `#${i + 1}`, false, copy, TILE_DECK.BASE, i);
   }).join("");
 
   const standaloneRows = Object.entries(state.standaloneDecks || {}).map(([collKey, deck]) => {
@@ -885,7 +885,7 @@ function attachDeckDragListeners() {
       e.preventDefault();
       const toIdx = Number(row.dataset.dragIdx);
       if (toIdx === dragFrom.idx) return;
-      const deck = dragFrom.deckId === "base"
+      const deck = dragFrom.deckId === TILE_DECK.BASE
         ? state.mapDeck
         : (state.standaloneDecks || {})[dragFrom.deckId];
       if (!deck) return;

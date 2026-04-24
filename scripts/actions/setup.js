@@ -181,7 +181,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   // Auto-place any companion tiles declared on the start tile (e.g. Front Gate → Straight → 4-Way).
   if (startTile.companionTiles && startTile.companionTiles.length > 0) {
     state.pendingCompanionTiles = [];
-    state.pendingTileDeck = startTile.placedDeck || "base";
+    state.pendingTileDeck = startTile.placedDeck || TILE_DECK.BASE;
     startTile.companionTiles.forEach(({ name }) => {
       let idx = -1;
       let sourceDeck = null;
@@ -217,17 +217,17 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   render();
 }
 
-function drawAndPlaceTile(deckId = "base") {
+function drawAndPlaceTile(deckId = TILE_DECK.BASE) {
   if (state.step !== STEP.DRAW_TILE || state.gameOver) return;
 
   // Standalone deck: must be active (gateway tile placed)
-  if (deckId !== "base" && !state.activeStandaloneDecks.has(deckId)) return;
+  if (deckId !== TILE_DECK.BASE && !state.activeStandaloneDecks.has(deckId)) return;
 
-  const deck = deckId === "base" ? state.mapDeck : state.standaloneDecks[deckId];
+  const deck = deckId === TILE_DECK.BASE ? state.mapDeck : state.standaloneDecks[deckId];
   if (!deck) return;
 
   if (deck.length === 0) {
-    const label = deckId === "base" ? "Map deck" : (COLLECTION_META[deckId]?.label || deckId) + " deck";
+    const label = deckId === TILE_DECK.BASE ? "Map deck" : (COLLECTION_META[deckId]?.label || deckId) + " deck";
     logLine(`${label} is empty — skipping tile draw, continuing turn.`);
     state.step = STEP.DRAW_EVENTS;
     render();
@@ -339,11 +339,11 @@ function placeCompanionTilesFor(mainTile, tileX, tileY, tileRotation) {
     const companionCols = Object.keys(resolveCollectionCounts(companion));
     const companionDeck = companionCols.length > 0 && COLLECTION_META[companionCols[0]]?.standaloneDeck
       ? companionCols[0]
-      : (state.pendingTileDeck || "base");
+      : (state.pendingTileDeck || TILE_DECK.BASE);
 
     if (state.board.has(key(cx, cy))) {
       logLine(`Cannot place ${companion.name} at (${cx}, ${cy}) — space already occupied; returning to deck.`);
-      const returnDeck = companionDeck === "base" ? state.mapDeck : (state.standaloneDecks[companionDeck] || state.mapDeck);
+      const returnDeck = companionDeck === TILE_DECK.BASE ? state.mapDeck : (state.standaloneDecks[companionDeck] || state.mapDeck);
       returnDeck.unshift(companion);
       return;
     }
@@ -513,7 +513,7 @@ function placePendingTileAt(x, y) {
     connectors: placement.connectors,
     ...(placedConnectorRules ? { placedConnectorRules } : {}),
     ...(placedConnectorOnlyTarget ? { placedConnectorOnlyTarget } : {}),
-    placedDeck: state.pendingTileDeck || "base",
+    placedDeck: state.pendingTileDeck || TILE_DECK.BASE,
     placedRotation: placement.rotation,
     ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {})
   });

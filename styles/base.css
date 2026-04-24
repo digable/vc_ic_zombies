@@ -53,6 +53,24 @@
   --tooltip-fg:     #f5ead0;
   --tooltip-border: #5a4020;
 
+  /* Cell dimensions */
+  --cell-width:  96px;
+  --cell-height: 114px;
+
+  /* Wall thickness (flat view) */
+  --wall-thickness: 3px;
+
+  /* Road lane stripe color */
+  --lane-color: rgba(246, 212, 75, 0.95);
+
+  /* Player palette — base color + light (pulse highlight) */
+  --player-P1: #2d6a9f; --player-P1-light: #74b8f0;
+  --player-P2: #c0392b; --player-P2-light: #f1948a;
+  --player-P3: #27ae60; --player-P3-light: #82e0aa;
+  --player-P4: #e67e22; --player-P4-light: #f0b27a;
+  --player-P5: #8e44ad; --player-P5-light: #c39bd3;
+  --player-P6: #16a085; --player-P6-light: #76d7c4;
+
   /* Action panel theme colors */
   --panel-zombie-border: #7c4a4a;
   --panel-zombie-bg:     #fff0f0;

@@ -210,7 +210,7 @@ function attachListeners() {
     }
   });
 
-  refs.drawTileBtn.addEventListener("click", () => drawAndPlaceTile("base"));
+  refs.drawTileBtn.addEventListener("click", () => drawAndPlaceTile(TILE_DECK.BASE));
   refs.rotateLeftBtn.addEventListener("click", () => rotatePendingTile(-1));
   refs.rotateRightBtn.addEventListener("click", () => rotatePendingTile(1));
   refs.combatBtn.addEventListener("click", resolveCombatOnCurrentTile);
