@@ -18,77 +18,76 @@
 
     <main class="layout">
       <section class="panel controls">
-        <h2>Game Controls</h2>
-
         <details class="save-load-details">
           <summary>Save / Load</summary>
           <div id="saveLoadPanel"></div>
         </details>
 
-        <div id="setupSection">
-          <div class="setup-collection-grid" id="collectionGrid">
-            <span class="setup-col-header">Collection Name</span><span class="setup-col-header">Map Tiles</span><span class="setup-col-header">Event Cards</span>
-          </div>
-          <div id="deckPreviewCount" class="deck-preview-count"></div>
-          <div class="setup-variant-rules">
-            <span class="setup-variant-header">Variant Rules</span>
-            <label class="setup-variant-label">
-              <input type="checkbox" id="useGutsCheckbox" />
-              Guts Tokens — hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat; always keep at least 1 card
-            </label>
-            <label class="setup-variant-label">
-              <input type="checkbox" id="useSewerTokensCheckbox" />
-              Sewer Tokens (Z6) — each player starts with 2 sewer tokens to place on road spaces; players in the sewer skip combat and pay 1 life/guts per turn to remain underground
-            </label>
+        <div class="phase-group" data-step="setup">
+          <span class="phase-label">New Game</span>
+          <div id="setupSection">
+            <div class="setup-collection-grid" id="collectionGrid">
+              <span class="setup-col-header">Collection Name</span><span class="setup-col-header">Map Tiles</span><span class="setup-col-header">Event Cards</span>
+            </div>
+            <div id="deckPreviewCount" class="deck-preview-count"></div>
+            <div class="setup-variant-rules">
+              <span class="setup-variant-header">Variant Rules</span>
+              <label class="setup-variant-label">
+                <input type="checkbox" id="useGutsCheckbox" />
+                Guts Tokens — hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat; always keep at least 1 card
+              </label>
+              <label class="setup-variant-label">
+                <input type="checkbox" id="useSewerTokensCheckbox" />
+                Sewer Tokens (Z6) — each player starts with 2 sewer tokens to place on road spaces; players in the sewer skip combat and pay 1 life/guts per turn to remain underground
+              </label>
+            </div>
+            <div class="row">
+              <label for="playerCount">Players</label>
+              <input id="playerCount" type="number" min="1" max="6" value="2" />
+            </div>
           </div>
           <div class="row">
-            <label for="playerCount">Players</label>
-            <input id="playerCount" type="number" min="1" max="6" value="2" />
+            <button id="newGameBtn">Start Game</button>
           </div>
+          <details id="mpPanel" class="save-load-details">
+            <summary>Online Multiplayer</summary>
+
+            <div id="mpCreateJoinSection">
+              <div id="mpCreateSection">
+                <div class="row">
+                  <input id="mpHostName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
+                </div>
+                <div class="row">
+                  <button id="mpCreateBtn" onclick="createMultiplayerGame()">Create Game</button>
+                </div>
+                <hr style="margin:6px 0;opacity:0.3"/>
+              </div>
+              <div id="mpJoinSection">
+                <div id="mpInviteNote" class="mp-invite-note hidden"></div>
+                <div class="row">
+                  <input id="mpJoinName" type="text" maxlength="32" placeholder="Your name" style="flex:1" />
+                </div>
+                <div class="row" id="mpJoinCodeRow">
+                  <input id="mpJoinCode" type="text" maxlength="4" placeholder="Code" style="width:60px;text-transform:uppercase" />
+                  <button id="mpJoinBtn" onclick="joinMultiplayerGame()">Join Game</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="mpLobbySection" class="hidden">
+              <div id="mpShareCode" class="mp-share-code"></div>
+              <div id="mpPlayerList" class="mp-player-list"></div>
+              <div class="row" style="margin-top:6px">
+                <button id="mpStartBtn" onclick="startMultiplayerGame()" style="display:none">Start Game</button>
+                <button onclick="leaveMultiplayerGame()">Leave</button>
+              </div>
+            </div>
+
+            <div id="mpLobbyStatus" class="mp-lobby-status"></div>
+          </details>
         </div>
 
-        <div class="row">
-          <button id="newGameBtn">Start Game</button>
-        </div>
-
-        <details id="mpPanel" class="save-load-details">
-          <summary>Online Multiplayer</summary>
-
-          <div id="mpCreateJoinSection">
-            <div id="mpCreateSection">
-              <div class="row">
-                <input id="mpHostName" type="text" maxlength="32" placeholder="Your display name" style="flex:1" />
-              </div>
-              <div class="row">
-                <button id="mpCreateBtn" onclick="createMultiplayerGame()">Create Game</button>
-              </div>
-              <hr style="margin:6px 0;opacity:0.3"/>
-            </div>
-            <div id="mpJoinSection">
-              <div id="mpInviteNote" class="mp-invite-note hidden"></div>
-              <div class="row">
-                <input id="mpJoinName" type="text" maxlength="32" placeholder="Your name" style="flex:1" />
-              </div>
-              <div class="row" id="mpJoinCodeRow">
-                <input id="mpJoinCode" type="text" maxlength="4" placeholder="Code" style="width:60px;text-transform:uppercase" />
-                <button id="mpJoinBtn" onclick="joinMultiplayerGame()">Join Game</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="mpLobbySection" class="hidden">
-            <div id="mpShareCode" class="mp-share-code"></div>
-            <div id="mpPlayerList" class="mp-player-list"></div>
-            <div class="row" style="margin-top:6px">
-              <button id="mpStartBtn" onclick="startMultiplayerGame()" style="display:none">Start Game</button>
-              <button onclick="leaveMultiplayerGame()">Leave</button>
-            </div>
-          </div>
-
-          <div id="mpLobbyStatus" class="mp-lobby-status"></div>
-        </details>
-
-        <div class="phase-group">
+        <div class="phase-group" data-step="tile">
           <span class="phase-label">Tile</span>
           <div class="row">
             <button id="drawTileBtn">Draw Base Tile</button>
@@ -103,7 +102,7 @@
           </div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-step="combat">
           <span class="phase-label">Combat</span>
           <div class="row">
             <button id="combatBtn">Combat Current Space</button>
@@ -111,7 +110,7 @@
           <span id="sentinel-combat" class="panel-sentinel"></span><div id="combatDecisionPanel" class="combat-decision hidden" aria-live="polite"></div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-step="events">
           <span class="phase-label">Events</span>
           <div class="row">
             <button id="drawEventsBtn">Draw to 3 Events</button>
@@ -120,7 +119,7 @@
           <span id="sentinel-events-dice" class="panel-sentinel"></span><div id="zombieDiceChallengePanel" class="combat-decision hidden" aria-live="polite"></div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-step="move">
           <span class="phase-label">Movement</span>
           <div class="row">
             <button id="rollMoveBtn">Roll Movement</button>
@@ -141,7 +140,7 @@
           </div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-step="zombies">
           <span class="phase-label">Zombies</span>
           <div class="row">
             <button id="moveZombiesBtn">Move Zombies</button>
@@ -150,7 +149,7 @@
           <span id="sentinel-zombies" class="panel-sentinel"></span><div id="zombieReplacePanel" class="zombie-replace hidden" aria-live="polite"></div>
         </div>
 
-        <div class="phase-group">
+        <div class="phase-group" data-step="end">
           <span class="phase-label">End Turn</span>
           <div class="row">
             <button id="performSpellBtn">Cabin Spell</button>

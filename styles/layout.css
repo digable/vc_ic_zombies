@@ -937,6 +937,48 @@ kbd {
   border-color: #3a7a3a;
 }
 
+/* Desktop phase-group accordion */
+@media (min-width: 1081px) {
+  .controls .phase-group[data-step]:not(.phase-group--open) > *:not(.phase-label) {
+    display: none !important;
+  }
+
+  .controls .phase-group[data-step] .phase-label {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .controls .phase-group[data-step] .phase-label::before {
+    content: "▸";
+    font-size: 0.6rem;
+    display: inline-block;
+    width: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .controls .phase-group--open > .phase-label::before {
+    content: "▾";
+  }
+
+  .controls .phase-group--active > .phase-label {
+    color: var(--tone-warm);
+  }
+
+  /* Compact 2-column event hand in sidebar */
+  #handList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+  }
+
+  #handList > .hand-items-divider {
+    grid-column: 1 / -1;
+  }
+}
+
 .mobile-tabs {
   display: none;
 }

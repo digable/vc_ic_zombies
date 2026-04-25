@@ -133,6 +133,7 @@ function autoCheckSewerTokensForZ6() {
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
+    _lastAutoStep = null;
     const count = Number(refs.playerCount.value) || 2;
     state.gameActive = true;
     state.useGuts = !!(document.getElementById("useGutsCheckbox")?.checked);
@@ -164,6 +165,20 @@ function attachListeners() {
       autoCheckSewerTokensForZ6();
     });
   }
+
+  document.querySelectorAll(".controls .phase-group[data-step] .phase-label").forEach(function(el) {
+    el.addEventListener("click", function() {
+      var group = el.closest(".phase-group");
+      if (!group) return;
+      var wasOpen = group.classList.contains("phase-group--open");
+      document.querySelectorAll(".controls .phase-group[data-step]").forEach(function(g) {
+        g.classList.remove("phase-group--open", "phase-group--active");
+      });
+      if (!wasOpen) {
+        group.classList.add("phase-group--open");
+      }
+    });
+  });
 
   document.querySelectorAll("[data-event-requires-base][data-event-state='enabled']").forEach((el) => {
     el.addEventListener("change", () => {
@@ -917,6 +932,20 @@ function syncTurnStrip() {
   }
 }
 
+var _lastAutoStep = null;
+
+function syncDesktopControls() {
+  if (window.matchMedia("(max-width: 1080px)").matches) return;
+  var targetStep = state.gameActive ? getActiveStep() : "setup";
+  if (targetStep === _lastAutoStep) return;
+  _lastAutoStep = targetStep;
+  document.querySelectorAll(".controls .phase-group[data-step]").forEach(function(g) {
+    var isActive = g.dataset.step === targetStep;
+    g.classList.toggle("phase-group--open", isActive);
+    g.classList.toggle("phase-group--active", isActive && state.gameActive);
+  });
+}
+
 // ---- Lock screen (pass-device single-device play) -------------------------
 
 function endTurnWithLockCheck() {
@@ -1016,6 +1045,7 @@ if (window.matchMedia("(max-width: 480px)").matches) {
 if (refs.playerCount) refs.playerCount.max = MAX_PLAYERS;
 buildCollectionRows();
 attachListeners();
+syncDesktopControls();
 populateCollectionCounts();
 applyCollectionTooltips();
 updateDeckPreviewCounts();

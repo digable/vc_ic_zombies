@@ -173,6 +173,7 @@ function render() {
   renderItemAcquiredBanner();
   renderSaveLoadPanel();
   if (typeof syncTurnStrip === "function") syncTurnStrip();
+  if (typeof syncDesktopControls === "function") syncDesktopControls();
   if (typeof renderMobileHandPanel === "function") renderMobileHandPanel();
   // If a card triggered a pending interaction while on the Hand tab, jump to Map
   // so the player sees the relevant turn-strip panel immediately.
