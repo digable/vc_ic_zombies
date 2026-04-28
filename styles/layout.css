@@ -143,6 +143,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.7;
+  cursor: pointer;
+  user-select: none;
 }
 
 .setup-variant-label {
@@ -1120,6 +1122,10 @@ kbd {
 
   .controls.mobile-tab-active .phase-group {
     display: none;
+  }
+
+  body:not(.game-active) .controls.mobile-tab-active .phase-group[data-step="setup"] {
+    display: block;
   }
 
   .kb-hint { display: none; }

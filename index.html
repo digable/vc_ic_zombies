@@ -30,8 +30,8 @@
               <span class="setup-col-header">Collection Name</span><span class="setup-col-header">Map Tiles</span><span class="setup-col-header">Event Cards</span>
             </div>
             <div id="deckPreviewCount" class="deck-preview-count"></div>
-            <div class="setup-variant-rules">
-              <span class="setup-variant-header">Variant Rules</span>
+            <details open id="variantRulesDetails" class="setup-variant-rules">
+              <summary class="setup-variant-header">Variant Rules</summary>
               <label class="setup-variant-label">
                 <input type="checkbox" id="useGutsCheckbox" />
                 Guts Tokens — hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat; always keep at least 1 card
@@ -40,7 +40,7 @@
                 <input type="checkbox" id="useSewerTokensCheckbox" />
                 Sewer Tokens (Z6) — each player starts with 2 sewer tokens to place on road spaces; players in the sewer skip combat and pay 1 life/guts per turn to remain underground
               </label>
-            </div>
+            </details>
             <div class="row">
               <label for="playerCount">Players</label>
               <input id="playerCount" type="number" min="1" max="6" value="2" />

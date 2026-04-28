@@ -117,6 +117,8 @@ function autoCheckGutsForZ5() {
   const z5EventChecked = document.querySelector(`[data-event-coll="${z5Key}"][data-event-state="enabled"]`)?.checked;
   if (z5MapChecked || z5EventChecked) {
     gutsCheckbox.checked = true;
+    const vrd = document.getElementById("variantRulesDetails");
+    if (vrd) vrd.open = true;
   }
 }
 
@@ -127,6 +129,8 @@ function autoCheckSewerTokensForZ6() {
   const z6MapChecked = document.querySelector(`[data-deck-coll="${z6Key}"][data-deck-state="enabled"]`)?.checked;
   if (z6MapChecked) {
     sewerCheckbox.checked = true;
+    const vrd = document.getElementById("variantRulesDetails");
+    if (vrd) vrd.open = true;
   }
 }
 
@@ -1056,3 +1060,7 @@ setupGame(2, _baseFilter, _baseFilter);
 tryAutoRejoin();
 switchMobileTab("controls");
 updateIsoBtnIcon();
+if (window.matchMedia("(max-width: 1080px)").matches) {
+  const vrd = document.getElementById("variantRulesDetails");
+  if (vrd) vrd.open = false;
+}

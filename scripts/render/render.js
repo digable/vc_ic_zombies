@@ -29,6 +29,8 @@ function isPendingInteraction() {
 }
 
 function updateButtons() {
+  document.body.classList.toggle("game-active", !!state.gameActive);
+
   // Z4 (Cabin Spell) visibility — runs unconditionally so early returns don't leave stale state
   const _z4 = isZ4Active();
   const _spellDisplay = _z4 ? "" : "none";
