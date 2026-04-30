@@ -125,8 +125,8 @@ const namedTilesZ7 = [
       [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
     },
     connectors: {
-      N: CONNECTOR_RULE.SAME,
-      E: CONNECTOR_RULE.SAME
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
     },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {},
@@ -177,8 +177,8 @@ const namedTilesZ7 = [
       [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
     },
     connectors: {
-      S: CONNECTOR_RULE.SAME,
-      W: CONNECTOR_RULE.SAME
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME
     },
     zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
     zombies: {},
