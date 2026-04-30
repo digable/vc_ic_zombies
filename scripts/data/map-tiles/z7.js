@@ -92,4 +92,108 @@ const namedTilesZ7 = [
       "2,2": { walkable: false }
     }
   },
+  {
+    name: "Fun House 1",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {},
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: false },
+      "1,0": { walkable: false },
+      "2,0": { walkable: false },
+      "0,1": { walkable: true, type: "building" },
+      "1,1": { walkable: true, type: "building" },
+      "2,1": { walkable: false },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "building" },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Fun House 2",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {},
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: false },
+      "1,0": { walkable: false },
+      "2,0": { walkable: false },
+      "0,1": { walkable: true, type: "building" },
+      "1,1": { walkable: true, type: "building" },
+      "2,1": { walkable: false },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "building" },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Fun House 3",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {},
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: false },
+      "1,0": { walkable: true, type: "building" },
+      "2,0": { walkable: false },
+      "0,1": { walkable: false },
+      "1,1": { walkable: true, type: "building" },
+      "2,1": { walkable: true, type: "building" },
+      "0,2": { walkable: false },
+      "1,2": { walkable: false },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Fun House 4",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {},
+    hearts: 0,
+    bullets: 0,
+    subTilesTemplate: {
+      "0,0": { walkable: false },
+      "1,0": { walkable: true, type: "building" },
+      "2,0": { walkable: false },
+      "0,1": { walkable: false },
+      "1,1": { walkable: true, type: "building" },
+      "2,1": { walkable: true, type: "building" },
+      "0,2": { walkable: false },
+      "1,2": { walkable: false },
+      "2,2": { walkable: false }
+    }
+  },
 ];

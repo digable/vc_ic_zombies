@@ -215,7 +215,7 @@ Fan adaptation of **Zombies!!!** by Twilight Creations, Inc. Consider supporting
 
 ## Thanks
 
-Special thanks to **Chris Troyer** — playtester, great person, and an essential part of making this game better.
+Special thanks to **Chris Troyer** and **Brian Walker** — playtester, great person, and an essential part of making this game better.
 
 ---
 
