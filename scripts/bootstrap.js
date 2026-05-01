@@ -142,6 +142,19 @@ function autoCheckSewerTokensForZ6() {
   }
 }
 
+function autoCheckDodgeForZ8() {
+  const dodgeCheckbox = document.getElementById("useDodgeCheckbox");
+  if (!dodgeCheckbox) return;
+  const z8Key = COLLECTIONS.JAILBREAK;
+  const z8MapChecked = document.querySelector(`[data-deck-coll="${z8Key}"][data-deck-state="enabled"]`)?.checked;
+  const z8EventChecked = document.querySelector(`[data-event-coll="${z8Key}"][data-event-state="enabled"]`)?.checked;
+  if (z8MapChecked || z8EventChecked) {
+    dodgeCheckbox.checked = true;
+    const vrd = document.getElementById("variantRulesDetails");
+    if (vrd) vrd.open = true;
+  }
+}
+
 function attachListeners() {
   refs.newGameBtn.addEventListener("click", () => {
     refs.newGameBtn.classList.remove("needs-restart");
@@ -150,6 +163,7 @@ function attachListeners() {
     state.gameActive = true;
     state.useGuts = !!(document.getElementById("useGutsCheckbox")?.checked);
     state.useSewerTokens = !!(document.getElementById("useSewerTokensCheckbox")?.checked);
+    state.useDodge = !!(document.getElementById("useDodgeCheckbox")?.checked);
     setupGame(Math.max(1, Math.min(MAX_PLAYERS, count)), readCurrentFilters(), readCurrentEventFilters());
     if (window.matchMedia("(max-width: 1080px)").matches) switchMobileTab("map");
   });
@@ -175,6 +189,7 @@ function attachListeners() {
       updateDeckPreviewCounts();
       autoCheckGutsForZ5();
       autoCheckSewerTokensForZ6();
+      autoCheckDodgeForZ8();
     });
   }
 

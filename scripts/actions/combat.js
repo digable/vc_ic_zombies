@@ -461,6 +461,36 @@ function resolveCombatForPlayer(player, options = {}) {
   const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""}${scalpelCount ? ` - scalpel ${scalpelCount}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""}${poolCueBonus ? ` + pool cue ${poolCueBonus}` : ""}${batBonus ? ` + bat ${batBonus}` : ""}${allyBonus ? ` + ally ${allyBonus}` : ""}${clownBonus ? ` + hate clowns ${clownBonus}` : ""})`;
   const zombieLabel = isDog ? "zombie dog" : isEnhanced ? "government-enhanced zombie" : isClown ? "clown zombie" : "zombie";
 
+  if (state.useDodge) {
+    const hasStraightJacket = (player.items || []).some(c => c.name === "Straight Jacket");
+    const isDodge = hasStraightJacket
+      ? (baseCombatRoll >= 3)
+      : (baseCombatRoll === 3);
+    if (isDodge) {
+      state.lastCombatResult = `Dodge (${baseCombatRoll})`;
+      const jacketNote = hasStraightJacket ? " (Straight Jacket)" : "";
+      logLine(`${player.name} rolled ${baseCombatRoll}${bonusText} — dodged the ${zombieLabel}${jacketNote}!`);
+      state.combatMoveResume = null;
+      state.combatZombiePhaseResume = null;
+      if (resumeStepAfterPending === STEP.MOVE) {
+        state.step = STEP.MOVE;
+        if (state.movesRemaining > 0) {
+          logLine(`${player.name} may continue moving (${state.movesRemaining} space(s) remaining).`, "quiet");
+        }
+      } else if (resumeStepAfterPending === STEP.MOVE_ZOMBIES) {
+        state.step = STEP.MOVE_ZOMBIES;
+        if (!state.pendingZombieMovement) autoSkipZombieMoveIfClear();
+      } else if (resumeStepAfterPending === STEP.DRAW_TILE) {
+        state.step = STEP.DRAW_TILE;
+        autoSkipDrawTileIfEmpty();
+      } else if (advanceStepWhenClear && state.step === STEP.COMBAT) {
+        state.step = STEP.DRAW_EVENTS;
+        autoSkipDrawEventsIfFull();
+      }
+      return { fought: true, knockedOut: false, pending: false, dodged: true };
+    }
+  }
+
   if (baseCombatRoll >= killRoll) {
     decrementZombieAt(playerSpaceKey);
     player.kills += 1;

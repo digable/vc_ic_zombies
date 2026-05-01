@@ -149,6 +149,7 @@ const COLLECTIONS = {
   SCHOOLS_OUT_FOREVER: "schools_out_forever",
   SIX_FEET_UNDER: "six_feet_under",
   SEND_IN_THE_CLOWNS: "send_in_the_clowns",
+  JAILBREAK: "jailbreak",
   IOWA_CITY: "iowa_city",
   SUBSCRIPTION: "subscription"
 };
@@ -249,6 +250,18 @@ const COLLECTION_META = {
     version: "1.0",
     description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
     creator: "Based on the Twilight Creations Zombies!!! 7 - Send in the Clowns by Todd A. Breitenstein",
+    standaloneDeck: true,
+    compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
+  },
+  [COLLECTIONS.JAILBREAK]: {
+    label: "Jailbreak!!!",
+    shortCode: "Z8",
+    requiresBase: null,
+    year: 2009,
+    type: "Standalone / Expansion",
+    version: "1.0",
+    description: "Playable standalone or alongside Director's Cut. Uses its own zone-isolated deck when mixed.",
+    creator: "Based on the Twilight Creations Zombies!!! 8 - Jailbreak!!! by Todd A. Breitenstein",
     standaloneDeck: true,
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },

@@ -106,6 +106,7 @@ const state = {
   logs: [],
   useGuts: false,               // Guts Tokens variant: hand limit = guts count, gain/lose on natural 6/1 in combat
   useSewerTokens: false,        // Sewer Tokens variant (Z6): players place tokens on roads and travel underground
+  useDodge: false,              // Dodge variant (Z8/Jailbreak): rolling 3 dodges a zombie instead of failing
   sewerTokenSpaces: new Map(),  // key(sx,sy) → { ownerId } — all placed sewer tokens on the board
   pendingSewerTokenPlace: null, // { playerId } — awaiting road-space click to place a token
   gameActive: false,            // true once Start Game (or Load) has been explicitly triggered
@@ -219,6 +220,10 @@ function clearPendingTileState() {
 
 function isZ7Active() {
   return !!(state.deckFilters?.[COLLECTIONS.SEND_IN_THE_CLOWNS]?.enabled);
+}
+
+function isZ8Active() {
+  return !!(state.deckFilters?.[COLLECTIONS.JAILBREAK]?.enabled);
 }
 
 function isZ7Tile(tile) {
