@@ -15,13 +15,15 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 - **Isometric view** — toggle 3D perspective at any time; tilt/spin sliders, zoom (0.3×–3.0×), click-drag pan; pawns counter-rotate to always face the camera; zombie dogs render as a low dog silhouette
 - **Online multiplayer** — 4-character room codes, host-controlled start, automatic state sync every 1.5 s via polling; rejoining via invite link is always supported
 - **Combat** — d6 + bonuses; spend bullets or hearts to reroll/boost; weapon items; mid-movement combat resolves and resumes; knockout respawns you at the nearest start tile
-- **Zombie AI** — moves toward nearest player each phase; respects walls, doors, and connectors; government-enhanced zombies move 2 spaces; zombie dogs move 2 spaces, deal ½ heart damage, and can stack 2 per subtile; zombie clowns use regular stats but have a unique sprite and token
+- **Zombie AI** — moves toward nearest player each phase; respects walls, doors, and connectors; government-enhanced zombies move 2 spaces; zombie dogs move 2 spaces, deal ½ heart damage, and can stack 2 per subtile; zombie clowns are zone-separated to Z7 tiles only and have a unique sprite and token
 - **Event cards** — draw up to 3 per turn, play one; includes player buffs, opponent disruption, zombie manipulation, and Book of the Dead page cards (Z4)
 - **Air ducts (Mall Walkers)** — duct subtiles offer teleport to any adjacent duct store; costs your next movement roll; zombies cannot use ducts
 - **Book of the Dead (Z4)** — stage pages in front of you (uses your event play slot); remove one per round for effects; staged pages reduce the Cabin Spell roll target
 - **Cabin Spell win condition (Z4)** — clear all dogs from Cabin building subtiles, be on a building subtile, roll d6 ≥ 6 minus staged page count
 - **Subway stations (Z6)** — enter any subway station building to skip your next turn (combat only); on the following turn teleport to any other station on the board; exiting the building cancels the subway use
 - **Sewer Tokens (Z6 variant)** — each player starts with 2 tokens to place on road spaces; enter the sewer at any token to move through any subtile and skip zombie combat; pay 1 life or guts per turn to remain underground; exit at any token; knockout surfaces you instantly; manhole cover icon marks placed tokens on the board
+- **Send in the Clowns (Z7)** — Funhouse 2×2 block (Fun House 1–4) and Ticket Booth auto-placed at game start; collect the Clown Car item in the funhouse to unlock the Z7 escape win condition; leaving a funhouse tile causes it to randomly rotate, reshuffling its layout; reaching the funhouse perimeter lets the player to your left assign you a 4-Way exit point; rolling a 1 after exiting teleports you back to the funhouse and loses the Clown Car; clown zombies are zone-separated from regular zombies; Z7 event cards include reactive plays (Cotton Candy, Stuffed Animal), clown zombie manipulation (That's not a mask!, Important Clown Business, Send in the Clowns!), movement disruption (Whoaaa!, That's not an exit!, What do you mean funny?!?), and hand-lock (What the ____!?!)
+- **Dodge (Z8 / Jailbreak variant)** — when enabled, rolling a 3 in combat dodges the zombie (no kill, no damage, continue moving); with a Straight Jacket item, any roll of 3+ dodges; auto-enabled when Z8 tiles or cards are selected
 - **Save / Load** — 5 localStorage slots; export/import as timestamped `.json`; saving blocked during pending actions
 - **Bug reports** — in-game modal attaches game state + last 20 log entries and opens a GitHub issue automatically
 - **Mobile UI** — bottom tab bar (Controls / Map / Game Info / Hand); turn-strip accordion on the Map tab; pass-device lock screen for same-device multiplayer
@@ -52,17 +54,18 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | Escape | Reach the center subtile of the Helipad |
 | Last Stand | Accumulate 25 zombie kills |
 | Cabin Spell *(Z4)* | Clear dogs from Cabin building, roll d6 ≥ (6 − staged pages) |
+| Clown Car Escape *(Z7)* | Collect the Clown Car in the Funhouse, exit the Funhouse, reach the Ticket Booth center subtile |
 
 ---
 
 ## Zombie Types
 
-| Type | Kill Roll | Movement | Damage |
-|------|-----------|----------|--------|
-| Regular | 4+ | 1 space | 1 heart |
-| Government-Enhanced | 5+ | 2 spaces | 1 heart |
-| Zombie Dog | 4+ | 2 spaces | ½ heart |
-| Zombie Clown *(Z7)* | 4+ | 1 space | 1 heart |
+| Type | Kill Roll | Movement | Damage | Notes |
+|------|-----------|----------|--------|-------|
+| Regular | 4+ | 1 space | 1 heart | |
+| Government-Enhanced | 5+ | 2 spaces | 1 heart | |
+| Zombie Dog | 5+ | 2 spaces | ½ heart | Up to 2 per subtile; player may spend ½ heart to reroll |
+| Zombie Clown *(Z7)* | 4+ | 1 space | 1 heart | Zone-separated to Z7 tiles; unique sprite |
 
 ---
 
@@ -77,7 +80,8 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 | `THE_END` | Z4 | Standalone / expansion — bridge zone, BOTD pages, Cabin Spell |
 | `SCHOOLS_OUT_FOREVER` | Z5 | Standalone / expansion — school campus; helipad only reachable through a named building's designated rooftop connector |
 | `SIX_FEET_UNDER` | Z6 | Expansion (requires Z1) — tiles and cards mix directly into the base deck; subway stations, sewer token variant rule |
-| `SEND_IN_THE_CLOWNS` | Z7 | Standalone / expansion — circus-themed; introduces zombie clowns; Big Top is a paired two-tile structure (Big Top 1 + Big Top 2 auto-placed, connected N-to-N) |
+| `SEND_IN_THE_CLOWNS` | Z7 | Standalone / expansion — circus-themed; Funhouse 2×2 block + Ticket Booth auto-placed at start; zombie clowns zone-separated to Z7 tiles; Clown Car item + alternate escape win condition; funhouse tiles rotate on exit and teleport on roll-of-1 return |
+| `JAILBREAK` | Z8 | Standalone / expansion — jailbreak theme; enables the Dodge variant rule; Straight Jacket item |
 | `IOWA_CITY` | IC | Standalone / expansion — Iowa City locations |
 | `SUBSCRIPTION` | SUB | Event cards only — no map tiles; add to any game |
 
@@ -87,8 +91,9 @@ A browser-based board game adaptation of zombie survival. Draw tiles to build th
 
 | Variant | Enabled By | Description |
 |---------|-----------|-------------|
-| Guts Tokens | Any collection | Hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat |
+| Guts Tokens | Z5 (auto-enabled) | Hand limit = guts count (0–5); gain 1 on natural 6, lose 1 on natural 1 in combat; death resets to 3 |
 | Sewer Tokens | Z6 (auto-enabled) | Each player gets 2 tokens to place on road spaces; underground movement skips zombie combat; pay 1 life or guts per turn to stay under |
+| Dodge | Z8 (auto-enabled) | Roll of 3 in combat dodges the zombie — no kill, no damage, movement continues; with Straight Jacket item any roll of 3+ dodges |
 
 ---
 
@@ -169,6 +174,7 @@ vc_ic_zombies/
 │           ├── player-cards-z4.js    # THE_END (Z4) player cards
 │           ├── player-cards-z5.js    # SCHOOLS_OUT_FOREVER (Z5) player cards
 │           ├── player-cards-z6.js    # SIX_FEET_UNDER (Z6) player cards
+│           ├── player-cards-z7.js    # SEND_IN_THE_CLOWNS (Z7) player cards
 │           ├── player-cards-ic.js    # IOWA_CITY player cards
 │           ├── player-cards-subscription.js # SUBSCRIPTION player cards (no map tiles)
 │           ├── opponent-cards.js     # Opponent disruption cards

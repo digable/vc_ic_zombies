@@ -41,6 +41,7 @@ const INITIAL_HEARTS         = 3;   // starting hearts for a new/respawned playe
 const INITIAL_BULLETS        = 3;   // starting bullets for a new/respawned player
 const INITIAL_GUTS           = 3;   // starting guts tokens (Guts variant only)
 const INITIAL_SEWER_TOKENS   = 2;   // sewer tokens each player starts with (Z6 variant)
+const DODGE_ROLL             = 3;   // Z8 variant: exact roll that triggers a dodge; Straight Jacket dodges on any roll >= this value
 const MAX_GUTS          = 5;   // maximum guts tokens a player can hold
 const MAX_HAND_SIZE     = 3;   // maximum event cards in hand at end of turn (non-guts games)
 const BREAKTHROUGH_SEP  = "\u2192"; // separator used in breakthrough connection keys

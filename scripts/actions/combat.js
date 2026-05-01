@@ -464,8 +464,8 @@ function resolveCombatForPlayer(player, options = {}) {
   if (state.useDodge) {
     const hasStraightJacket = (player.items || []).some(c => c.name === "Straight Jacket");
     const isDodge = hasStraightJacket
-      ? (baseCombatRoll >= 3)
-      : (baseCombatRoll === 3);
+      ? (baseCombatRoll >= DODGE_ROLL)
+      : (baseCombatRoll === DODGE_ROLL);
     if (isDodge) {
       state.lastCombatResult = `Dodge (${baseCombatRoll})`;
       const jacketNote = hasStraightJacket ? " (Straight Jacket)" : "";
