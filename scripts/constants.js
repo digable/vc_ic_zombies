@@ -254,7 +254,7 @@ const COLLECTION_META = {
     compatibleWith: [COLLECTIONS.DIRECTORS_CUT]
   },
   [COLLECTIONS.JAILBREAK]: {
-    label: "Jailbreak!!!",
+    label: "Jailbreak!",
     shortCode: "Z8",
     requiresBase: null,
     year: 2009,
