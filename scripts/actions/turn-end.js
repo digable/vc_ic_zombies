@@ -33,6 +33,8 @@ function endTurn() {
 
   outgoing.forcedDirection = null;
   outgoing.tempCombatBonus = 0;
+  outgoing.clownCombatBonus = 0;
+  outgoing.sendInTheClownsActive = false;
   outgoing.tileCombatBonus = 0;
   outgoing.tileCombatBonusTile = null;
   outgoing.itemsUsedThisTurn = [];

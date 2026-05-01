@@ -217,6 +217,16 @@ function clearPendingTileState() {
   state.pendingTileDeck = TILE_DECK.BASE;
 }
 
+function isZ7Active() {
+  return !!(state.deckFilters?.[COLLECTIONS.SEND_IN_THE_CLOWNS]?.enabled);
+}
+
+function isZ7Tile(tile) {
+  if (!tile) return false;
+  const colCounts = resolveCollectionCounts(tile);
+  return !!(colCounts[COLLECTIONS.SEND_IN_THE_CLOWNS]);
+}
+
 // Stringify a coordinate pair into a map key ("x,y"). Used for board, zombie, and subtile lookups.
 function key(x, y) {
   return `${x},${y}`;

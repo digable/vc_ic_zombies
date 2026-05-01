@@ -98,6 +98,8 @@ const namedTilesZ7 = [
     collection: {
       [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
     },
+    funhouse: true,
+    funhouseSetupRotation: 3,
     connectors: {
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.SAME
@@ -124,6 +126,8 @@ const namedTilesZ7 = [
     collection: {
       [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
     },
+    funhouse: true,
+    funhouseSetupRotation: 2,
     connectors: {
       S: CONNECTOR_RULE.SAME,
       W: CONNECTOR_RULE.SAME
@@ -150,6 +154,8 @@ const namedTilesZ7 = [
     collection: {
       [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
     },
+    funhouse: true,
+    funhouseSetupRotation: 3,
     connectors: {
       N: CONNECTOR_RULE.SAME,
       E: CONNECTOR_RULE.SAME
@@ -176,6 +182,8 @@ const namedTilesZ7 = [
     collection: {
       [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
     },
+    funhouse: true,
+    funhouseSetupRotation: 2,
     connectors: {
       N: CONNECTOR_RULE.SAME,
       E: CONNECTOR_RULE.SAME
@@ -196,4 +204,119 @@ const namedTilesZ7 = [
       "2,2": { walkable: false }
     }
   },
+  {
+    name: "Fortune Teller",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.CLOWN]: 2,
+    },
+    hearts: 2,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building" },
+      "1,0": { walkable: true, type: "building" },
+      "2,0": { walkable: true, type: "building" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Ferris Wheel",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.CLOWN]: 2,
+    },
+    hearts: 1,
+    bullets: 1,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building" },
+      "1,0": { walkable: true, type: "building" },
+      "2,0": { walkable: true, type: "building" },
+      "0,1": { walkable: true, type: "grass" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "grass" },
+      "0,2": { walkable: false },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: false }
+    }
+  },
+  {
+    name: "Freak Show",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      S: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.CLOWN]: 2,
+    },
+    hearts: 2,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "building", walls: ["N"] },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,1": { walkable: true, type: "building", doors: ["S"] },
+      "2,1": { walkable: true, type: "building", walls: ["E", "S"] },
+      "0,2": { walkable: true, type: "grass", walls: ["N"] },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "grass", walls: ["N"] }
+    }
+  },
+  {
+    name: "Midway Games",
+    type: "named",
+    collection: {
+      [COLLECTIONS.SEND_IN_THE_CLOWNS]: 1,
+    },
+    connectors: {
+      N: CONNECTOR_RULE.SAME,
+      E: CONNECTOR_RULE.SAME,
+      S: CONNECTOR_RULE.SAME,
+      W: CONNECTOR_RULE.SAME
+    },
+    zombieSpawnMode: ZOMBIE_SPAWN_MODE.BY_CARD,
+    zombies: {
+      [ZOMBIE_TYPE.CLOWN]: 9,
+    },
+    hearts: 2,
+    bullets: 2,
+    subTilesTemplate: {
+      "0,0": { walkable: true, type: "building", walls: ["N", "W"] },
+      "1,0": { walkable: true, type: "grass" },
+      "2,0": { walkable: true, type: "building", walls: ["N", "E"] },
+      "0,1": { walkable: true, type: "building" },
+      "1,1": { walkable: true, type: "grass" },
+      "2,1": { walkable: true, type: "building" },
+      "0,2": { walkable: true, type: "building", walls: ["S", "W"] },
+      "1,2": { walkable: true, type: "grass" },
+      "2,2": { walkable: true, type: "building", walls: ["E", "S"] }
+    }
+  }
 ];

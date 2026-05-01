@@ -1,4 +1,9 @@
 function handleKnockout(player, options = {}) {
+  if (consumeItemByName(player, "Stuffed Animal")) {
+    player.hearts = Math.max(player.hearts, 1);
+    logLine(`${player.name} discarded Stuffed Animal — avoided being knocked out!`);
+    return;
+  }
   const { endStep = true } = options;
   let lostKills;
   if (consumeItemByName(player, "Adjusting Nicely")) {
@@ -17,6 +22,7 @@ function handleKnockout(player, options = {}) {
   player.hasJeep = false;
   player.hasClownCar = false;
   player.clownCarPending = false;
+  player.hasExitedFunhouse = false;
   player.subwayPending = false;
   player.subwayTeleport = false;
   player.inSewer = false;
@@ -93,6 +99,22 @@ function applyCombatPostStep(player, playerSpaceKey, options = {}) {
   }
 }
 
+function handleSendInTheClownsKill(player, killedZombieType) {
+  if (!player.sendInTheClownsActive) return;
+  if (killedZombieType !== ZOMBIE_TYPE.CLOWN) return;
+  const opponents = state.players.filter(p => p.id !== player.id && !p.knockedOut);
+  if (opponents.length === 0) return;
+  const validSpaces = new Set(opponents.map(p => key(p.x, p.y)));
+  state.pendingZombiePlace = {
+    playerId: player.id,
+    cardName: "Send in the Clowns!",
+    remaining: 1,
+    zombieType: ZOMBIE_TYPE.CLOWN,
+    validSpaces
+  };
+  logLine(`${player.name} killed a clown zombie — click an opponent's space to place it there.`);
+}
+
 // Action codes passed to resolvePendingCombatDecision:
 //   "B"          — spend a bullet for +1 to the current roll
 //   "H"          — spend a heart to reroll from scratch
@@ -133,6 +155,8 @@ function resolvePendingCombatDecision(actionCode) {
     if (consumeItemByName(player, "Bat")) logLine(`${player.name}'s Bat breaks — discarded.`);
     decrementZombieAt(playerSpaceKey);
     player.kills += 1;
+    player.cardPlayFrozenUntilKill = false;
+    handleSendInTheClownsKill(player, pending.zombieType);
     state.lastCombatResult = "Lucky Shot";
     state.recentKillKey = playerSpaceKey;
     state.recentKillByPlayerId = player.id;
@@ -182,6 +206,8 @@ function resolvePendingCombatDecision(actionCode) {
     if (pending.modifiedRoll >= pending.killRoll) {
       decrementZombieAt(playerSpaceKey);
       player.kills += 1;
+      player.cardPlayFrozenUntilKill = false;
+      handleSendInTheClownsKill(player, pending.zombieType);
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = playerSpaceKey;
       state.recentKillByPlayerId = player.id;
@@ -306,6 +332,8 @@ function resolvePendingCombatDecision(actionCode) {
     if (pending.modifiedRoll >= pending.killRoll) {
       decrementZombieAt(pending.pKey);
       player.kills += 1;
+      player.cardPlayFrozenUntilKill = false;
+      handleSendInTheClownsKill(player, pending.zombieType);
       state.lastCombatResult = `Success (${pending.modifiedRoll})`;
       state.recentKillKey = pending.pKey;
       state.recentKillByPlayerId = player.id;
@@ -397,6 +425,7 @@ function resolveCombatForPlayer(player, options = {}) {
     : zombieTypeProps.killRoll;
   const isEnhanced = zombieData?.type === ZOMBIE_TYPE.ENHANCED;
   const isDog = zombieData?.type === ZOMBIE_TYPE.DOG;
+  const isClown = zombieData?.type === ZOMBIE_TYPE.CLOWN;
 
   const permanentBonus = player.attack || 0;
   const tempBonus = player.tempCombatBonus || 0;
@@ -427,9 +456,10 @@ function resolveCombatForPlayer(player, options = {}) {
   const batBonus = (player.items || []).some((c) => c.name === "Bat") ? 2 : 0;
   const scalpelCount = (player.items || []).filter((c) => c.name === "Scalpel").length;
   const allyBonus = player.zombieAllyActive ? 1 : 0;
-  const baseCombatRoll = roll - diePenalty - scalpelCount + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus + poolCueBonus + batBonus + allyBonus;
-  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""}${scalpelCount ? ` - scalpel ${scalpelCount}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""}${poolCueBonus ? ` + pool cue ${poolCueBonus}` : ""}${batBonus ? ` + bat ${batBonus}` : ""}${allyBonus ? ` + ally ${allyBonus}` : ""})`;
-  const zombieLabel = isDog ? "zombie dog" : isEnhanced ? "government-enhanced zombie" : "zombie";
+  const clownBonus = isClown ? (player.clownCombatBonus || 0) : 0;
+  const baseCombatRoll = roll - diePenalty - scalpelCount + permanentBonus + tempBonus + shotgunBonus + tileBonus + meatCleaverBonus + macheteBonus + poolCueBonus + batBonus + allyBonus + clownBonus;
+  const bonusText = ` (d6 ${roll}${diePenalty ? ` - penalty ${diePenalty}` : ""}${scalpelCount ? ` - scalpel ${scalpelCount}` : ""} + attack ${permanentBonus} + temp ${tempBonus}${shotgunBonus ? ` + shotgun ${shotgunBonus}` : ""}${tileBonus ? ` + molotov ${tileBonus}` : ""}${meatCleaverBonus ? ` + cleaver ${meatCleaverBonus}` : ""}${macheteBonus ? ` + machete ${macheteBonus}` : ""}${poolCueBonus ? ` + pool cue ${poolCueBonus}` : ""}${batBonus ? ` + bat ${batBonus}` : ""}${allyBonus ? ` + ally ${allyBonus}` : ""}${clownBonus ? ` + hate clowns ${clownBonus}` : ""})`;
+  const zombieLabel = isDog ? "zombie dog" : isEnhanced ? "government-enhanced zombie" : isClown ? "clown zombie" : "zombie";
 
   if (baseCombatRoll >= killRoll) {
     decrementZombieAt(playerSpaceKey);
@@ -438,6 +468,8 @@ function resolveCombatForPlayer(player, options = {}) {
     state.recentKillKey = playerSpaceKey;
     state.recentKillByPlayerId = player.id;
     logLine(`${player.name} won combat with a ${baseCombatRoll}${bonusText} and killed the ${zombieLabel}.`, "kill");
+    player.cardPlayFrozenUntilKill = false;
+    handleSendInTheClownsKill(player, zombieData?.type);
     checkWin(player);
     applyCombatPostStep(player, playerSpaceKey, { resumeStepAfterPending });
     return { fought: true, knockedOut: false, pending: false };
@@ -449,6 +481,8 @@ function resolveCombatForPlayer(player, options = {}) {
     killRoll,
     isEnhanced,
     isDog,
+    isClown,
+    zombieType: zombieData?.type,
     roll,
     baseRoll: baseCombatRoll,
     modifiedRoll: baseCombatRoll,

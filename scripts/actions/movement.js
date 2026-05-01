@@ -28,6 +28,75 @@ function checkJeepDoorOffer(player) {
   };
 }
 
+function findFunhouseReturnSpace() {
+  for (const [bKey, tile] of state.board) {
+    if (tile && tile.funhouse) {
+      const [tx, ty] = bKey.split(",").map(Number);
+      return { x: tx * TILE_DIM + 1, y: ty * TILE_DIM + 1 };
+    }
+  }
+  return null;
+}
+
+function rotateFunhouseTileInPlace(tx, ty, tile) {
+  const delta = Math.random() < 0.5 ? 1 : 3;
+  const dirLabel = delta === 1 ? "CW" : "CCW";
+  const rotatedSubTiles = getRotatedSubTiles(tile.subTiles, delta);
+  const rotatedConnectors = getRotatedConnectors(tile.connectors, delta);
+  const newRot = ((tile.placedRotation ?? 0) + delta) % 4;
+  const newConnectorRules = getRotatedConnectorRules(tile.connectors, delta);
+  state.board.set(key(tx, ty), {
+    ...tile,
+    subTiles: rotatedSubTiles,
+    connectors: rotatedConnectors,
+    ...(newConnectorRules ? { placedConnectorRules: newConnectorRules } : {}),
+    placedRotation: newRot,
+  });
+  logLine(`${tile.name} rotated 90° ${dirLabel}.`, "quiet");
+}
+
+function triggerFunhouseExit(player) {
+  const fourWayCenters = [];
+  for (const [bKey, tile] of state.board) {
+    if (tile && tile.name === "4-Way") {
+      const [tx, ty] = bKey.split(",").map(Number);
+      fourWayCenters.push({ label: `4-Way at tile (${tx},${ty})`, x: tx * TILE_DIM + 1, y: ty * TILE_DIM + 1 });
+    }
+  }
+
+  state.movesRemaining = 0;
+
+  if (fourWayCenters.length === 0) {
+    player.hasExitedFunhouse = true;
+    logLine(`${player.name} exits the Funhouse — no 4-Way tiles on the board yet. Draw one first!`);
+    moveToZombiePhase();
+    return;
+  }
+
+  const leftIdx = (state.currentPlayerIndex - 1 + state.players.length) % state.players.length;
+  const chooser = state.players[leftIdx];
+
+  state.pendingEventChoice = {
+    playerId: chooser.id,
+    title: `${player.name} exits the Funhouse! ${chooser.name}, pick a 4-Way destination`,
+    cardName: "Funhouse Exit",
+    options: fourWayCenters.map((c, i) => ({ key: `fw_${i}`, label: c.label })),
+    resolve(choice) {
+      const idx = parseInt(choice.replace("fw_", ""), 10);
+      const dest = fourWayCenters[idx];
+      player.x = dest.x;
+      player.y = dest.y;
+      player.hasExitedFunhouse = true;
+      state.playerTrail = [key(dest.x, dest.y)];
+      collectTokensAtPlayerSpace(player);
+      logLine(`${player.name} exits the Funhouse and appears at the 4-Way (${dest.x}, ${dest.y})!`);
+      if (checkWin(player)) { render(); return; }
+      moveToZombiePhase(true);
+      render();
+    }
+  };
+}
+
 function checkClownCarAward(player) {
   if (player.hasClownCar) return;
   const tile = getTileAtSpace(player.x, player.y);
@@ -277,6 +346,26 @@ function rollMovement() {
   const dieRollPenalty = player.dieRollPenalty || 0;
   const penalizedRoll = roll - dieRollPenalty;
   state.currentMoveRoll = penalizedRoll;
+
+  // Z7: rolling a 1 while outside the funhouse sends the player back and strips their Clown Car
+  if (roll === 1 && isZ7Active() && player.hasExitedFunhouse) {
+    const dest = findFunhouseReturnSpace();
+    if (dest) {
+      player.hasClownCar = false;
+      player.clownCarPending = false;
+      player.hasExitedFunhouse = false;
+      player.x = dest.x;
+      player.y = dest.y;
+      state.movesRemaining = 0;
+      state.playerTrail = [key(dest.x, dest.y)];
+      collectTokensAtPlayerSpace(player);
+      logLine(`${player.name} rolled a 1 — sucked back into the Funhouse! Clown Car lost.`);
+      moveToZombiePhase(true);
+      render();
+      return;
+    }
+  }
+
   if (player.inTheZone && roll === 6) {
     drawOneEventCardForPlayer(player, "In the Zone");
   }
@@ -520,6 +609,20 @@ function movePlayer(dir) {
     return;
   }
   if (!canMove(player, dir)) {
+    // Z7: funhouse perimeter exit — player walks off the edge of the carnival into the city
+    if (isZ7Active() && !player.hasExitedFunhouse) {
+      const currentTile = getTileAtSpace(player.x, player.y);
+      if (currentTile?.funhouse) {
+        const dd = DIRS[dir];
+        const nx = player.x + dd.x;
+        const ny = player.y + dd.y;
+        if (!state.board.has(key(spaceToTileCoord(nx), spaceToTileCoord(ny)))) {
+          triggerFunhouseExit(player);
+          render();
+          return;
+        }
+      }
+    }
     const d = DIRS[dir];
     logLine(
       `${player.name} cannot move ${directionToArrow(dir)} from [space ${player.x}, ${player.y}] to [space ${player.x + d.x}, ${player.y + d.y}].`, "quiet"
@@ -595,10 +698,24 @@ function movePlayer(dir) {
 
   const wasInBuilding = player.claustrophobiaActive && isSpaceBuilding(player.x, player.y);
 
+  // Z7: capture funhouse tile before stepping off it
+  const prevFhTileX = spaceToTileCoord(player.x);
+  const prevFhTileY = spaceToTileCoord(player.y);
+  const prevFhTile = getTileAtSpace(player.x, player.y);
+
   player.x += d.x;
   player.y += d.y;
   state.movesRemaining -= 1;
   state.playerTrail.push(key(player.x, player.y));
+
+  // Z7: rotate the funhouse tile when the player steps off it
+  if (prevFhTile?.funhouse) {
+    const newFhTileX = spaceToTileCoord(player.x);
+    const newFhTileY = spaceToTileCoord(player.y);
+    if (prevFhTileX !== newFhTileX || prevFhTileY !== newFhTileY) {
+      rotateFunhouseTileInPlace(prevFhTileX, prevFhTileY, prevFhTile);
+    }
+  }
 
   if (player.movingTogether) {
     const companion = getPlayerById(player.movingTogether.withPlayerId);

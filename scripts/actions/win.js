@@ -58,6 +58,23 @@ function attemptSpell() {
 
 function checkWin(player) {
   const tile = getTileAtSpace(player.x, player.y);
+
+  // Z7 solo win: exit through the Ticket Booth's south subtile while holding a Clown Car
+  if (isZ7Active() && player.hasClownCar && player.hasExitedFunhouse) {
+    if (tile && tile.name === "Ticket Booth") {
+      const tx = spaceToTileCoord(player.x);
+      const ty = spaceToTileCoord(player.y);
+      const lx = getLocalCoord(player.x, tx);
+      const ly = getLocalCoord(player.y, ty);
+      if (lx === 1 && ly === 2) {
+        state.winInfo = { playerName: player.name, kills: player.kills, knockouts: player.knockouts || 0, winType: "clown_escape" };
+        state.gameOver = true;
+        logLine(`${player.name} escapes through the Ticket Booth with a Clown Car — winner!`);
+        return true;
+      }
+    }
+  }
+
   if (tile && tile.isWinTile) {
     const tx = spaceToTileCoord(player.x);
     const ty = spaceToTileCoord(player.y);

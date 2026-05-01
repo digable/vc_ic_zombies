@@ -1,3 +1,55 @@
+// 2×2 block — all four funhouse tiles directly adjacent, no gaps.
+// The regular "4-Way" road tile is pulled from the deck and placed immediately
+// above the block to serve as the funhouse center connection point.
+//
+//   4WY(0,-4)   ← funhouse center (road 4-way from deck)
+//   FH1(-1,-3)  FH4(0,-3)   ← upper row
+//   FH2(-1,-2)  FH3(0,-2)   ← lower row
+//   4WY(clowns)(0,-1)       ← Ticket Booth companion
+//   Ticket Booth(0,0)
+//
+function placeFunhouseLayout() {
+  const allTiles = [...roadTiles, ...namedTiles];
+
+  // Pull the regular 4-Way road tile from the deck to place above the funhouse block.
+  const fourWayIdx = state.mapDeck.findIndex((t) => t.name === "4-Way");
+  if (fourWayIdx !== -1) {
+    const fourWay = state.mapDeck.splice(fourWayIdx, 1)[0];
+    addTile(0, -4, {
+      ...fourWay,
+      placedRotation: 0,
+      placedDeck: COLLECTIONS.SEND_IN_THE_CLOWNS,
+    });
+    state.discardPile.push(fourWay);
+  }
+
+  const FUNHOUSE_OFFSETS = [
+    { name: "Fun House 1", dx: -1, dy: -3 },  // upper-left
+    { name: "Fun House 4", dx:  0, dy: -3 },  // upper-right
+    { name: "Fun House 2", dx: -1, dy: -2 },  // lower-left
+    { name: "Fun House 3", dx:  0, dy: -2 },  // lower-right
+  ];
+
+  FUNHOUSE_OFFSETS.forEach(({ name, dx, dy }) => {
+    const def = allTiles.find((t) => t.name === name);
+    if (!def) return;
+    const rot = def.funhouseSetupRotation ?? 0;
+    const rotatedSubTiles     = getRotatedSubTiles(getTileSubTileMap(def), rot);
+    const rotatedConnectors   = getRotatedConnectors(def.connectors, rot);
+    const placedConnectorRules = getRotatedConnectorRules(def.connectors, rot);
+    addTile(dx, dy, {
+      ...def,
+      connectors: rotatedConnectors,
+      ...(placedConnectorRules ? { placedConnectorRules } : {}),
+      placedRotation: rot,
+      placedDeck: COLLECTIONS.SEND_IN_THE_CLOWNS,
+      ...(rotatedSubTiles ? { subTiles: rotatedSubTiles } : {}),
+    });
+    state.discardPile.push({ ...def });
+    logLine(`${name} placed at (${dx}, ${dy}).`, "quiet");
+  });
+}
+
 function setupGame(playerCount, deckFilters = null, eventFilters = null) {
   state.players = [];
   for (let i = 0; i < playerCount; i += 1) {
@@ -37,6 +89,7 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       hasBike: false,
       hasClownCar: false,
       clownCarPending: false,
+      hasExitedFunhouse: false,
       smellEffect: null,
       itemsUsedThisTurn: [],
       dieRollPenalty: 0,
@@ -49,7 +102,10 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
       spellAttemptedThisTurn: false,
       mustMoveTowardTile: null,
       studentLoanReturn: null,
-      zombieAllyActive: false
+      zombieAllyActive: false,
+      clownCombatBonus: 0,
+      sendInTheClownsActive: false,
+      cardPlayFrozenUntilKill: false
     });
   }
 
@@ -202,6 +258,24 @@ function setupGame(playerCount, deckFilters = null, eventFilters = null) {
     if (state.pendingCompanionTiles.length > 0) placeCompanionTilesFor(startTile, 0, 0, 0);
     state.pendingCompanionTiles = [];
     state.pendingTileDeck = null;
+  }
+
+  // Z7 solo: pre-place the funhouse 3×3 layout and move players to funhouse starting positions.
+  const z7Active = deckFilters?.[COLLECTIONS.SEND_IN_THE_CLOWNS]?.enabled;
+  if (z7Active) {
+    placeFunhouseLayout();
+    const FUNHOUSE_STARTS = [
+      { tx: -1, ty: -3 },   // Fun House 1 (upper-left)
+      { tx:  0, ty: -3 },   // Fun House 4 (upper-right)
+      { tx: -1, ty: -2 },   // Fun House 2 (lower-left)
+      { tx:  0, ty: -2 },   // Fun House 3 (lower-right)
+    ];
+    state.players.forEach((p, i) => {
+      const s = FUNHOUSE_STARTS[i % FUNHOUSE_STARTS.length];
+      p.x = s.tx * TILE_DIM + 1;
+      p.y = s.ty * TILE_DIM + 1;
+    });
+    logLine("Funhouse layout placed. Players start in the Funhouse — draw tiles to reach the carnival!");
   }
 
   const summaryParts = Object.entries(deckMeta).map(([name, m]) => `${name} ×${m.count}`).join(", ");

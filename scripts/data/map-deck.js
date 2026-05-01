@@ -33,6 +33,7 @@ function buildMapDeck(filters = null) {
     .filter((t) => {
       if (startTileName && t.name === startTileName) return false; // start tile is pre-placed
       if (t.companionOnly) return false; // set-aside tiles are never in the deck
+      if (t.funhouse) return false;      // funhouse tiles are pre-placed at setup
       if (!filters) return true;
       const colCounts = resolveCollectionCounts(t);
       return Object.keys(colCounts).some((c) => {
@@ -126,6 +127,7 @@ function buildStandaloneDeck(collKey, filters = null) {
       if (hasBaseCollection && getGatewayConnectorDir(t)) return false; // gateway goes to base deck when mixed
       if (t.name === startTileName) return false; // start tile is pre-placed, not drawn
       if (t.companionOnly) return false; // set-aside tiles are never in the deck
+      if (t.funhouse) return false;      // funhouse tiles are pre-placed at setup
       const colCounts = resolveCollectionCounts(t);
       if (!colCounts[collKey]) return false;
       return rule?.enabled ?? true;

@@ -24,6 +24,12 @@ function buildCollectionRows() {
 
     grid.appendChild(nameSpan);
 
+    const isWip = collKey === COLLECTIONS.SEND_IN_THE_CLOWNS;
+    if (isWip) {
+      nameSpan.classList.add("coll-wip");
+      nameSpan.title = "Coming soon — rules not yet fully implemented";
+    }
+
     if (mapCounts[collKey]) {
       const mapInput = document.createElement("input");
       mapInput.type = "checkbox";
@@ -31,6 +37,7 @@ function buildCollectionRows() {
       mapInput.setAttribute("data-deck-state", "enabled");
       if (collKey === COLLECTIONS.DIRECTORS_CUT) mapInput.checked = true;
       if (!isBase) mapInput.setAttribute("data-requires-base", meta.requiresBase);
+      if (isWip) mapInput.disabled = true;
       grid.appendChild(mapInput);
     } else {
       grid.appendChild(document.createElement("span"));
@@ -43,6 +50,7 @@ function buildCollectionRows() {
       eventInput.setAttribute("data-event-state", "enabled");
       if (collKey === COLLECTIONS.DIRECTORS_CUT) eventInput.checked = true;
       if (!isBase) eventInput.setAttribute("data-event-requires-base", meta.requiresBase);
+      if (isWip) eventInput.disabled = true;
       grid.appendChild(eventInput);
     } else {
       grid.appendChild(document.createElement("span"));

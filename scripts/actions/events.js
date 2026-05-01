@@ -69,6 +69,11 @@ function playEvent(index) {
     render();
     return;
   }
+  if (player.cardPlayFrozenUntilKill) {
+    logLine(`${player.name} cannot play cards until they kill a zombie (What the ____!?!).`);
+    render();
+    return;
+  }
   if (player.eventUsedThisRound) {
     logLine("Only one event or page card may be played per turn.");
     render();
@@ -328,7 +333,7 @@ function handleZombiePlaceClick(sx, sy) {
   if (state.players.some((p) => key(p.x, p.y) === spaceKey)) return;
   if (pzp.validSpaces && !pzp.validSpaces.has(spaceKey)) return;
 
-  state.zombies.set(spaceKey, { type: ZOMBIE_TYPE.REGULAR });
+  state.zombies.set(spaceKey, { type: pzp.zombieType ?? ZOMBIE_TYPE.REGULAR });
   logLine(`Zombie placed at ${spaceKey}.`);
   pzp.remaining -= 1;
 

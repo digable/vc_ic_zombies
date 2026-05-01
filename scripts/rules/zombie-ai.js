@@ -37,6 +37,8 @@ function closestPlayersTo(x, y, pool = null) {
 function moveZombieOneStep(zKey, options = {}) {
   const { targetPlayerId = null, resolveTiesDeterministically = false, isDog = false } = options;
   const { x, y } = parseKey(zKey);
+  const zombieData = state.zombies.get(zKey);
+  const zombieType = zombieData?.type ?? ZOMBIE_TYPE.REGULAR;
 
   // Players protected by Dog Repellent — dogs may not move closer to them
   const repellentIds = isDog
@@ -63,6 +65,19 @@ function moveZombieOneStep(zKey, options = {}) {
     if (!canStep(x, y, nx, ny)) return;
     if (state.zombies.has(toKey)) return;
     if (state.noZombieTiles && state.noZombieTiles.has(key(spaceToTileCoord(nx), spaceToTileCoord(ny)))) return;
+    // Z7 zone separation: enforce cross-tile collection boundaries
+    if (isZ7Active()) {
+      const srcTileX = spaceToTileCoord(x), srcTileY = spaceToTileCoord(y);
+      const dstTileX = spaceToTileCoord(nx), dstTileY = spaceToTileCoord(ny);
+      if (srcTileX !== dstTileX || srcTileY !== dstTileY) {
+        const destTile = getTileAtSpace(nx, ny);
+        if (destTile) {
+          const destIsZ7 = isZ7Tile(destTile);
+          if (zombieType === ZOMBIE_TYPE.CLOWN && !destIsZ7) return;
+          if (zombieType !== ZOMBIE_TYPE.CLOWN && destIsZ7) return;
+        }
+      }
+    }
     // Dog Repellent: cannot move to a space closer to any protected player
     if (isDog && repellentIds.size > 0) {
       for (const pid of repellentIds) {
